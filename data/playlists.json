@@ -1,0 +1,81 @@
+{
+  "playlists": [
+    {
+      "id": "pl-local-1792673072635-t3trut",
+      "name": "Favorit",
+      "url": "",
+      "type": "local",
+      "addedBy": "Mas Joy",
+      "createdAt": "2026-10-22T12:44:32.635Z",
+      "aliases": [
+        "favorit",
+        "favorite",
+        "fav",
+        "likes",
+        "suka"
+      ],
+      "songs": [
+        {
+          "id": "4n5bpeh5NNg",
+          "title": "ONE OK ROCK: Renegades [OFFICIAL VIDEO]",
+          "url": "https://www.youtube.com/watch?v=4n5bpeh5NNg",
+          "duration": 0,
+          "addedAt": "2026-10-22T12:44:32.641Z"
+        },
+        {
+          "id": "k2qgadSvNyU",
+          "title": "Dua Lipa - New Rules (Official Music Video)",
+          "url": "https://www.youtube.com/watch?v=k2qgadSvNyU",
+          "duration": 0,
+          "addedAt": "2026-10-22T15:45:24.292Z"
+        },
+        {
+          "id": "Tt-zb3a85bQ",
+          "title": "Faouzia - Fur Elise (Official Lyric Video)",
+          "url": "https://www.youtube.com/watch?v=Tt-zb3a85bQ",
+          "duration": 0,
+          "addedAt": "2026-10-22T16:32:18.412Z"
+        },
+        {
+          "id": "I1zqCX3Dvxo",
+          "title": "Faouzia - UNETHICAL (Official Music Video)",
+          "url": "https://www.youtube.com/watch?v=I1zqCX3Dvxo",
+          "duration": 232,
+          "addedAt": "2026-10-23T09:55:59.136Z"
+        },
+        {
+          "id": "WNMviMH9W1I",
+          "title": "【手描き第五人格】命に女兼われている。【自己解釈】",
+          "url": "https://www.youtube.com/watch?v=WNMviMH9W1I",
+          "duration": 270,
+          "addedAt": "2026-11-07T10:41:22.539Z"
+        }
+      ],
+      "cachedVideoIds": [],
+      "cachedAt": null
+    },
+    {
+      "id": "pl-1793982543391-xcwclz",
+      "name": "harucha",
+      "url": "https://www.youtube.com/playlist?list=PLvya9RqhUTrSTo8Q9WRxOAieJdYQCLrhJ",
+      "type": "youtube_playlist",
+      "addedBy": "Mas Joy",
+      "createdAt": "2026-11-06T16:29:03.391Z",
+      "aliases": [],
+      "cachedVideoIds": [],
+      "cachedAt": null
+    },
+    {
+      "id": "pl-1793982631310-5pmto9",
+      "name": "kafu",
+      "url": "https://www.youtube.com/playlist?list=PLPqVb_3u9vSOT7bvScbmvnLx10P-Z8Ai9",
+      "type": "youtube_playlist",
+      "addedBy": "Mas Joy",
+      "createdAt": "2026-11-06T16:30:31.310Z",
+      "aliases": [],
+      "cachedVideoIds": [],
+      "cachedAt": null
+    }
+  ],
+  "cachedAt": "2026-11-08T02:35:56.862Z"
+}

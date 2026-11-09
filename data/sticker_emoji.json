@@ -1,0 +1,214 @@
+{
+  "emojis": [
+    {
+      "id": "emoji-1792505926927-6pos12",
+      "label": "Ketawa brutal",
+      "expression": "ketawa",
+      "code": "<:WKWKWK:862553144562024499>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792506054197-ozv6ym",
+      "label": "Ewww",
+      "expression": "kesal",
+      "code": "<:ewww:1556419947251367968>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792506158799-xecwvh",
+      "label": "piece",
+      "expression": "senang",
+      "code": "<:emo1:1562108608223912056>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792506281161-zdvt38",
+      "label": "turu",
+      "expression": "malas",
+      "code": "<:emoji_47:948285328744149083>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792507376690-5uhtk6",
+      "label": "Waduh",
+      "expression": "gelisah",
+      "code": "<:meng_3:1556421701607100517>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792507419135-0tmpoc",
+      "label": "Dih",
+      "expression": "malas",
+      "code": "<:embek:884761459098288148>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792507531617-3ukueo",
+      "label": "Senyum Sus",
+      "expression": "evil_smile",
+      "code": "<:Musang:911631677854457876>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792507564022-89xs4s",
+      "label": "sedih",
+      "expression": "nangis",
+      "code": "<:hiksrot:884761285324050482>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792507575065-5bifji",
+      "label": "kesel nasib",
+      "expression": "kesal",
+      "code": "<:hiksrot:884761285324050482>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792507588347-vxnyam",
+      "label": "lelah",
+      "expression": "lelah_total",
+      "code": "<:hiksrot:884761285324050482>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792507622408-o7zypj",
+      "label": "sebel",
+      "expression": "kesal",
+      "code": "<:meng_16:1559772621120348180>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792507657052-0p56t9",
+      "label": "ohh",
+      "expression": "cringe",
+      "code": "<:meng_7:1557695677931454464>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792682007404-atdd9o",
+      "label": "Bingung",
+      "expression": "bingung",
+      "code": "<:nanii:1556419435349155990>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792682017989-mvpda9",
+      "label": "skeptis",
+      "expression": "skeptis",
+      "code": "<:nanii:1556419435349155990>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792682029402-vox24h",
+      "label": "Kaget",
+      "expression": "kaget",
+      "code": "<:nanii:1556419435349155990>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792682042176-ut8bii",
+      "label": "Susah Dielaskan",
+      "expression": "susah_kata",
+      "code": "<:nanii:1556419435349155990>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792682060237-udemnc",
+      "label": "Heran",
+      "expression": "wtf",
+      "code": "<:nanii:1556419435349155990>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792682067805-ao3bw7",
+      "label": "Pusing",
+      "expression": "pusing",
+      "code": "<:nanii:1556419435349155990>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792682092570-hj3uvr",
+      "label": "gimana gimana gt",
+      "expression": "terkesan_gimana_git",
+      "code": "<:sksk:862567231988957224>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792682117671-d07eh1",
+      "label": "hmm",
+      "expression": "deadpan",
+      "code": "<:meng_3:1556421701607100517>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792682142178-biyp93",
+      "label": "geleng geleng",
+      "expression": "menggelitik",
+      "code": "<:meng_3:1556421701607100517>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792682224253-owd0zg",
+      "label": "Ga terima",
+      "expression": "marah",
+      "code": "<:meng_15:1558922422810316870>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792682625611-bhij3y",
+      "label": "senang",
+      "expression": "senang",
+      "code": "<:lop:1556444311799865365>",
+      "animated": false
+    },
+    {
+      "id": "emoji-1792682677089-weys23",
+      "label": "Hehe",
+      "expression": "senang",
+      "code": "<:meng_05:1557695538684633088>",
+      "animated": false
+    }
+  ],
+  "stickers": [
+    {
+      "id": "sticker-1792505019089-ksn92x",
+      "label": "piece",
+      "expression": "deadpan",
+      "stickerId": "1562099478662746132"
+    },
+    {
+      "id": "sticker-1792505710181-5jiy6f",
+      "label": "Logikanya Dimana",
+      "expression": "kaget",
+      "stickerId": "1545240106699333693"
+    },
+    {
+      "id": "sticker-1792505749438-j4lz5y",
+      "label": "Mending Turu",
+      "expression": "malas",
+      "stickerId": "1547870731579162664"
+    },
+    {
+      "id": "sticker-1792505771041-9t6nn6",
+      "label": "Plenger",
+      "expression": "kesal",
+      "stickerId": "1547870656748847134"
+    }
+  ],
+  "customExpressions": [
+    {
+      "value": "terkesan_gimana_git",
+      "label": "😶 Tergesa Gimana Gitu",
+      "createdAt": "2026-10-20T14:32:19.171Z"
+    },
+    {
+      "value": "evil_smile",
+      "label": "Senyum Evil",
+      "createdAt": "2026-10-20T14:45:17.411Z"
+    }
+  ],
+  "settings": {
+    "mode": "auto",
+    "manualFrequency": 100
+  }
+}

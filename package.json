@@ -1,0 +1,23 @@
+{
+  "name": "callista-clarissa-firka",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "generator": "node src/dailyLifeGenerator.js",
+    "generator:once": "node src/dailyLifeGenerator.js --once",
+    "test": "node test/test_all.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@discordjs/opus": "^0.10.0",
+    "@discordjs/voice": "^0.19.2",
+    "@distube/ytdl-core": "^5.0.1",
+    "discord.js": "^14.27.0",
+    "distube": "^5.2.3",
+    "ffmpeg-static": "^5.3.0"
+  }
+}

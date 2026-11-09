@@ -1,0 +1,618 @@
+
+{
+  "version": "2.0.0",
+  "type": "college_roadmap",
+  "timezone": "Asia/Jakarta",
+  "last_updated": "2026-11-09",
+
+  "profile": {
+    "name": "Callista Clarissa Firka",
+    "major": "Desain Komunikasi Visual",
+    "major_short": "DKV",
+    "semester": 5,
+    "academic_year": "2026/2027",
+    "semester_start": "2026-09-01",
+    "semester_end": "2027-01-31",
+    "total_credits": 23,
+    "academic_status": "active"
+  },
+
+  "courses": [
+    {
+      "id": "DKV501",
+      "name": "Desain Identitas Visual",
+      "credits": 3,
+      "lecturer": "Bu Ratna",
+      "type": "studio"
+    },
+    {
+      "id": "DKV502",
+      "name": "Tipografi Lanjut",
+      "credits": 3,
+      "lecturer": "Pak Ardi",
+      "type": "studio"
+    },
+    {
+      "id": "DKV503",
+      "name": "Fotografi Komersial",
+      "credits": 3,
+      "lecturer": "Bu Maya",
+      "type": "practice"
+    },
+    {
+      "id": "DKV504",
+      "name": "Ilustrasi Digital",
+      "credits": 3,
+      "lecturer": "Pak Dimas",
+      "type": "studio"
+    },
+    {
+      "id": "DKV505",
+      "name": "Desain Media Interaktif",
+      "credits": 3,
+      "lecturer": "Bu Sinta",
+      "type": "practice"
+    },
+    {
+      "id": "DKV506",
+      "name": "Metodologi Penelitian Desain",
+      "credits": 2,
+      "lecturer": "Pak Budi",
+      "type": "theory"
+    },
+    {
+      "id": "DKV507",
+      "name": "Motion Graphic",
+      "credits": 3,
+      "lecturer": "Bu Nadia",
+      "type": "practice"
+    },
+    {
+      "id": "DKV508",
+      "name": "Sejarah Desain Kontemporer",
+      "credits": 3,
+      "lecturer": "Pak Rendra",
+      "type": "theory"
+    }
+  ],
+
+  "class_schedule": {
+    "valid_from": "2026-09-01",
+    "valid_until": "2027-01-31",
+    "weekly": {
+      "monday": [
+        {
+          "course_id": "DKV501",
+          "start": "08:00",
+          "end": "10:30",
+          "location": "Studio DKV 2"
+        },
+        {
+          "course_id": "DKV506",
+          "start": "13:00",
+          "end": "14:40",
+          "location": "Ruang 301"
+        }
+      ],
+      "tuesday": [
+        {
+          "course_id": "DKV502",
+          "start": "08:00",
+          "end": "10:30",
+          "location": "Ruang 204"
+        },
+        {
+          "course_id": "DKV507",
+          "start": "13:00",
+          "end": "15:30",
+          "location": "Lab Multimedia"
+        }
+      ],
+      "wednesday": [
+        {
+          "course_id": "DKV503",
+          "start": "08:00",
+          "end": "11:00",
+          "location": "Studio Fotografi"
+        },
+        {
+          "course_id": "DKV506",
+          "start": "13:00",
+          "end": "14:40",
+          "location": "Ruang 301"
+        }
+      ],
+      "thursday": [
+        {
+          "course_id": "DKV504",
+          "start": "08:00",
+          "end": "10:30",
+          "location": "Studio DKV 1"
+        },
+        {
+          "course_id": "DKV507",
+          "start": "13:00",
+          "end": "15:30",
+          "location": "Lab Multimedia"
+        }
+      ],
+      "friday": [
+        {
+          "course_id": "DKV505",
+          "start": "08:00",
+          "end": "11:00",
+          "location": "Lab Komputer"
+        },
+        {
+          "course_id": "DKV508",
+          "start": "13:00",
+          "end": "15:30",
+          "location": "Ruang 205"
+        }
+      ],
+      "saturday": [],
+      "sunday": []
+    }
+  },
+
+  "assignments": [
+    {
+      "id": "A001",
+      "course_id": "DKV501",
+      "title": "Perancangan Identitas Visual Kedai Kopi",
+      "assigned_date": "2026-11-02",
+      "due_date": "2026-11-12",
+      "due_time": "23:59",
+      "type": "individual_project",
+      "priority": "high",
+      "status": "in_progress",
+      "progress": 65,
+      "estimated_hours": 12,
+      "description": "Membuat konsep brand, logo, warna, tipografi, brand guideline dan mockup.",
+      "milestones": [
+        {
+          "title": "Riset dan moodboard",
+          "due_date": "2026-11-05",
+          "status": "completed"
+        },
+        {
+          "title": "Eksplorasi logo",
+          "due_date": "2026-11-08",
+          "status": "completed"
+        },
+        {
+          "title": "Brand guideline dan mockup",
+          "due_date": "2026-11-11",
+          "status": "in_progress"
+        },
+        {
+          "title": "Pengumpulan final",
+          "due_date": "2026-11-12",
+          "status": "not_started"
+        }
+      ],
+      "notes": "Masih perlu memperbaiki mockup."
+    },
+    {
+      "id": "A002",
+      "course_id": "DKV502",
+      "title": "Eksplorasi Tipografi Eksperimental",
+      "assigned_date": "2026-11-03",
+      "due_date": "2026-11-16",
+      "due_time": "23:59",
+      "type": "individual",
+      "priority": "medium",
+      "status": "in_progress",
+      "progress": 30,
+      "estimated_hours": 8,
+      "description": "Membuat tiga komposisi tipografi eksperimental.",
+      "milestones": [
+        {
+          "title": "Eksplorasi bentuk huruf",
+          "due_date": "2026-11-10",
+          "status": "in_progress"
+        },
+        {
+          "title": "Pembuatan komposisi",
+          "due_date": "2026-11-13",
+          "status": "not_started"
+        },
+        {
+          "title": "Finalisasi",
+          "due_date": "2026-11-16",
+          "status": "not_started"
+        }
+      ],
+      "notes": "Masih mencari gaya tipografi yang cocok."
+    },
+    {
+      "id": "A003",
+      "course_id": "DKV503",
+      "title": "Fotografi Produk Minimalis",
+      "assigned_date": "2026-11-04",
+      "due_date": "2026-11-13",
+      "due_time": "16:00",
+      "type": "practical",
+      "priority": "high",
+      "status": "not_started",
+      "progress": 0,
+      "estimated_hours": 6,
+      "description": "Menghasilkan lima foto produk dengan pencahayaan dan komposisi komersial.",
+      "milestones": [
+        {
+          "title": "Menyiapkan properti",
+          "due_date": "2026-11-10",
+          "status": "not_started"
+        },
+        {
+          "title": "Sesi pemotretan",
+          "due_date": "2026-11-11",
+          "status": "not_started"
+        },
+        {
+          "title": "Editing foto",
+          "due_date": "2026-11-12",
+          "status": "not_started"
+        },
+        {
+          "title": "Pengumpulan",
+          "due_date": "2026-11-13",
+          "status": "not_started"
+        }
+      ],
+      "notes": "Perlu menyiapkan kamera dan properti."
+    },
+    {
+      "id": "A004",
+      "course_id": "DKV504",
+      "title": "Ilustrasi Karakter Digital",
+      "assigned_date": "2026-11-05",
+      "due_date": "2026-11-20",
+      "due_time": "23:59",
+      "type": "individual_project",
+      "priority": "medium",
+      "status": "not_started",
+      "progress": 0,
+      "estimated_hours": 10,
+      "description": "Membuat karakter digital lengkap dengan sketsa, line art, warna dan ekspresi.",
+      "milestones": [
+        {
+          "title": "Sketsa karakter",
+          "due_date": "2026-11-12",
+          "status": "not_started"
+        },
+        {
+          "title": "Line art",
+          "due_date": "2026-11-15",
+          "status": "not_started"
+        },
+        {
+          "title": "Pewarnaan",
+          "due_date": "2026-11-18",
+          "status": "not_started"
+        },
+        {
+          "title": "Finalisasi",
+          "due_date": "2026-11-20",
+          "status": "not_started"
+        }
+      ],
+      "notes": "Bebas menentukan konsep karakter."
+    },
+    {
+      "id": "A005",
+      "course_id": "DKV505",
+      "title": "Prototype Aplikasi Pemesanan Makanan",
+      "assigned_date": "2026-11-09",
+      "due_date": "2026-11-27",
+      "due_time": "23:59",
+      "type": "group_project",
+      "priority": "high",
+      "status": "not_started",
+      "progress": 0,
+      "estimated_hours": 16,
+      "description": "Membuat prototype UI/UX aplikasi dengan minimal lima halaman.",
+      "milestones": [
+        {
+          "title": "Pembagian tugas kelompok",
+          "due_date": "2026-11-11",
+          "status": "not_started"
+        },
+        {
+          "title": "Wireframe",
+          "due_date": "2026-11-16",
+          "status": "not_started"
+        },
+        {
+          "title": "Desain UI",
+          "due_date": "2026-11-22",
+          "status": "not_started"
+        },
+        {
+          "title": "Prototype final",
+          "due_date": "2026-11-25",
+          "status": "not_started"
+        },
+        {
+          "title": "Presentasi kelompok",
+          "due_date": "2026-11-27",
+          "status": "not_started"
+        }
+      ],
+      "notes": "Dikerjakan bersama tiga anggota kelompok."
+    },
+    {
+      "id": "A006",
+      "course_id": "DKV506",
+      "title": "Proposal Penelitian Desain",
+      "assigned_date": "2026-11-09",
+      "due_date": "2026-12-04",
+      "due_time": "23:59",
+      "type": "individual",
+      "priority": "medium",
+      "status": "not_started",
+      "progress": 0,
+      "estimated_hours": 14,
+      "description": "Menyusun latar belakang, rumusan masalah, tujuan dan metode penelitian.",
+      "milestones": [
+        {
+          "title": "Menentukan topik",
+          "due_date": "2026-11-13",
+          "status": "not_started"
+        },
+        {
+          "title": "Latar belakang",
+          "due_date": "2026-11-20",
+          "status": "not_started"
+        },
+        {
+          "title": "Rumusan masalah dan tujuan",
+          "due_date": "2026-11-27",
+          "status": "not_started"
+        },
+        {
+          "title": "Metode penelitian",
+          "due_date": "2026-12-02",
+          "status": "not_started"
+        },
+        {
+          "title": "Pengumpulan",
+          "due_date": "2026-12-04",
+          "status": "not_started"
+        }
+      ],
+      "notes": "Topik masih perlu dikonsultasikan."
+    },
+    {
+      "id": "A007",
+      "course_id": "DKV507",
+      "title": "Animasi Logo 5-10 Detik",
+      "assigned_date": "2026-11-10",
+      "due_date": "2026-11-24",
+      "due_time": "23:59",
+      "type": "individual_project",
+      "priority": "medium",
+      "status": "not_started",
+      "progress": 0,
+      "estimated_hours": 10,
+      "description": "Membuat animasi logo menggunakan prinsip motion graphic dasar.",
+      "milestones": [
+        {
+          "title": "Storyboard",
+          "due_date": "2026-11-13",
+          "status": "not_started"
+        },
+        {
+          "title": "Animatic",
+          "due_date": "2026-11-17",
+          "status": "not_started"
+        },
+        {
+          "title": "Animasi dan rendering",
+          "due_date": "2026-11-22",
+          "status": "not_started"
+        },
+        {
+          "title": "Pengumpulan",
+          "due_date": "2026-11-24",
+          "status": "not_started"
+        }
+      ],
+      "notes": "Boleh menggunakan After Effects atau software sejenis."
+    },
+    {
+      "id": "A008",
+      "course_id": "DKV508",
+      "title": "Analisis Desain Kontemporer",
+      "assigned_date": "2026-11-13",
+      "due_date": "2026-11-23",
+      "due_time": "23:59",
+      "type": "individual_report",
+      "priority": "low",
+      "status": "not_started",
+      "progress": 0,
+      "estimated_hours": 5,
+      "description": "Menganalisis satu tren desain kontemporer dan memberikan contoh penerapannya."
+    },
+    {
+      "id": "A009",
+      "course_id": "DKV503",
+      "title": "Fotografi Long Exposure",
+      "assigned_date": "2026-11-18",
+      "due_date": "2026-11-30",
+      "due_time": "23:59",
+      "type": "practical",
+      "priority": "medium",
+      "status": "not_started",
+      "progress": 0,
+      "estimated_hours": 5,
+      "description": "Membuat tiga foto menggunakan teknik long exposure dan menjelaskan pengaturan kamera."
+    },
+    {
+      "id": "A010",
+      "course_id": "DKV504",
+      "title": "Ilustrasi Editorial",
+      "assigned_date": "2026-11-23",
+      "due_date": "2026-12-07",
+      "due_time": "23:59",
+      "type": "individual_project",
+      "priority": "medium",
+      "status": "not_started",
+      "progress": 0,
+      "estimated_hours": 8,
+      "description": "Membuat ilustrasi editorial berdasarkan artikel pilihan."
+    },
+    {
+      "id": "A011",
+      "course_id": "DKV505",
+      "title": "Evaluasi Prototype UI/UX",
+      "assigned_date": "2026-12-01",
+      "due_date": "2026-12-11",
+      "due_time": "23:59",
+      "type": "group_project",
+      "priority": "high",
+      "status": "not_started",
+      "progress": 0,
+      "estimated_hours": 8,
+      "description": "Melakukan usability testing dan menyusun laporan evaluasi prototype."
+    },
+    {
+      "id": "A012",
+      "course_id": "DKV507",
+      "title": "Motion Graphic Iklan Produk",
+      "assigned_date": "2026-12-02",
+      "due_date": "2026-12-18",
+      "due_time": "23:59",
+      "type": "individual_project",
+      "priority": "high",
+      "status": "not_started",
+      "progress": 0,
+      "estimated_hours": 14,
+      "description": "Membuat video iklan produk berdurasi 15-30 detik."
+    },
+    {
+      "id": "A013",
+      "course_id": "DKV502",
+      "title": "Poster Tipografi",
+      "assigned_date": "2026-12-07",
+      "due_date": "2026-12-18",
+      "due_time": "23:59",
+      "type": "individual",
+      "priority": "medium",
+      "status": "not_started",
+      "progress": 0,
+      "estimated_hours": 7,
+      "description": "Membuat poster dengan tipografi sebagai elemen visual utama."
+    }
+  ],
+
+  "academic_events": [
+    {
+      "id": "E001",
+      "title": "Presentasi Identitas Visual",
+      "type": "presentation",
+      "start_date": "2026-11-13",
+      "end_date": "2026-11-13",
+      "start_time": "08:00",
+      "end_time": "11:00",
+      "course_id": "DKV501",
+      "description": "Presentasi proyek identitas visual."
+    },
+    {
+      "id": "E002",
+      "title": "Review Motion Graphic",
+      "type": "review",
+      "start_date": "2026-11-26",
+      "end_date": "2026-11-26",
+      "start_time": "13:00",
+      "end_time": "15:30",
+      "course_id": "DKV507",
+      "description": "Review animasi logo bersama dosen."
+    },
+    {
+      "id": "E003",
+      "title": "Presentasi Prototype Kelompok",
+      "type": "presentation",
+      "start_date": "2026-11-27",
+      "end_date": "2026-11-27",
+      "start_time": "08:00",
+      "end_time": "11:00",
+      "course_id": "DKV505",
+      "description": "Presentasi prototype aplikasi."
+    },
+    {
+      "id": "E004",
+      "title": "Ujian Akhir Semester",
+      "type": "exam_period",
+      "start_date": "2027-01-11",
+      "end_date": "2027-01-16",
+      "start_time": null,
+      "end_time": null,
+      "course_id": null,
+      "description": "Periode ujian akhir semester 5."
+    },
+    {
+      "id": "E005",
+      "title": "Libur Natal",
+      "type": "holiday",
+      "start_date": "2026-12-25",
+      "end_date": "2026-12-25",
+      "is_holiday": true,
+      "description": "Tidak ada kegiatan perkuliahan."
+    },
+    {
+      "id": "E006",
+      "title": "Libur Tahun Baru",
+      "type": "holiday",
+      "start_date": "2027-01-01",
+      "end_date": "2027-01-01",
+      "is_holiday": true,
+      "description": "Tidak ada kegiatan perkuliahan."
+    }
+  ],
+
+  "calendar_exceptions": [
+    {
+      "date": "2026-11-13",
+      "type": "class_replaced",
+      "course_ids": ["DKV501"],
+      "description": "Jadwal kuliah reguler digantikan presentasi."
+    },
+    {
+      "date": "2026-12-25",
+      "type": "holiday",
+      "cancelled_course_ids": ["all"]
+    },
+    {
+      "date": "2027-01-01",
+      "type": "holiday",
+      "cancelled_course_ids": ["all"]
+    }
+  ],
+
+  "academic_history": {
+    "completed_assignments": [],
+    "completed_events": [],
+    "notes": [
+      {
+        "date": "2026-11-09",
+        "content": "Callista sedang menjalani semester 5 DKV dengan beban 23 SKS."
+      }
+    ]
+  },
+
+  "rules": {
+    "assignment_status_values": [
+      "not_started",
+      "in_progress",
+      "completed",
+      "overdue",
+      "cancelled"
+    ],
+    "automatic_completion": false,
+    "preserve_incomplete_assignments": true,
+    "holiday_overrides_class_schedule": true,
+    "milestone_deadlines_are_independent": true,
+    "timezone_required": true
+  }
+}

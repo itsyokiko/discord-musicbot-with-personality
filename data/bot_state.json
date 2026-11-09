@@ -1,0 +1,16 @@
+{
+  "isResponding": true,
+  "silencedAt": null,
+  "silencedReason": null,
+  "lastDisabledPeriod": null,
+  "mood": 80,
+  "silenceCount": 0,
+  "moodLog": [
+    {
+      "timestamp": 1794250000000,
+      "delta": 0,
+      "newMood": 80,
+      "reason": "Status awal"
+    }
+  ]
+}

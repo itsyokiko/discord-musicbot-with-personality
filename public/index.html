@@ -1,0 +1,1878 @@
+<!DOCTYPE html>
+
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Callista — Pengendali Kepribadian &amp; Hubungan</title>
+<style>
+    :root {
+      --bg: #f4f6fb;
+      --card: #ffffff;
+      --border: #e2e6ee;
+      --border-strong: #cdd4e0;
+      --text: #1f2733;
+      --muted: #6b7688;
+      --accent: #4f5bd5;
+      --accent-hover: #3f4ac0;
+      --accent-soft: #eef0fd;
+      --success: #2f9e5a;
+      --success-soft: #e8f6ee;
+      --danger: #e04a4d;
+      --danger-hover: #c93d40;
+      --danger-soft: #fdecec;
+      --warn: #d9932b;
+      --shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.06);
+      --shadow-lg: 0 4px 12px rgba(16, 24, 40, 0.08);
+      --surface-2: #fafbfd;
+      --input-bg: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      padding: 24px;
+      max-width: 1120px;
+      margin: 0 auto;
+      font-size: 14px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+    code {
+      background: var(--accent-soft);
+      color: var(--accent-hover);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-size: 0.9em;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.2px; }
+    h2 { letter-spacing: -0.1px; }
+    h3 { letter-spacing: -0.1px; }
+    .header-sub { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .badge {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      white-space: nowrap;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      margin-bottom: 16px;
+    }
+    .card > h2:first-child,
+    .card > div > h2:first-child {
+      font-size: 15px;
+      font-weight: 650;
+      margin-bottom: 14px;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .grid .card { margin-bottom: 0; }
+    .grid .card h2 {
+      font-size: 15px;
+      font-weight: 650;
+      margin-bottom: 16px;
+      color: var(--text);
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+    .control-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 14px;
+    }
+    .control-row:last-child { margin-bottom: 0; }
+    .label-val {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .slider-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    input[type="range"] {
+      flex: 1;
+      accent-color: var(--accent);
+      cursor: pointer;
+      height: 4px;
+    }
+    input[type="number"], select, input[type="text"], textarea {
+      background: var(--input-bg);
+      border: 1px solid var(--border-strong);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      outline: none;
+    }
+    input[type="number"]:focus, select:focus, input[type="text"]:focus, textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    input[type="number"] {
+      width: 64px;
+      text-align: center;
+    }
+    select { cursor: pointer; }
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s, transform 0.05s;
+      font-family: inherit;
+    }
+    .btn:hover { background: var(--accent-hover); }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12.5px;
+      border-radius: 7px;
+    }
+    .btn-secondary {
+      background: var(--card);
+      color: var(--text);
+      border: 1px solid var(--border-strong);
+    }
+    .btn-secondary:hover { background: var(--surface-2); }
+    .btn-danger {
+      background: var(--danger);
+      color: #fff;
+    }
+    .btn-danger:hover { background: var(--danger-hover); }
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+    .status-msg {
+      font-size: 13px;
+      color: var(--success);
+      font-weight: 500;
+    }
+    .user-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+    .user-table th, .user-table td {
+      border: 1px solid var(--border);
+      padding: 8px 10px;
+      text-align: left;
+    }
+    .user-table th {
+      background: var(--surface-2);
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+    .user-table tbody tr:hover { background: var(--surface-2); }
+    .table-container {
+      overflow-x: auto;
+    }
+    /* Tabel di dalam card bisa di-scroll horizontal di layar sempit */
+    .card .user-table {
+      display: block;
+      overflow-x: auto;
+    }
+    /* Panels (pengganti inline style gelap) */
+    .panel {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .panel-inline {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .desc { color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .keyfont { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    @media (max-width: 640px) {
+      body { padding: 14px; }
+      h1 { font-size: 19px; }
+      input[type="number"] { width: 56px; }
+    }
+  
+/* === Callista settings workspace === */
+body{max-width:none;margin:0;padding:0;background:#f5f5fb;line-height:1.55}
+.app-shell{min-height:100vh;display:grid;grid-template-columns:250px minmax(0,1fr)}
+.sidebar{position:sticky;top:0;height:100vh;background:#fff;border-right:1px solid var(--border);padding:22px 14px;display:flex;flex-direction:column;z-index:20}
+.brand{display:flex;align-items:center;gap:11px;padding:4px 10px 25px;border-bottom:1px solid var(--border)}
+.brand-mark{width:38px;height:38px;border-radius:13px;background:linear-gradient(135deg,#7777e8,#9b7be9);display:grid;place-items:center;color:white;font-size:20px;font-weight:800;box-shadow:0 5px 14px #7777e833}
+.brand-copy{display:flex;flex-direction:column;gap:2px}.brand-copy strong{font-size:13px;letter-spacing:1.5px}.brand-copy span{font-size:10px;color:var(--muted)}
+.side-nav{display:flex;flex-direction:column;gap:5px;padding-top:18px;overflow:auto}
+.nav-caption{font-size:10px;letter-spacing:1.2px;font-weight:750;color:#9aa1b2;padding:15px 12px 5px}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 12px;border:0;border-radius:10px;background:transparent;color:#626b7c;font:500 13px inherit;cursor:pointer;transition:.18s}
+.nav-item:hover{background:#f5f4ff;color:var(--accent)}.nav-item.active{background:#efedff;color:#5a50c9;font-weight:700}
+.nav-icon{width:21px;text-align:center;font-size:17px}
+.sidebar-foot{margin-top:auto;padding:15px 10px 3px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.online-dot{width:7px;height:7px;border-radius:50%;background:#38b879}
+.main-area{min-width:0}.topbar{display:flex;align-items:center;gap:18px;padding:22px clamp(18px,3vw,42px) 0}
+.topbar header{flex:1;margin:0;padding:0 0 18px;border-bottom:1px solid var(--border)}
+.topbar h1{font-size:19px}.header-sub{font-size:12px}.menu-toggle{display:none;border:1px solid var(--border);background:#fff;border-radius:10px;padding:9px 12px;color:var(--text);font-size:17px}
+.content-area{max-width:1250px;padding:26px clamp(18px,3vw,42px) 48px;margin:0 auto}
+.page-heading{margin:0 0 24px}.eyebrow{font-size:10px;letter-spacing:1.5px;font-weight:800;color:#8276db;margin-bottom:5px}
+.page-heading h2{font-size:25px;letter-spacing:-.6px;font-weight:750}.page-heading p{color:var(--muted);font-size:13px;margin-top:5px}
+.view-page{display:none;animation:pageIn .2s ease}.view-page.active{display:block}
+@keyframes pageIn{from{opacity:.35;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.card{border-radius:15px;padding:22px;margin-bottom:18px;box-shadow:0 3px 12px rgba(35,35,70,.035);border-color:#e5e5f0}
+.card>h2:first-child,.card>div>h2:first-child{font-size:15px}.grid{grid-template-columns:minmax(0,1fr);gap:16px}
+#configForm{display:contents}#configForm .view-page{width:100%}#configForm .card{max-width:none}
+#configForm .actions{position:sticky;bottom:12px;z-index:5;background:rgba(255,255,255,.94);backdrop-filter:blur(12px);border:1px solid var(--border);box-shadow:var(--shadow-lg);padding:12px 14px;border-radius:13px;margin:14px 0 0;gap:10px}
+.control-row{margin-bottom:20px}.control-row:last-child{margin-bottom:0}input[type=range]{height:5px}
+.panel,.panel-inline{border-radius:12px}button:focus-visible,.nav-item:focus-visible{outline:3px solid #c6c0ff;outline-offset:2px}
+@media(max-width:850px){.app-shell{grid-template-columns:1fr}.sidebar{position:fixed;left:0;top:0;width:265px;transform:translateX(-105%);transition:transform .22s ease;box-shadow:var(--shadow-lg)}.sidebar.open{transform:translateX(0)}.menu-toggle{display:block}.topbar{padding-top:15px;gap:12px}.topbar header{padding-bottom:14px}.topbar h1{font-size:16px}.content-area{padding-top:22px}.page-heading h2{font-size:22px}}
+@media(max-width:560px){.content-area{padding-left:12px;padding-right:12px}.topbar{padding-left:12px;padding-right:12px}.card{padding:16px;border-radius:12px}#configForm .actions{bottom:8px}#configForm .actions .btn{width:100%}#configForm .actions{align-items:stretch}}
+</style>
+</head>
+<body><div class="app-shell"><aside class="sidebar" id="sidebar"><div class="brand"><div class="brand-mark">C</div><div class="brand-copy"><strong>CALLISTA</strong><span>AI Companion Control</span></div></div><nav aria-label="Navigasi pengaturan" class="side-nav"><div class="nav-caption">MONITORING</div><button class="nav-item active" data-page="page-overview" type="button"><span class="nav-icon">⌂</span><span>Ringkasan</span></button><div class="nav-caption">PERSONA</div><button class="nav-item" data-page="page-background" type="button"><span class="nav-icon">✦</span><span>Persona &amp; Latar</span></button><div class="nav-caption">KEPRIBADIAN</div><button class="nav-item" data-page="page-social" type="button"><span class="nav-icon">◉</span><span>Dinamika Sosial</span></button><button class="nav-item" data-page="page-tone" type="button"><span class="nav-icon">☷</span><span>Nada &amp; Karakter</span></button><button class="nav-item" data-page="page-language" type="button"><span class="nav-icon">文</span><span>Bahasa &amp; Deteksi</span></button><div class="nav-caption">INTERAKSI</div><button class="nav-item" data-page="page-relationships" type="button"><span class="nav-icon">♡</span><span>Hubungan Pengguna</span></button><div class="nav-caption">MEDIA</div><button class="nav-item" data-page="page-stickers" type="button"><span class="nav-icon">▧</span><span>Sticker &amp; Emoji</span></button><button class="nav-item" data-page="page-gifs" type="button"><span class="nav-icon">▶</span><span>GIF Reaksi</span></button><button class="nav-item" data-page="page-music" type="button"><span class="nav-icon">♪</span><span>Music Player</span></button></nav><div class="sidebar-foot"><span class="online-dot"></span> Panel kontrol lokal</div></aside><main class="main-area"><div class="topbar"><button aria-label="Buka menu" class="menu-toggle" id="menuToggle" type="button">☰</button><header>
+<div>
+<h1>Callista — Pengendali Kepribadian &amp; Hubungan</h1>
+<p class="header-sub">Panel kontrol dinamis langsung untuk Discord AI Companion</p>
+</div>
+<div class="badge" id="statusBadge">Memuat pengaturan...</div>
+</header></div><div class="content-area"><div class="page-heading"><div class="eyebrow">CONTROL CENTER</div><h2 id="currentPageTitle">Ringkasan</h2><p id="currentPageSubtitle">Status bot dan kondisi Callista</p></div><section class="view-page" data-subtitle="Status bot dan kondisi Callista" data-title="Ringkasan" id="page-overview"><div class="card" style="margin-bottom: 20px;">
+<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px;">
+<h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
+<span>⚡ Status Operasional &amp; Indikator Mood</span>
+</h2>
+<span class="badge" id="liveIndicatorBadge" style="background: var(--success-soft); color: var(--success); border-color: var(--success);">🟢 Real-Time Sync</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+<!-- Toggle Saklar Respon -->
+<div class="panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+<div>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+<span style="font-weight: 600; font-size: 14px;">Saklar Respon Callista</span>
+<span class="badge" id="respondingBadge" style="font-weight: 600;">Memuat...</span>
+</div>
+<p class="desc" id="respondingDesc" style="font-size: 12.5px; margin-bottom: 14px;">
+            Jika dimatikan, Callista MURNI tidak akan membalas siapapun apapun triggernya, sampai diaktifkan kembali.
+          </p>
+</div>
+<div style="display: flex; align-items: center; gap: 10px;">
+<button class="btn" id="toggleRespondingBtn" style="flex: 1; padding: 10px 16px; font-weight: 600; font-size: 13.5px; transition: all 0.2s ease;" type="button">
+            Memuat Status...
+          </button>
+</div>
+</div>
+<!-- Skor Mood Callista (Read-Only) -->
+<div class="panel">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+<span style="font-weight: 600; font-size: 14px;">Parameter Mood (Otomatis &amp; Real-Time)</span>
+<span id="moodScoreBadge" style="font-size: 16px; font-weight: 700; color: var(--text);">80 / 100</span>
+</div>
+<div style="margin: 8px 0;">
+<div style="background: var(--border); border-radius: 6px; height: 12px; overflow: hidden; border: 1px solid var(--border-strong);">
+<div id="moodProgressBar" style="width: 80%; height: 100%; background: var(--success); transition: width 0.4s ease, background-color 0.4s ease;"></div>
+</div>
+</div>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+<span id="moodStateLabel" style="font-size: 13px; font-weight: 600; color: var(--success);">😊 Senang / Baik</span>
+<span style="font-size: 11px; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px;">Terkunci / Read-Only</span>
+</div>
+<p class="desc" style="font-size: 12px; margin-top: 8px;">
+          Semakin sering disuruh diam atau dikritik, mood akan turun. Dalam kondisi sensi/ngambek (&lt;45), Callista akan baper saat disuruh diam: <em>"MAS JOY JUJUR AKU SALAH APA YA T_T"</em>.
+        </p>
+</div>
+</div>
+</div><div class="card" style="margin-bottom: 20px;">
+<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+<h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">Kondisi Kehidupan Harian Callista (24 Jam)</h2>
+<span class="badge" id="dailyStatusBadge">Memuat jadwal harian...</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 13px;">
+<div>
+<span style="color: var(--muted); display: block;">Aktivitas Saat Ini:</span>
+<strong id="dailyCurrentActivity" style="color: var(--text);">-</strong>
+</div>
+<div>
+<span style="color: var(--muted); display: block;">Ketersediaan / Mood:</span>
+<strong id="dailyAvailability" style="color: var(--accent);">-</strong>
+</div>
+<div>
+<span style="color: var(--muted); display: block;">Rencana Terdekat:</span>
+<strong id="dailyUpcomingPlan" style="color: var(--text);">-</strong>
+</div>
+<div>
+<span style="color: var(--muted); display: block;">Jadwal Tidur:</span>
+<strong id="dailySleepSchedule" style="color: var(--muted);">-</strong>
+</div>
+</div>
+</div></section><section class="view-page" data-subtitle="Kelola memori inti dan latar belakang Callista" data-title="Persona &amp; Latar" id="page-background"><div class="card" style="margin-bottom: 20px;">
+<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+<h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">Latar Belakang &amp; Persona Callista (Lore Editor)</h2>
+<span class="badge" id="backgroundStatus">Memuat background...</span>
+</div>
+<p style="color: var(--muted); font-size: 13px; margin-bottom: 10px;">
+      Teks ini adalah memori inti dan latar belakang hidup Callista (identitas, kuliah DKV, kucing Mochi, hobi, Mas Joy). Kamu bisa mengedit atau mengubahnya sesuka hati di sini. Tersimpan otomatis ke <code>data/callista_background.txt</code> dan langsung diterapkan oleh AI secara live tanpa restart.
+    </p>
+<textarea id="backgroundText" placeholder="Tulis latar belakang persona Callista di sini..." spellcheck="false" style="width: 100%; min-height: 260px; line-height: 1.6; resize: vertical; font-size: 13.5px; font-family: inherit;"></textarea>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 12px; color: var(--muted);">
+<span id="charCount">0 karakter • 0 kata</span>
+<span>Format: Teks bebas / paragraf natural</span>
+</div>
+<div class="actions" style="margin: 12px 0 0 0; display: flex; align-items: center; gap: 8px;">
+<button class="btn btn-sm" id="saveBackgroundBtn" type="button">💾 Simpan Perubahan</button>
+<button class="btn btn-sm btn-secondary" id="reloadBackgroundBtn" type="button">🔄 Muat Ulang File</button>
+<span class="status-msg" id="backgroundSaveStatus"></span>
+</div>
+</div></section><form id="configForm">
+
+
+<section class="view-page" data-subtitle="Atur keaktifan, inisiatif, dan pola interaksi" data-title="Dinamika Sosial" id="page-social"><div class="card">
+<h2>Dinamika Sosial</h2>
+<div class="control-row">
+<div class="label-val"><span>Keaktifan (Activity)</span><span id="activityVal">77</span></div>
+<div class="slider-group">
+<input max="100" min="0" name="activity" type="range" value="77"/>
+<input id="num_activity" max="100" min="0" type="number" value="77"/>
+</div>
+</div>
+<div class="control-row">
+<div class="label-val"><span>Inisiatif (Initiative - Disarankan Rendah)</span><span id="initiativeVal">10</span></div>
+<div class="slider-group">
+<input max="100" min="0" name="initiative" type="range" value="10"/>
+<input id="num_initiative" max="100" min="0" type="number" value="10"/>
+</div>
+</div>
+<div class="control-row">
+<div class="label-val"><span>Spontanitas (Spontaneity)</span><span id="spontaneityVal">35</span></div>
+<div class="slider-group">
+<input max="100" min="0" name="spontaneity" type="range" value="35"/>
+<input id="num_spontaneity" max="100" min="0" type="number" value="35"/>
+</div>
+</div>
+<div class="control-row">
+<div class="label-val"><span>Fokus Obrolan (Conversation Focus)</span><span id="conversationFocusVal">60s</span></div>
+<div class="slider-group">
+<input max="300" min="10" name="conversationFocus" type="range" value="60"/>
+<input id="num_conversationFocus" max="300" min="10" type="number" value="60"/>
+</div>
+</div>
+<div class="control-row">
+<div class="label-val"><span>Toleransi Interupsi (Interruption Tolerance)</span><span id="interruptionToleranceVal">30</span></div>
+<div class="slider-group">
+<input max="100" min="0" name="interruptionTolerance" type="range" value="30"/>
+<input id="num_interruptionTolerance" max="100" min="0" type="number" value="30"/>
+</div>
+</div>
+<div class="control-row">
+<div class="label-val"><span>Jendela Agregator Burst Pesan (Burst Window)</span><span id="burstWindowMsVal">2500ms</span></div>
+<div class="slider-group">
+<input max="8000" min="500" name="burstWindowMs" step="100" type="range" value="2500"/>
+<input id="num_burstWindowMs" max="8000" min="500" step="100" type="number" value="2500"/>
+</div>
+</div>
+</div></section><section class="view-page" data-subtitle="Atur gaya bicara dan pembawaan" data-title="Nada &amp; Karakter" id="page-tone"><div class="card">
+<h2>Nada &amp; Pembawaan</h2>
+<div class="control-row">
+<div class="label-val"><span>Humor / Candaan</span><span id="humorVal">60</span></div>
+<div class="slider-group">
+<input max="100" min="0" name="humor" type="range" value="60"/>
+<input id="num_humor" max="100" min="0" type="number" value="60"/>
+</div>
+</div>
+<div class="control-row">
+<div class="label-val"><span>Kehangatan Dasar (Warmth)</span><span id="warmthVal">70</span></div>
+<div class="slider-group">
+<input max="100" min="0" name="warmth" type="range" value="70"/>
+<input id="num_warmth" max="100" min="0" type="number" value="70"/>
+</div>
+</div>
+<div class="control-row">
+<div class="label-val"><span>Empati (Empathy)</span><span id="empathyVal">75</span></div>
+<div class="slider-group">
+<input max="100" min="0" name="empathy" type="range" value="75"/>
+<input id="num_empathy" max="100" min="0" type="number" value="75"/>
+</div>
+</div>
+<div class="control-row">
+<div class="label-val"><span>Ketegasan (Assertiveness)</span><span id="assertivenessVal">45</span></div>
+<div class="slider-group">
+<input max="100" min="0" name="assertiveness" type="range" value="45"/>
+<input id="num_assertiveness" max="100" min="0" type="number" value="45"/>
+</div>
+</div>
+</div></section><section class="view-page" data-subtitle="Atur bahasa, model AI, dan deteksi panggilan" data-title="Bahasa &amp; Deteksi" id="page-language"><div class="card">
+<h2>Bahasa &amp; Deteksi</h2>
+<div class="control-row">
+<div class="label-val"><span>Formalitas (Formality)</span><span id="formalityVal">25</span></div>
+<div class="slider-group">
+<input max="100" min="0" name="formality" type="range" value="25"/>
+<input id="num_formality" max="100" min="0" type="number" value="25"/>
+</div>
+</div>
+<div class="control-row">
+<div class="label-val"><span>Keringkasan Pesan (Brevity)</span><span id="brevityVal">88</span></div>
+<div class="slider-group">
+<input max="100" min="0" name="brevity" type="range" value="88"/>
+<input id="num_brevity" max="100" min="0" type="number" value="88"/>
+</div>
+</div>
+<div class="control-row">
+<div class="label-val"><span>Frekuensi Emoji</span><span id="emojiFrequencyVal">30</span></div>
+<div class="slider-group">
+<input max="100" min="0" name="emojiFrequency" type="range" value="30"/>
+<input id="num_emojiFrequency" max="100" min="0" type="number" value="30"/>
+</div>
+</div>
+<div class="control-row">
+<div class="label-val"><span>Threshold Panggilan Langsung</span><span id="directAddressThresholdVal">60</span></div>
+<div class="slider-group">
+<input max="100" min="0" name="directAddressThreshold" type="range" value="60"/>
+<input id="num_directAddressThreshold" max="100" min="0" type="number" value="60"/>
+</div>
+</div>
+<div class="control-row">
+<span style="font-size: 13px; font-weight: 500;">Model LLM (Re:Link Gateway):</span>
+<select name="model" style="width: 100%;">
+<option value="hy4">hy4 (Aktif, Cepat &amp; Responsif ~2s) [Recommended]</option>
+<option value="auto">auto (Gateway Auto-Routing)</option>
+<option value="deepseek-v4-pro">deepseek-v4-pro (Antrean Padat / Kadang Timeout)</option>
+<option value="deepseek-v4-flash">deepseek-v4-flash</option>
+<option value="kimi-k2.7-code">kimi-k2.7-code</option>
+<option value="gpt-6-astra">gpt-6-astra</option>
+</select>
+</div>
+<div class="control-row">
+<span style="font-size: 13px; font-weight: 500;">Zona Waktu:</span>
+<input name="timezone" placeholder="Asia/Jakarta" type="text" value="Asia/Jakarta"/>
+</div>
+<div class="control-row">
+<span style="font-size: 13px; font-weight: 500;">Nama &amp; Panggilan Alias:</span>
+<input name="aliases" placeholder="firka, callista, cal" type="text" value="firka, callista, cal"/>
+</div>
+</div></section><div class="actions">
+<button class="btn" type="submit">Simpan Pengaturan Kepribadian</button>
+<span class="status-msg" id="saveStatus"></span>
+</div></form><section class="view-page" data-subtitle="Profil interaksi dan kedekatan tiap pengguna" data-title="Hubungan Pengguna" id="page-relationships"><div class="card" style="margin-top: 16px;">
+<h2>Manajemen Profil Hubungan &amp; Interaksi Pengguna (Satu Kesatuan)</h2>
+<p style="color: var(--muted); font-size: 13px; margin-bottom: 14px;">
+      Semua orang yang memanggil, me-reply, atau mention Callista otomatis terdaftar di sini dengan setelan default <strong>Ramah</strong>. Anda dapat mengatur sikap Callista pada tiap orang dari <em>Ga Suka / Antipati</em> hingga <em>Clingy / Manja</em>.
+    </p>
+<div class="table-container">
+<div id="usersContainer">
+<p style="color: var(--muted); font-size: 13px;">Memuat data interaksi pengguna...</p>
+</div>
+</div>
+<h3 style="font-size: 14px; margin-top: 24px; margin-bottom: 12px; color: var(--accent);">Tambah / Edit Profil Pengguna Manual</h3>
+<form class="panel" id="userEditForm" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+<input id="manualUserId" placeholder="ID Discord (Contoh: 833196669940138004)" required="" style="width: 200px;" type="text"/>
+<input id="manualUserName" placeholder="Nama Tampilan (Display Name)" required="" style="width: 160px;" type="text"/>
+<select id="manualStyle" style="width: 180px;">
+<option selected="" value="friendly">😊 Ramah / Teman (Default)</option>
+<option value="playfully_hostile">😡 Ga Suka / Antipati</option>
+<option value="cold">❄️ Dingin / Cuek</option>
+<option value="neutral">😐 Biasa / Netral</option>
+<option value="close">💖 Akrab / Sangat Dekat</option>
+<option value="clingy">🥰 Clingy / Manja (Mas Joy)</option>
+</select>
+<input id="manualAffection" max="100" min="0" placeholder="Afeksi (0-100)" style="width: 90px;" type="number" value="20"/>
+<input id="manualNicknames" placeholder="Panggilan (e.g. Mas Joy, Ayah)" style="width: 170px;" type="text"/>
+<input id="manualNotes" placeholder="Catatan Tambahan" style="flex: 1; min-width: 150px;" type="text"/>
+<button class="btn btn-sm" type="submit">Simpan / Daftarkan</button>
+</form>
+</div></section><section class="view-page" data-subtitle="Kelola ekspresi, custom emoji, dan sticker" data-title="Sticker &amp; Emoji" id="page-stickers"><div class="card" style="margin-top: 16px;">
+<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+<h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">🎨 Sticker &amp; Emoji Manager</h2>
+<span class="badge" id="stickerEmojiStatus">Memuat...</span>
+</div>
+<p style="color: var(--muted); font-size: 13px; margin-bottom: 14px; line-height: 1.5;">
+      Daftarkan sticker atau custom emoji untuk Callista. Klasifikasikan per <strong>ekspresi</strong> (senang, bingung, malas, dll).
+      Callista bisa merespons HANYA dengan sticker/emoji (tanpa teks) saat ekspresi tersebut lebih kuat dari kata-kata.
+      <br/><br/>
+<strong>Custom Emoji:</strong> format <code>&lt;:nama:id&gt;</code> (static) atau <code>&lt;a:nama:id&gt;</code> (animated).
+       <strong>Sticker:</strong> cukup masukkan ID numerik sticker (klik kanan sticker di Discord → Copy ID, aktifkan Developer Mode).
+    </p>
+<!-- Mode & Frequency Control -->
+<div class="panel" style="margin-bottom: 16px;">
+<h3 style="font-size: 14px; margin-bottom: 12px; color: var(--accent);">⚙️ Mode Frekuensi Sticker/Emoji</h3>
+<div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start;">
+<div style="flex: 1; min-width: 280px;">
+<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+<label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+<input checked="" name="seMode" type="radio" value="auto"/>
+<strong>Auto Mode</strong>
+</label>
+<label style="display: flex; align-items: center; gap: 6px; cursor: pointer; margin-left: 16px;">
+<input name="seMode" type="radio" value="manual"/>
+<strong>Manual Mode</strong>
+</label>
+</div>
+<p id="autoModeDesc" style="color: var(--muted); font-size: 12px; line-height: 1.5; margin-bottom: 0;">
+<strong>Auto:</strong> Frekuensi otomatis berdasarkan affection &amp; mood. Affection rendah (Fusyu/Sonasona) → ~45% pakai sticker/emoji-only (ketus). Affection tinggi (Mas Joy) → ~5% (utamakan teks manja). Mood sensi → +15%. Pesan absurd → paksa sticker bingung/deadpan.
+          </p>
+<p id="manualModeDesc" style="color: var(--muted); font-size: 12px; line-height: 1.5; margin-bottom: 0; display: none;">
+<strong>Manual:</strong> Atur frekuensi sendiri dengan slider di bawah. 0% = tidak pernah sticker-only. 100% = selalu sticker-only.
+          </p>
+</div>
+<div id="manualFreqControl" style="min-width: 220px; display: none;">
+<div class="label-val" style="margin-bottom: 6px;">
+<span>Frekuensi Manual</span>
+<span id="manualFreqVal">20%</span>
+</div>
+<div class="slider-group">
+<input id="manualFreqSlider" max="100" min="0" style="min-width: 180px;" type="range" value="20"/>
+</div>
+<p style="color: var(--muted); font-size: 11px; margin-top: 6px; line-height: 1.4;">
+            0% = tidak pernah • 15% = kadang • 40% = sering • 70%+ = sangat sering
+          </p>
+</div>
+</div>
+<div style="margin-top: 12px;">
+<button class="btn btn-sm" id="saveModeBtn" type="button">Simpan Pengaturan Mode</button>
+<span class="status-msg" id="modeSaveStatus" style="margin-left: 8px;"></span>
+</div>
+</div>
+<!-- Custom Expression Manager -->
+<div class="panel" style="margin-bottom: 16px;">
+<h3 style="font-size: 14px; margin-bottom: 8px; color: var(--accent);">🏷️ Ekspresi Custom</h3>
+<p style="color: var(--muted); font-size: 12px; margin-bottom: 10px; line-height: 1.5;">
+        Tambahkan kategori ekspresi sendiri yang lebih spesifik/nuanced (misal: <code>menggelitik</code>, <code>jijik</code>, <code>creepy</code>, <code>terkesan_gimana_git</code>).
+        Bebas apa saja, selama huruf kecil/angka/underscore.
+      </p>
+<form id="customExprForm" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+<input id="customExprValue" placeholder="value (e.g. menggelitik)" required="" style="width: 200px; font-family: monospace;" type="text"/>
+<input id="customExprLabel" placeholder="Label tampilan (e.g. 😆 Menggelitik)" style="flex: 1; min-width: 200px;" type="text"/>
+<button class="btn btn-sm" type="submit">Tambah Ekspresi</button>
+</form>
+<div id="customExprList" style="margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap;"></div>
+</div>
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+<!-- Form Tambah Emoji -->
+<div class="panel">
+<h3 style="font-size: 14px; margin-bottom: 12px; color: var(--accent);">➕ Tambah Custom Emoji</h3>
+<form id="emojiAddForm" style="display: flex; flex-direction: column; gap: 8px;">
+<input id="emojiLabel" placeholder="Label (e.g. Peepo Senang)" required="" style="width: 100%;" type="text"/>
+<select id="emojiExpression" style="width: 100%;"></select>
+<input id="emojiCode" placeholder="Emoji code: &lt;:nama:id&gt; atau &lt;a:nama:id&gt;" required="" style="width: 100%; font-family: monospace;" type="text"/>
+<button class="btn btn-sm" style="align-self: flex-start;" type="submit">Daftarkan Emoji</button>
+<span class="status-msg" id="emojiAddStatus" style="font-size: 12px;"></span>
+</form>
+</div>
+<!-- Form Tambah Sticker -->
+<div class="panel">
+<h3 style="font-size: 14px; margin-bottom: 12px; color: var(--accent);">➕ Tambah Sticker</h3>
+<form id="stickerAddForm" style="display: flex; flex-direction: column; gap: 8px;">
+<input id="stickerLabel" placeholder="Label (e.g. Wibu Dance)" required="" style="width: 100%;" type="text"/>
+<select id="stickerExpression" style="width: 100%;"></select>
+<input id="stickerIdInput" placeholder="Sticker ID (angka, e.g. 1023456789012345678)" required="" style="width: 100%; font-family: monospace;" type="text"/>
+<button class="btn btn-sm" style="align-self: flex-start;" type="submit">Daftarkan Sticker</button>
+<span class="status-msg" id="stickerAddStatus" style="font-size: 12px;"></span>
+</form>
+</div>
+</div>
+<!-- Daftar Emoji Terdaftar -->
+<h3 style="font-size: 14px; margin-bottom: 10px; color: var(--accent);">📋 Custom Emoji Terdaftar</h3>
+<div id="emojiListContainer" style="margin-bottom: 20px;">
+<p style="color: var(--muted); font-size: 13px;">Memuat...</p>
+</div>
+<!-- Daftar Sticker Terdaftar -->
+<h3 style="font-size: 14px; margin-bottom: 10px; color: var(--accent);">📋 Sticker Terdaftar</h3>
+<div id="stickerListContainer">
+<p style="color: var(--muted); font-size: 13px;">Memuat...</p>
+</div>
+</div></section><section class="view-page" data-subtitle="Konfigurasi Giphy dan keyword ekspresi" data-title="GIF Reaksi" id="page-gifs"><div class="card" style="margin-top: 16px;">
+<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+<h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">🎬 GIF Reaksi (Giphy)</h2>
+<span class="badge" id="gifStatusBadge">Memuat...</span>
+</div>
+<p style="color: var(--muted); font-size: 13px; margin-bottom: 14px; line-height: 1.5;">
+      GIF bersifat dinamis — bot mencari via <strong>Giphy API</strong> berdasarkan keyword ekspresi, ambil 5 hasil, lalu pilih 1 secara acak.
+      GIF tidak permanen, selalu fresh, jadi terasa alami. Tidak perlu mendaftarkan URL manual.
+    </p>
+<!-- Toggle Enable + Pengaturan Dasar -->
+<div class="panel" style="margin-bottom: 16px;">
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+<span style="font-weight: 600; font-size: 14px;">Status GIF Reaksi</span>
+<span class="badge" id="gifEnabledBadge">Memuat...</span>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px;">
+<div>
+<label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px;">Giphy API Key</label>
+<input id="gifApiKey" placeholder="Giphy API Key" style="width: 100%; font-family: monospace; font-size: 12px;" type="text"/>
+</div>
+<div>
+<label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px;">Rating Konten</label>
+<select id="gifRating" style="width: 100%;">
+<option value="g">G (Aman semua umur)</option>
+<option value="pg">PG</option>
+<option selected="" value="pg-13">PG-13 (Direkomendasikan)</option>
+<option value="r">R</option>
+</select>
+</div>
+<div>
+<label style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 4px;">Peluang RNG Muncul (%)</label>
+<input id="gifChance" type="number" min="0" max="100" step="5" value="30" style="width: 100%; font-size: 12px;" />
+</div>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+<button class="btn btn-sm" id="gifToggleBtn" type="button">Memuat...</button>
+<button class="btn btn-sm btn-secondary" id="gifSaveBtn" type="button">💾 Simpan Pengaturan</button>
+<button class="btn btn-sm btn-secondary" id="gifTestBtn" type="button">🧪 Tes GIF</button>
+<span class="status-msg" id="gifSaveStatus" style="font-size: 12px;"></span>
+</div>
+<div id="gifTestPreview" style="margin-top: 12px;"></div>
+</div>
+<!-- Keyword per Ekspresi -->
+<h3 style="font-size: 14px; margin-bottom: 8px; color: var(--accent);">🔑 Keyword per Ekspresi</h3>
+<p style="color: var(--muted); font-size: 12px; margin-bottom: 10px; line-height: 1.5;">
+      Kosongkan untuk pakai keyword default (Bahasa Inggris). Pisahkan beberapa keyword dengan koma.
+      Contoh: <code>angry, mad, rage</code>
+</p>
+<div id="gifKeywordList" style="display: flex; flex-direction: column; gap: 8px;">
+<p style="color: var(--muted); font-size: 13px;">Memuat...</p>
+</div>
+</div></section><section class="view-page" data-subtitle="Playlist YouTube untuk Mas Joy" data-title="Music Player" id="page-music"><div class="card" style="margin-top: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+      <h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">🎵 Music Player (DisTube)</h2>
+      <span id="musicStatusBadge" class="badge">Memuat...</span>
+    </div>
+    <p class="desc" style="margin-bottom: 14px;">
+      Simpan playlist YouTube favorit untuk Mas Joy. Callista akan join VC lalu putar playlist saat Mas Joy menyuruh.
+      <br>Contoh perintah: <code>cal, puter one ok rock</code>, <code>cal, shuffle</code>, <code>cal, skip</code>, <code>cal, stop</code>.
+    </p>
+
+    <!-- Form Tambah Playlist -->
+    <div class="panel" style="margin-bottom: 16px;">
+      <h3 style="font-size: 14px; margin-bottom: 12px; color: var(--accent);">➕ Tambah Playlist YouTube</h3>
+      <form id="playlistAddForm" style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+        <input type="text" id="playlistName" placeholder="Nama (e.g. One Ok Rock)" required style="flex: 1; min-width: 200px;">
+        <input type="text" id="playlistAliases" placeholder="Alias (pisah koma, e.g. wanokuro, oor)" style="flex: 1; min-width: 200px; font-size: 12px;">
+        <input type="text" id="playlistUrl" placeholder="URL Playlist YouTube" required style="flex: 2; min-width: 280px; font-family: monospace; font-size: 12px;">
+        <button type="submit" class="btn btn-sm">Tambah Playlist</button>
+        <span id="playlistAddStatus" class="status-msg" style="font-size: 12px;"></span>
+      </form>
+    </div>
+
+    <!-- Daftar Playlist -->
+    <h3 style="font-size: 14px; margin-bottom: 10px; color: var(--accent);">📋 Playlist Tersimpan</h3>
+    <div id="playlistListContainer">
+      <p style="color: var(--muted); font-size: 13px;">Memuat...</p>
+    </div>
+
+    <!-- Info Penggunaan -->
+    <div class="panel" style="margin-top: 16px;">
+      <h3 style="font-size: 14px; margin-bottom: 8px; color: var(--accent);">ℹ️ Penggunaan</h3>
+      <p class="desc" style="font-size: 12px;">
+        Hanya <strong>Mas Joy</strong> yang bisa menyuruh Callista muter musik. User lain akan ditolak.
+        Setelah tambah playlist, langsung bisa dipakai via Discord dengan: <code>"cal, puter [nama playlist]"</code>.
+        DisTube akan otomatis extract playlist, build queue, dan handle skip/shuffle/repeat.
+      </p>
+    </div>
+  </div>
+
+  <!-- SFX Audio Section -->
+  <div class="card" style="margin-top: 16px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+      <h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">🔊 Local Audio / SFX Player</h2>
+      <span id="sfxStatusBadge" class="badge">Memuat...</span>
+    </div>
+    <p class="desc" style="margin-bottom: 14px;">
+      Muat satu file audio lokal (lagu atau efek suara) untuk diputar di Discord dengan perintah <code>&gt;sfx</code>.
+      Hanya 1 file suara yang disimpan. Memuat file baru otomatis menggantikan audio sebelumnya.
+    </p>
+
+    <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px;">
+      <input type="file" id="sfxFileInput" accept="audio/*,.mp3,.wav,.ogg,.m4a,.flac,.aac,.webm,.opus" style="display: none;">
+      <button type="button" class="btn btn-sm" id="btnLoadSfx">📁 Load SFX</button>
+      <button type="button" class="btn btn-sm btn-danger" id="btnDeleteSfx" style="display: none; background: #e74c3c; color: white;">🗑️ Hapus SFX</button>
+      <span id="sfxFileInfo" style="font-size: 13px; color: var(--muted);">Belum ada audio lokal dimuat</span>
+    </div>
+
+    <div id="sfxDetailsPanel" class="panel" style="display: none; font-size: 12px; margin-top: 8px;">
+      <div><strong>Nama File:</strong> <span id="sfxDetailName" style="color: var(--accent);">-</span></div>
+      <div style="margin-top: 4px;"><strong>Ukuran:</strong> <span id="sfxDetailSize">-</span> &nbsp;|&nbsp; <strong>Durasi:</strong> <span id="sfxDetailDuration">-</span></div>
+      <div style="margin-top: 4px;"><strong>Dimuat Pada:</strong> <span id="sfxDetailLoadedAt">-</span></div>
+    </div>
+    <span id="sfxUploadStatus" class="status-msg" style="font-size: 12px; margin-top: 6px; display: block;"></span>
+  </div></section></div></main></div><script>
+    // Sidebar navigation; API endpoints and existing handlers remain unchanged.
+    (() => {
+      const buttons = [...document.querySelectorAll('.nav-item')];
+      const pages = [...document.querySelectorAll('.view-page')];
+      const title = document.getElementById('currentPageTitle');
+      const subtitle = document.getElementById('currentPageSubtitle');
+      const sidebar = document.getElementById('sidebar');
+      function showPage(id) {
+        const btn = buttons.find(item => item.dataset.page === id) || buttons[0];
+        pages.forEach(page => page.classList.toggle('active', page.id === btn.dataset.page));
+        buttons.forEach(item => item.classList.toggle('active', item === btn));
+        title.textContent = btn.querySelector('span:last-child').textContent;
+        subtitle.textContent = document.getElementById(btn.dataset.page)?.dataset.subtitle || '';
+        sidebar.classList.remove('open');
+        window.scrollTo({top: 0, behavior: 'smooth'});
+      }
+      buttons.forEach(btn => btn.addEventListener('click', () => showPage(btn.dataset.page)));
+      document.getElementById('menuToggle').addEventListener('click', () => sidebar.classList.toggle('open'));
+      document.addEventListener('click', e => {
+        if (window.innerWidth <= 850 && sidebar.classList.contains('open') &&
+            !sidebar.contains(e.target) && !e.target.closest('#menuToggle')) sidebar.classList.remove('open');
+      });
+      showPage('page-overview');
+    })();
+
+    const fields = [
+      'activity', 'initiative', 'spontaneity', 'conversationFocus', 'interruptionTolerance',
+      'burstWindowMs', 'humor', 'warmth', 'empathy', 'assertiveness', 'formality', 'brevity',
+      'emojiFrequency', 'directAddressThreshold'
+    ];
+
+    function formatVal(field, val) {
+      if (field === 'conversationFocus') return val + 's';
+      if (field === 'burstWindowMs') return val + 'ms';
+      return val;
+    }
+
+    fields.forEach(field => {
+      const slider = document.querySelector(`input[name="${field}"]`);
+      const numInput = document.getElementById(`num_${field}`);
+      const valLabel = document.getElementById(`${field}Val`);
+
+      if (slider && numInput && valLabel) {
+        slider.addEventListener('input', () => {
+          numInput.value = slider.value;
+          valLabel.textContent = formatVal(field, slider.value);
+        });
+        numInput.addEventListener('input', () => {
+          slider.value = numInput.value;
+          valLabel.textContent = formatVal(field, numInput.value);
+        });
+      }
+    });
+
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/config');
+        const cfg = await res.json();
+        fields.forEach(field => {
+          if (cfg[field] !== undefined) {
+            const slider = document.querySelector(`input[name="${field}"]`);
+            const numInput = document.getElementById(`num_${field}`);
+            const valLabel = document.getElementById(`${field}Val`);
+            if (slider && numInput && valLabel) {
+              slider.value = cfg[field];
+              numInput.value = cfg[field];
+              valLabel.textContent = formatVal(field, cfg[field]);
+            }
+          }
+        });
+        const modelInput = document.querySelector('select[name="model"], input[name="model"]');
+        if (modelInput && cfg.model) modelInput.value = cfg.model;
+        const tzInput = document.querySelector('input[name="timezone"]');
+        if (tzInput && cfg.timezone) tzInput.value = cfg.timezone;
+        const aliasesInput = document.querySelector('input[name="aliases"]');
+        if (aliasesInput && Array.isArray(cfg.aliases)) aliasesInput.value = cfg.aliases.join(', ');
+
+        document.getElementById('statusBadge').textContent = 'Terhubung • Bot Aktif';
+        document.getElementById('statusBadge').style.color = 'var(--success)';
+      } catch (e) {
+        document.getElementById('statusBadge').textContent = 'Koneksi Terputus';
+        document.getElementById('statusBadge').style.color = 'var(--danger)';
+      }
+    }
+
+    async function loadDailyContext() {
+      try {
+        const res = await fetch('/api/daily-context');
+        const data = await res.json();
+        const cur = data.current || {};
+        const ctx = data.context || {};
+
+        document.getElementById('dailyStatusBadge').textContent = `${ctx.date || ''} (${cur.status || 'Aktif'})`;
+        document.getElementById('dailyCurrentActivity').textContent = cur.current_activity || '-';
+        document.getElementById('dailyAvailability').textContent = `${(cur.availability || '').toUpperCase()} (${cur.reply_tendency || ''})`;
+        document.getElementById('dailyUpcomingPlan').textContent = cur.upcoming_plan || '-';
+        if (ctx.sleep_schedule) {
+          document.getElementById('dailySleepSchedule').textContent = `${ctx.sleep_schedule.sleep_time} - ${ctx.sleep_schedule.wake_time} WIB`;
+        }
+      } catch (e) {
+        document.getElementById('dailyStatusBadge').textContent = 'Mode Cadangan (Fallback)';
+      }
+    }
+
+    function updateCharCount() {
+      const text = document.getElementById('backgroundText').value || '';
+      const chars = text.length;
+      const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+      document.getElementById('charCount').textContent = `${chars.toLocaleString()} karakter • ${words.toLocaleString()} kata`;
+    }
+
+    document.getElementById('backgroundText').addEventListener('input', updateCharCount);
+
+    async function loadBackground() {
+      try {
+        const res = await fetch('/api/background');
+        const data = await res.json();
+        const text = data.background || '';
+        document.getElementById('backgroundText').value = text;
+        updateCharCount();
+        document.getElementById('backgroundStatus').textContent = data.isCustom
+          ? `${text.length} karakter • aktif`
+          : 'Belum ada file, memakai fallback';
+        document.getElementById('backgroundStatus').style.color = 'var(--success)';
+      } catch (e) {
+        document.getElementById('backgroundStatus').textContent = 'Gagal memuat background';
+        document.getElementById('backgroundStatus').style.color = 'var(--danger)';
+      }
+    }
+
+    async function saveBackground() {
+      const text = document.getElementById('backgroundText').value;
+      const status = document.getElementById('backgroundSaveStatus');
+      try {
+        const res = await fetch('/api/background', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ background: text })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal menyimpan');
+        status.textContent = `Latar belakang berhasil disimpan (${data.length} karakter) dan langsung aktif!`;
+        status.style.color = 'var(--success)';
+        document.getElementById('backgroundStatus').textContent = `${data.length} karakter • aktif`;
+        updateCharCount();
+        setTimeout(() => { status.textContent = ''; }, 4000);
+      } catch (e) {
+        status.textContent = e.message;
+        status.style.color = 'var(--danger)';
+      }
+    }
+
+    document.getElementById('saveBackgroundBtn').addEventListener('click', saveBackground);
+    document.getElementById('reloadBackgroundBtn').addEventListener('click', () => {
+      loadBackground();
+      const status = document.getElementById('backgroundSaveStatus');
+      status.textContent = 'Memuat ulang dari file data/callista_background.txt...';
+      status.style.color = 'var(--muted)';
+      setTimeout(() => { status.textContent = ''; }, 2500);
+    });
+
+    async function loadUsers() {
+      try {
+        const res = await fetch('/api/memory');
+        const mem = await res.json();
+        const container = document.getElementById('usersContainer');
+        const users = mem.users || {};
+        const userIds = Object.keys(users);
+
+        if (userIds.length === 0) {
+          container.innerHTML = '<p style="color: var(--muted); font-size: 13px;">Belum ada interaksi pengguna yang tercatat.</p>';
+          return;
+        }
+
+        let html = `
+          <table class="user-table">
+            <thead>
+              <tr>
+                <th>ID Discord</th>
+                <th>Nama Tampilan</th>
+                <th>Sikap / Hubungan</th>
+                <th>Afeksi (0-100)</th>
+                <th>Panggilan Khusus</th>
+                <th>Catatan</th>
+                <th>Pesan</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+        `;
+
+        userIds.forEach(uid => {
+          const u = users[uid];
+          const style = u.style || 'friendly';
+          const nicks = Array.isArray(u.nicknames) ? u.nicknames.join(', ') : (u.nicknames || '');
+          const count = u.interactionCount || 1;
+
+          html += `
+            <tr id="row_${uid}">
+              <td style="font-family: monospace; font-size: 12px; color: var(--muted);">${uid}</td>
+              <td><input type="text" id="name_${uid}" value="${u.name || ''}" style="width: 130px;"></td>
+              <td>
+                <select id="style_${uid}" style="width: 175px;">
+                  <option value="playfully_hostile" ${style === 'playfully_hostile' ? 'selected' : ''}>😡 Ga Suka / Antipati</option>
+                  <option value="cold" ${style === 'cold' ? 'selected' : ''}>❄️ Dingin / Cuek</option>
+                  <option value="neutral" ${style === 'neutral' ? 'selected' : ''}>😐 Biasa / Netral</option>
+                  <option value="friendly" ${style === 'friendly' ? 'selected' : ''}>😊 Ramah / Teman</option>
+                  <option value="close" ${style === 'close' ? 'selected' : ''}>💖 Akrab / Dekat</option>
+                  <option value="clingy" ${style === 'clingy' ? 'selected' : ''}>🥰 Clingy / Manja</option>
+                </select>
+              </td>
+              <td><input type="number" id="aff_${uid}" value="${u.affection ?? 20}" min="0" max="100" style="width: 55px;"></td>
+              <td><input type="text" id="nicks_${uid}" value="${nicks}" placeholder="Panggilan..." style="width: 140px;"></td>
+              <td><input type="text" id="notes_${uid}" value="${u.notes || ''}" placeholder="Catatan..." style="width: 140px;"></td>
+              <td style="font-size: 12px; color: var(--muted); text-align: center;">${count}x</td>
+              <td style="display: flex; gap: 6px;">
+                <button class="btn btn-sm" onclick="saveUser('${uid}')">Simpan</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteUser('${uid}')">Hapus</button>
+              </td>
+            </tr>
+          `;
+        });
+
+        html += '</tbody></table>';
+        container.innerHTML = html;
+      } catch (e) {
+        document.getElementById('usersContainer').innerHTML = '<p style="color: var(--danger); font-size: 13px;">Gagal memuat data pengguna.</p>';
+      }
+    }
+
+    async function saveUser(uid) {
+      const name = document.getElementById(`name_${uid}`).value.trim();
+      const style = document.getElementById(`style_${uid}`).value;
+      const affection = parseInt(document.getElementById(`aff_${uid}`).value, 10);
+      const rawNicks = document.getElementById(`nicks_${uid}`).value.trim();
+      const nicknames = rawNicks ? rawNicks.split(',').map(s => s.trim()).filter(Boolean) : [];
+      const notes = document.getElementById(`notes_${uid}`).value.trim();
+
+      let relLabel = 'Teman';
+      if (style === 'clingy') relLabel = 'Sangat Spesial / Dicintai (Mas Joy)';
+      else if (style === 'playfully_hostile') relLabel = 'Ga Suka / Antipati Fiktif';
+      else if (style === 'cold') relLabel = 'Dingin / Cuek';
+      else if (style === 'close') relLabel = 'Teman Dekat / Akrab';
+      else if (style === 'neutral') relLabel = 'Netral';
+
+      await fetch('/api/memory/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: uid, name, style, affection, relationship: relLabel, nicknames, notes })
+      });
+      loadUsers();
+    }
+
+    async function deleteUser(uid) {
+      if (!confirm(`Hapus data pengguna ${uid} dari memori?`)) return;
+      await fetch('/api/memory/user', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: uid })
+      });
+      loadUsers();
+    }
+
+    document.getElementById('configForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const payload = {};
+      fields.forEach(f => {
+        payload[f] = parseInt(formData.get(f), 10);
+      });
+      payload.model = formData.get('model');
+      payload.timezone = formData.get('timezone') || 'Asia/Jakarta';
+      const rawAliases = formData.get('aliases');
+      if (rawAliases) {
+        payload.aliases = rawAliases.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+      }
+
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (res.ok) {
+        const status = document.getElementById('saveStatus');
+        status.textContent = 'Pengaturan berhasil disimpan dan langsung aktif!';
+        setTimeout(() => { status.textContent = ''; }, 3000);
+      }
+    });
+
+    document.getElementById('userEditForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const userId = document.getElementById('manualUserId').value.trim();
+      const name = document.getElementById('manualUserName').value.trim();
+      const style = document.getElementById('manualStyle').value;
+      const affection = parseInt(document.getElementById('manualAffection').value, 10);
+      const rawNicks = document.getElementById('manualNicknames').value.trim();
+      const nicknames = rawNicks ? rawNicks.split(',').map(s => s.trim()).filter(Boolean) : [];
+      const notes = document.getElementById('manualNotes').value.trim();
+
+      let relLabel = 'Teman (Ramah)';
+      if (style === 'clingy') relLabel = 'Sangat Spesial / Dicintai (Mas Joy)';
+      else if (style === 'playfully_hostile') relLabel = 'Ga Suka / Antipati Fiktif';
+      else if (style === 'cold') relLabel = 'Dingin / Cuek';
+      else if (style === 'close') relLabel = 'Teman Dekat / Akrab';
+      else if (style === 'neutral') relLabel = 'Netral';
+
+      await fetch('/api/memory/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, name, style, affection, relationship: relLabel, nicknames, notes })
+      });
+
+      document.getElementById('userEditForm').reset();
+      loadUsers();
+    });
+
+    let currentBotResponding = true;
+
+    async function loadBotState() {
+      try {
+        const res = await fetch('/api/bot-state');
+        if (!res.ok) return;
+        const data = await res.json();
+        currentBotResponding = Boolean(data.isResponding);
+
+        const badge = document.getElementById('respondingBadge');
+        const btn = document.getElementById('toggleRespondingBtn');
+        const desc = document.getElementById('respondingDesc');
+
+        if (currentBotResponding) {
+          badge.textContent = '🟢 AKTIF (Merespon)';
+          badge.style.color = 'var(--success)';
+          badge.style.borderColor = 'var(--success)';
+          badge.style.background = 'var(--success-soft)';
+          btn.textContent = '⏸️ Matikan Respon (Paksa Diam Total)';
+          btn.style.background = 'var(--danger)';
+          btn.style.borderColor = 'transparent';
+          desc.textContent = 'Callista sedang AKTIF merespon obrolan sesuai jadwal dan filter perilakunya.';
+        } else {
+          badge.textContent = '🔴 DIAM TOTAL (Mati)';
+          badge.style.color = 'var(--danger)';
+          badge.style.borderColor = 'var(--danger)';
+          badge.style.background = 'var(--danger-soft)';
+          btn.textContent = '▶️ Nyalakan Respon (Boleh Nimbrung)';
+          btn.style.background = 'var(--success)';
+          btn.style.borderColor = 'transparent';
+          const dur = data.silencedDurationMinutes ? `${data.silencedDurationMinutes} menit` : 'baru saja';
+          desc.textContent = `Callista sedang DIAM TOTAL sejak ${dur}. Alasan: ${data.silencedReason || 'Manual'}. Tidak akan merespon apapun sampai dinyalakan lagi.`;
+        }
+
+        const mood = data.mood ?? 80;
+        document.getElementById('moodScoreBadge').textContent = `${mood} / 100`;
+        const bar = document.getElementById('moodProgressBar');
+        bar.style.width = `${mood}%`;
+        const stateLabel = document.getElementById('moodStateLabel');
+        stateLabel.textContent = data.moodState || 'Biasa / Netral';
+
+        if (mood >= 65) {
+          bar.style.backgroundColor = 'var(--success)';
+          stateLabel.style.color = 'var(--success)';
+        } else if (mood >= 45) {
+          bar.style.backgroundColor = 'var(--warn)';
+          stateLabel.style.color = 'var(--warn)';
+        } else {
+          bar.style.backgroundColor = 'var(--danger)';
+          stateLabel.style.color = 'var(--danger)';
+        }
+      } catch (e) {}
+    }
+
+    document.getElementById('toggleRespondingBtn').addEventListener('click', async () => {
+      try {
+        const btn = document.getElementById('toggleRespondingBtn');
+        btn.disabled = true;
+        btn.textContent = 'Memproses...';
+        await fetch('/api/bot-state/toggle', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isResponding: !currentBotResponding })
+        });
+        btn.disabled = false;
+        await loadBotState();
+      } catch (e) {
+        document.getElementById('toggleRespondingBtn').disabled = false;
+      }
+    });
+
+    loadConfig();
+    loadUsers();
+    loadDailyContext();
+    loadBackground();
+    loadBotState();
+    setInterval(loadBotState, 2000); // Real-time sync setiap 2 detik
+    setInterval(loadDailyContext, 30000);
+
+    // ===== STICKER & EMOJI MANAGER =====
+
+    let seExpressions = [];
+
+    async function loadStickerEmoji() {
+      try {
+        const res = await fetch('/api/sticker-emoji');
+        const data = await res.json();
+        seExpressions = data.expressions || [];
+
+        // Isi dropdown ekspresi
+        const emojiExprSelect = document.getElementById('emojiExpression');
+        const stickerExprSelect = document.getElementById('stickerExpression');
+        const optionsHTML = seExpressions.map(e => `<option value="${e.value}">${e.label}</option>`).join('');
+        emojiExprSelect.innerHTML = optionsHTML;
+        stickerExprSelect.innerHTML = optionsHTML;
+
+        const emojis = data.emojis || [];
+        const stickers = data.stickers || [];
+        const customExprs = data.customExpressions || [];
+        document.getElementById('stickerEmojiStatus').textContent = `${emojis.length} emoji • ${stickers.length} sticker • ${customExprs.length} custom expr`;
+        document.getElementById('stickerEmojiStatus').style.color = 'var(--success)';
+
+        renderEmojiList(emojis);
+        renderStickerList(stickers);
+        renderCustomExprList(customExprs);
+      } catch (e) {
+        document.getElementById('stickerEmojiStatus').textContent = 'Gagal memuat';
+        document.getElementById('stickerEmojiStatus').style.color = 'var(--danger)';
+      }
+    }
+
+    function exprLabel(value) {
+      const found = seExpressions.find(e => e.value === value);
+      return found ? found.label : value;
+    }
+
+    function renderEmojiList(emojis) {
+      const container = document.getElementById('emojiListContainer');
+      if (!emojis || emojis.length === 0) {
+        container.innerHTML = '<p style="color: var(--muted); font-size: 13px;">Belum ada custom emoji terdaftar.</p>';
+        return;
+      }
+      let html = '<table class="user-table"><thead><tr><th>Emoji</th><th>Label</th><th>Emoji Code</th><th>Ekspresi</th><th>Aksi</th></tr></thead><tbody>';
+      emojis.forEach(e => {
+        html += `
+          <tr>
+            <td style="text-align: center;"><span style="font-size: 16px;">${e.code}</span></td>
+            <td><input type="text" id="emoji_label_${e.id}" value="${(e.label || '').replace(/"/g, '&quot;')}" style="width: 120px;"></td>
+            <td><input type="text" id="emoji_code_${e.id}" value="${e.code.replace(/"/g, '&quot;')}" style="width: 200px; font-family: monospace; font-size: 12px;"></td>
+            <td>
+              <select id="emoji_expr_${e.id}" style="width: 170px;">
+                ${seExpressions.map(ex => `<option value="${ex.value}" ${ex.value === e.expression ? 'selected' : ''}>${ex.label}</option>`).join('')}
+              </select>
+            </td>
+            <td style="display: flex; gap: 6px;">
+              <button class="btn btn-sm" onclick="saveEmojiEdit('${e.id}')">Simpan</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteEmoji('${e.id}')">Hapus</button>
+            </td>
+          </tr>`;
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    async function saveEmojiEdit(id) {
+      const label = document.getElementById(`emoji_label_${id}`).value.trim();
+      const code = document.getElementById(`emoji_code_${id}`).value.trim();
+      const expression = document.getElementById(`emoji_expr_${id}`).value;
+      try {
+        const res = await fetch('/api/sticker-emoji/emoji', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, label, code, expression })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal');
+        loadStickerEmoji();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function renderStickerList(stickers) {
+      const container = document.getElementById('stickerListContainer');
+      if (!stickers || stickers.length === 0) {
+        container.innerHTML = '<p style="color: var(--muted); font-size: 13px;">Belum ada sticker terdaftar.</p>';
+        return;
+      }
+      let html = '<table class="user-table"><thead><tr><th>Label</th><th>Sticker ID</th><th>Ekspresi</th><th>Aksi</th></tr></thead><tbody>';
+      stickers.forEach(s => {
+        html += `
+          <tr>
+            <td><input type="text" id="sticker_label_${s.id}" value="${(s.label || '').replace(/"/g, '&quot;')}" style="width: 140px;"></td>
+            <td><input type="text" id="sticker_id_${s.id}" value="${s.stickerId}" style="width: 190px; font-family: monospace; font-size: 12px;"></td>
+            <td>
+              <select id="sticker_expr_${s.id}" style="width: 170px;">
+                ${seExpressions.map(ex => `<option value="${ex.value}" ${ex.value === s.expression ? 'selected' : ''}>${ex.label}</option>`).join('')}
+              </select>
+            </td>
+            <td style="display: flex; gap: 6px;">
+              <button class="btn btn-sm" onclick="saveStickerEdit('${s.id}')">Simpan</button>
+              <button class="btn btn-sm btn-danger" onclick="deleteSticker('${s.id}')">Hapus</button>
+            </td>
+          </tr>`;
+      });
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    async function saveStickerEdit(id) {
+      const label = document.getElementById(`sticker_label_${id}`).value.trim();
+      const stickerId = document.getElementById(`sticker_id_${id}`).value.trim();
+      const expression = document.getElementById(`sticker_expr_${id}`).value;
+      try {
+        const res = await fetch('/api/sticker-emoji/sticker', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, label, stickerId, expression })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal');
+        loadStickerEmoji();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    function renderCustomExprList(customExprs) {
+      const container = document.getElementById('customExprList');
+      if (!customExprs || customExprs.length === 0) {
+        container.innerHTML = '<span style="color: var(--muted); font-size: 12px;">Belum ada ekspresi custom. Tambahkan yang lebih nuanced (bukan emosi kaku).</span>';
+        return;
+      }
+      let html = '';
+      customExprs.forEach(e => {
+        html += `
+          <span class="badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px;">
+            <input type="text" id="cer_label_${e.value}" value="${(e.label || '').replace(/"/g, '&quot;')}" style="width: 160px; font-size: 12px; padding: 3px 6px;">
+            <code style="font-size: 11px; color: var(--muted);">${e.value}</code>
+            <button onclick="saveCustomExpr('${e.value}')" title="Simpan label" style="background: none; border: none; color: var(--success); cursor: pointer; font-size: 13px; font-weight: 600;">💾</button>
+            <button onclick="deleteCustomExpr('${e.value}')" title="Hapus" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px;">×</button>
+          </span>`;
+      });
+      container.innerHTML = html;
+    }
+
+    async function saveCustomExpr(value) {
+      const label = document.getElementById(`cer_label_${value}`).value.trim();
+      try {
+        const res = await fetch('/api/sticker-emoji/custom-expression', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value, label })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal');
+        loadStickerEmoji();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function deleteCustomExpr(value) {
+      if (!confirm(`Hapus ekspresi custom "${value}"?`)) return;
+      const res = await fetch('/api/sticker-emoji/custom-expression', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || 'Gagal hapus');
+      }
+      loadStickerEmoji();
+    }
+
+    document.getElementById('customExprForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const value = document.getElementById('customExprValue').value.trim();
+      const label = document.getElementById('customExprLabel').value.trim();
+      try {
+        const res = await fetch('/api/sticker-emoji/custom-expression', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ value, label })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal');
+        document.getElementById('customExprValue').value = '';
+        document.getElementById('customExprLabel').value = '';
+        loadStickerEmoji();
+      } catch (err) {
+        alert(err.message);
+      }
+    });
+
+    async function deleteEmoji(id) {
+      if (!confirm('Hapus emoji ini?')) return;
+      await fetch('/api/sticker-emoji/emoji', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      loadStickerEmoji();
+    }
+
+    async function deleteSticker(id) {
+      if (!confirm('Hapus sticker ini?')) return;
+      await fetch('/api/sticker-emoji/sticker', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id })
+      });
+      loadStickerEmoji();
+    }
+
+    document.getElementById('emojiAddForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('emojiAddStatus');
+      const label = document.getElementById('emojiLabel').value.trim();
+      const expression = document.getElementById('emojiExpression').value;
+      const code = document.getElementById('emojiCode').value.trim();
+      try {
+        const res = await fetch('/api/sticker-emoji/emoji', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ label, expression, code })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal');
+        status.textContent = 'Emoji berhasil ditambahkan!';
+        status.style.color = 'var(--success)';
+        document.getElementById('emojiLabel').value = '';
+        document.getElementById('emojiCode').value = '';
+        loadStickerEmoji();
+        setTimeout(() => { status.textContent = ''; }, 3000);
+      } catch (err) {
+        status.textContent = err.message;
+        status.style.color = 'var(--danger)';
+      }
+    });
+
+    document.getElementById('stickerAddForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('stickerAddStatus');
+      const label = document.getElementById('stickerLabel').value.trim();
+      const expression = document.getElementById('stickerExpression').value;
+      const stickerId = document.getElementById('stickerIdInput').value.trim();
+      try {
+        const res = await fetch('/api/sticker-emoji/sticker', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ label, expression, stickerId })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal');
+        status.textContent = 'Sticker berhasil ditambahkan!';
+        status.style.color = 'var(--success)';
+        document.getElementById('stickerLabel').value = '';
+        document.getElementById('stickerIdInput').value = '';
+        loadStickerEmoji();
+        setTimeout(() => { status.textContent = ''; }, 3000);
+      } catch (err) {
+        status.textContent = err.message;
+        status.style.color = 'var(--danger)';
+      }
+    });
+
+    loadStickerEmoji();
+
+    // ===== STICKER/EMOJI MODE CONTROL =====
+
+    async function loadSeSettings() {
+      try {
+        const res = await fetch('/api/sticker-emoji/settings');
+        const settings = await res.json();
+        const mode = settings.mode || 'auto';
+        const freq = settings.manualFrequency ?? 20;
+
+        document.querySelector(`input[name="seMode"][value="${mode}"]`).checked = true;
+        document.getElementById('manualFreqSlider').value = freq;
+        document.getElementById('manualFreqVal').textContent = freq + '%';
+        updateModeUI(mode);
+      } catch (e) {}
+    }
+
+    function updateModeUI(mode) {
+      const autoDesc = document.getElementById('autoModeDesc');
+      const manualDesc = document.getElementById('manualModeDesc');
+      const manualControl = document.getElementById('manualFreqControl');
+      if (mode === 'manual') {
+        autoDesc.style.display = 'none';
+        manualDesc.style.display = 'block';
+        manualControl.style.display = 'block';
+      } else {
+        autoDesc.style.display = 'block';
+        manualDesc.style.display = 'none';
+        manualControl.style.display = 'none';
+      }
+    }
+
+    document.querySelectorAll('input[name="seMode"]').forEach(radio => {
+      radio.addEventListener('change', (e) => updateModeUI(e.target.value));
+    });
+
+    document.getElementById('manualFreqSlider').addEventListener('input', (e) => {
+      document.getElementById('manualFreqVal').textContent = e.target.value + '%';
+    });
+
+    document.getElementById('saveModeBtn').addEventListener('click', async () => {
+      const mode = document.querySelector('input[name="seMode"]:checked').value;
+      const freq = parseInt(document.getElementById('manualFreqSlider').value, 10);
+      const status = document.getElementById('modeSaveStatus');
+      try {
+        await fetch('/api/sticker-emoji/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mode, manualFrequency: freq })
+        });
+        status.textContent = 'Pengaturan mode disimpan & langsung aktif!';
+        status.style.color = 'var(--success)';
+        setTimeout(() => { status.textContent = ''; }, 3000);
+      } catch (e) {
+        status.textContent = 'Gagal menyimpan';
+        status.style.color = 'var(--danger)';
+      }
+    });
+
+    loadSeSettings();
+
+    // ===== GIF MANAGER (GIPHY) =====
+
+    let gifDefaultKeywords = {};
+    let gifEnabled = false;
+
+    async function loadGifSettings() {
+      try {
+        const res = await fetch('/api/gif/settings');
+        const data = await res.json();
+        gifDefaultKeywords = data.defaultKeywords || {};
+        gifEnabled = Boolean(data.enabled);
+
+        const apiKeyInput = document.getElementById('gifApiKey');
+        apiKeyInput.value = data.apiKey || '';
+        apiKeyInput.placeholder = data.apiKeyMasked || 'Giphy API Key';
+        apiKeyInput.dataset.hasKey = data.apiKey ? '1' : '0';
+
+        document.getElementById('gifRating').value = data.rating || 'pg-13';
+        document.getElementById('gifChance').value = Math.round((typeof data.chance === 'number' ? data.chance : 0.30) * 100);
+
+        const badge = document.getElementById('gifEnabledBadge');
+        const statusBadge = document.getElementById('gifStatusBadge');
+        const toggleBtn = document.getElementById('gifToggleBtn');
+        if (gifEnabled) {
+          badge.textContent = '🟢 AKTIF';
+          badge.style.color = 'var(--success)';
+          toggleBtn.textContent = '⏸️ Matikan GIF';
+          toggleBtn.style.background = 'var(--danger)';
+          statusBadge.textContent = 'Aktif';
+          statusBadge.style.color = 'var(--success)';
+        } else {
+          badge.textContent = '🔴 NONAKTIF';
+          badge.style.color = 'var(--danger)';
+          toggleBtn.textContent = '▶️ Aktifkan GIF';
+          toggleBtn.style.background = 'var(--success)';
+          statusBadge.textContent = 'Nonaktif';
+          statusBadge.style.color = 'var(--muted)';
+        }
+
+        renderGifKeywords(data.keywords || {});
+      } catch (e) {
+        document.getElementById('gifStatusBadge').textContent = 'Gagal memuat';
+      }
+    }
+
+    function renderGifKeywords(customKeywords) {
+      const container = document.getElementById('gifKeywordList');
+      const allExpr = seExpressions.length > 0 ? seExpressions : [];
+      if (allExpr.length === 0) {
+        container.innerHTML = '<p style="color: var(--muted); font-size: 13px;">Ekspresi belum dimuat.</p>';
+        return;
+      }
+      let html = '';
+      allExpr.forEach(ex => {
+        const custom = customKeywords[ex.value];
+        const customStr = Array.isArray(custom) ? custom.join(', ') : (custom || '');
+        const def = gifDefaultKeywords[ex.value];
+        const defStr = Array.isArray(def) ? def.join(', ') : '';
+        html += `
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <span style="min-width: 160px; font-size: 13px;">${ex.label}</span>
+            <input type="text" id="gifkw_${ex.value}" value="${customStr.replace(/"/g, '&quot;')}" placeholder="${defStr || ex.value}" style="flex: 1; min-width: 220px; font-size: 12px; font-family: monospace;">
+          </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    document.getElementById('gifToggleBtn').addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/gif/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: !gifEnabled })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal');
+        loadGifSettings();
+      } catch (e) {
+        alert(e.message);
+      }
+    });
+
+    document.getElementById('gifSaveBtn').addEventListener('click', async () => {
+      const status = document.getElementById('gifSaveStatus');
+      const apiKeyInput = document.getElementById('gifApiKey');
+      const payload = {
+        rating: document.getElementById('gifRating').value
+      };
+      const chanceVal = parseFloat(document.getElementById('gifChance').value);
+      if (!isNaN(chanceVal)) {
+        payload.chance = Math.max(0, Math.min(100, chanceVal)) / 100;
+      }
+      // Hanya kirim apiKey jika user mengubahnya (tidak mengandung '...' masked)
+      const keyVal = apiKeyInput.value.trim();
+      if (keyVal && !keyVal.includes('...')) {
+        payload.apiKey = keyVal;
+      }
+      // Kumpulkan keyword
+      const keywords = {};
+      seExpressions.forEach(ex => {
+        const el = document.getElementById(`gifkw_${ex.value}`);
+        if (el) {
+          const val = el.value.trim();
+          if (val) keywords[ex.value] = val.split(',').map(s => s.trim()).filter(Boolean);
+        }
+      });
+      payload.keywords = keywords;
+
+      try {
+        const res = await fetch('/api/gif/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal');
+        status.textContent = 'Pengaturan GIF disimpan!';
+        status.style.color = 'var(--success)';
+        loadGifSettings();
+        setTimeout(() => { status.textContent = ''; }, 3000);
+      } catch (e) {
+        status.textContent = e.message;
+        status.style.color = 'var(--danger)';
+      }
+    });
+
+    document.getElementById('gifTestBtn').addEventListener('click', async () => {
+      const preview = document.getElementById('gifTestPreview');
+      const status = document.getElementById('gifSaveStatus');
+      preview.innerHTML = '<span style="color: var(--muted); font-size: 12px;">Mencari GIF...</span>';
+      try {
+        const res = await fetch('/api/gif/test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ expression: 'senang' })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          preview.innerHTML = `<span style="color: var(--danger); font-size: 12px;">${data.error || 'Gagal'}</span>`;
+          return;
+        }
+        preview.innerHTML = `<div style="font-size: 12px; color: var(--muted); margin-bottom: 6px;">Test keyword: <code>${data.keyword}</code></div><img src="${data.url}" style="max-width: 260px; border-radius: 6px; border: 1px solid var(--border);">`;
+      } catch (e) {
+        preview.innerHTML = `<span style="color: var(--danger); font-size: 12px;">${e.message}</span>`;
+      }
+    });
+
+    loadGifSettings();
+
+    // ===== MUSIC PLAYLIST MANAGER =====
+
+    async function loadPlaylists() {
+      try {
+        const res = await fetch('/api/playlists');
+        const data = await res.json();
+        const playlists = data.playlists || [];
+        const container = document.getElementById('playlistListContainer');
+        const statusBadge = document.getElementById('musicStatusBadge');
+
+        const remotes = playlists.filter(p => p.type !== 'local' && !Array.isArray(p.songs));
+        const locals = playlists.filter(p => p.type === 'local' || Array.isArray(p.songs));
+
+        statusBadge.textContent = `${remotes.length} remote, ${locals.length} lokal`;
+        statusBadge.style.color = 'var(--muted)';
+
+        if (playlists.length === 0) {
+          container.innerHTML = '<p class="desc">Belum ada playlist. Tambahkan via form di atas.</p>';
+          return;
+        }
+
+        let html = '';
+
+        // SEKSI 1: Playlist Remote YouTube
+        html += '<div style="margin-bottom: 24px;">';
+        html += '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">';
+        html += '<h4 style="font-size: 13px; color: var(--accent); margin: 0;">🌐 Playlist Remote YouTube (Link Langsung)</h4>';
+        html += `<span style="font-size: 11px; color: var(--muted);">${remotes.length} playlist</span>`;
+        html += '</div>';
+
+        if (remotes.length === 0) {
+          html += '<p style="color: var(--muted); font-size: 12px; margin-bottom: 12px;">Belum ada playlist YouTube remote. Tambahkan lewat form di atas.</p>';
+        } else {
+          html += '<table class="user-table" style="margin-bottom: 12px;"><thead><tr><th>Nama Playlist</th><th>Alias</th><th>Link YouTube</th><th>Aksi</th></tr></thead><tbody>';
+          remotes.forEach(p => {
+            const aliases = (p.aliases && p.aliases.length) ? p.aliases.join(', ') : '-';
+            html += `
+              <tr>
+                <td><strong>${escapeHtml(p.name)}</strong></td>
+                <td><span style="font-size: 12px; color: var(--muted);">${escapeHtml(aliases)}</span></td>
+                <td><a href="${escapeHtml(p.url)}" target="_blank" rel="noopener" style="color: var(--accent); font-family: monospace; font-size: 11px;">${escapeHtml(String(p.url || '').length > 45 ? p.url.substring(0, 45) + '...' : p.url)}</a></td>
+                <td><button class="btn btn-sm btn-danger" onclick="deletePlaylist('${p.id}')">Hapus</button></td>
+              </tr>`;
+          });
+          html += '</tbody></table>';
+        }
+        html += '</div>';
+
+        // SEKSI 2: Playlist Lokal & Favorit
+        html += '<div>';
+        html += '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">';
+        html += '<h4 style="font-size: 13px; color: var(--accent); margin: 0;">📁 Playlist Lokal & Favorit (Disimpan di Bot)</h4>';
+        html += `<span style="font-size: 11px; color: var(--muted);">${locals.length} playlist</span>`;
+        html += '</div>';
+
+        if (locals.length === 0) {
+          html += '<p style="color: var(--muted); font-size: 12px;">Belum ada playlist lokal. Buat via Discord: <code>>create &lt;nama&gt;</code></p>';
+        } else {
+          locals.forEach(p => {
+            const isFav = /^(?:favorit|fav|favorite)$/i.test(p.name);
+            const songs = p.songs || [];
+            html += `<div class="panel" style="margin-bottom: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border);">`;
+            html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">`;
+            html += `<div><strong>${isFav ? '⭐ ' : '🎵 '}${escapeHtml(p.name)}</strong> <span style="font-size: 12px; color: var(--muted); margin-left: 6px;">(${songs.length} lagu)</span></div>`;
+            if (!isFav) {
+              html += `<button class="btn btn-sm btn-danger" onclick="deletePlaylist('${p.id}')">Hapus Playlist</button>`;
+            }
+            html += `</div>`;
+
+            if (songs.length === 0) {
+              html += `<p style="font-size: 12px; color: var(--muted); margin: 6px 0;">Playlist masih kosong. Tambahkan lagu via Discord: <code>>add &lt;link YouTube&gt; &gt;&gt;${escapeHtml(p.name)}</code></p>`;
+            } else {
+              html += `<table class="user-table" style="font-size: 12px; margin-top: 6px;"><thead><tr><th style="width: 36px;">#</th><th>Judul Lagu</th><th style="width: 70px;">Durasi</th><th style="width: 60px;">Aksi</th></tr></thead><tbody>`;
+              songs.forEach((s, idx) => {
+                const title = s.title || s.url;
+                const durStr = s.duration ? `${Math.floor(s.duration / 60)}:${String(s.duration % 60).padStart(2, '0')}` : '-';
+                html += `
+                  <tr>
+                    <td style="color: var(--muted);">${idx + 1}</td>
+                    <td><a href="${escapeHtml(s.url)}" target="_blank" rel="noopener" style="color: var(--text); text-decoration: none;">${escapeHtml(title)}</a></td>
+                    <td style="color: var(--muted); font-family: monospace;">${durStr}</td>
+                    <td><button class="btn btn-sm btn-danger" style="padding: 2px 6px; font-size: 11px;" title="Hapus lagu ini" onclick="deleteSong('${p.id}', '${s.id || s.url}')">🗑️</button></td>
+                  </tr>`;
+              });
+              html += `</tbody></table>`;
+            }
+            html += `</div>`;
+          });
+        }
+        html += '</div>';
+
+        container.innerHTML = html;
+      } catch (e) {
+        document.getElementById('musicStatusBadge').textContent = 'Gagal memuat';
+      }
+    }
+
+    async function deleteSong(playlistId, songId) {
+      if (!confirm('Hapus lagu ini dari playlist?')) return;
+      try {
+        const res = await fetch('/api/playlists/song', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ playlistId, songId })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Gagal');
+        loadPlaylists();
+      } catch (e) {
+        alert('Gagal menghapus lagu: ' + e.message);
+      }
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    document.getElementById('playlistAddForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const status = document.getElementById('playlistAddStatus');
+      const name = document.getElementById('playlistName').value.trim();
+      const url = document.getElementById('playlistUrl').value.trim();
+      const aliasesRaw = document.getElementById('playlistAliases').value.trim();
+      const aliases = aliasesRaw ? aliasesRaw.split(',').map(s => s.trim()).filter(Boolean) : [];
+      if (!name || !url) return;
+      try {
+        const res = await fetch('/api/playlists', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, url, aliases })
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.error || 'Gagal');
+        status.textContent = 'Playlist ditambahkan!';
+        status.style.color = 'var(--success)';
+        document.getElementById('playlistName').value = '';
+        document.getElementById('playlistUrl').value = '';
+        document.getElementById('playlistAliases').value = '';
+        loadPlaylists();
+        setTimeout(() => { status.textContent = ''; }, 3000);
+      } catch (err) {
+        status.textContent = err.message;
+        status.style.color = 'var(--danger)';
+      }
+    });
+
+    async function deletePlaylist(id) {
+      if (!confirm('Hapus playlist ini?')) return;
+      try {
+        await fetch('/api/playlists', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        loadPlaylists();
+      } catch (e) {
+        alert('Gagal menghapus');
+      }
+    }
+
+    loadPlaylists();
+
+    // ===== SFX Audio Management =====
+    async function loadSfxState() {
+      try {
+        const res = await fetch('/api/sfx');
+        const data = await res.json();
+        const badge = document.getElementById('sfxStatusBadge');
+        const info = document.getElementById('sfxFileInfo');
+        const delBtn = document.getElementById('btnDeleteSfx');
+        const details = document.getElementById('sfxDetailsPanel');
+
+        if (data.loaded && data.sfx) {
+          badge.textContent = 'Dimuat';
+          badge.style.color = '#2ecc71';
+          info.textContent = `${data.sfx.originalName} (${data.sfx.formattedDuration || '00:00'})`;
+          info.style.color = 'var(--text)';
+          delBtn.style.display = 'inline-block';
+          details.style.display = 'block';
+          document.getElementById('sfxDetailName').textContent = data.sfx.originalName;
+          document.getElementById('sfxDetailSize').textContent = data.sfx.formattedSize || '-';
+          document.getElementById('sfxDetailDuration').textContent = data.sfx.formattedDuration || '-';
+          document.getElementById('sfxDetailLoadedAt').textContent = data.sfx.loadedAt ? new Date(data.sfx.loadedAt).toLocaleString('id-ID') : '-';
+        } else {
+          badge.textContent = 'Kosong';
+          badge.style.color = 'var(--muted)';
+          info.textContent = 'Belum ada audio lokal dimuat';
+          info.style.color = 'var(--muted)';
+          delBtn.style.display = 'none';
+          details.style.display = 'none';
+        }
+      } catch (e) {
+        console.error('Gagal memuat status SFX:', e);
+      }
+    }
+
+    const sfxFileInput = document.getElementById('sfxFileInput');
+    const btnLoadSfx = document.getElementById('btnLoadSfx');
+    const btnDeleteSfx = document.getElementById('btnDeleteSfx');
+    const sfxUploadStatus = document.getElementById('sfxUploadStatus');
+
+    if (btnLoadSfx && sfxFileInput) {
+      btnLoadSfx.addEventListener('click', () => {
+        sfxFileInput.click();
+      });
+
+      sfxFileInput.addEventListener('change', async () => {
+        const file = sfxFileInput.files[0];
+        if (!file) return;
+
+        sfxUploadStatus.textContent = `Mengupload ${file.name}...`;
+        sfxUploadStatus.style.color = 'var(--muted)';
+        btnLoadSfx.disabled = true;
+
+        try {
+          const res = await fetch('/api/sfx', {
+            method: 'POST',
+            headers: {
+              'Content-Type': file.type || 'application/octet-stream',
+              'X-File-Name': encodeURIComponent(file.name),
+            },
+            body: file,
+          });
+          const result = await res.json();
+          if (!res.ok || !result.success) {
+            throw new Error(result.error || 'Gagal mengupload file');
+          }
+
+          sfxUploadStatus.textContent = `Berhasil memuat ${result.sfx?.originalName || file.name}!`;
+          sfxUploadStatus.style.color = '#2ecc71';
+          loadSfxState();
+          setTimeout(() => { sfxUploadStatus.textContent = ''; }, 4000);
+        } catch (err) {
+          sfxUploadStatus.textContent = `Error: ${err.message}`;
+          sfxUploadStatus.style.color = '#e74c3c';
+        } finally {
+          btnLoadSfx.disabled = false;
+          sfxFileInput.value = '';
+        }
+      });
+    }
+
+    if (btnDeleteSfx) {
+      btnDeleteSfx.addEventListener('click', async () => {
+        if (!confirm('Hapus file SFX yang sedang dimuat?')) return;
+        try {
+          const res = await fetch('/api/sfx', { method: 'DELETE' });
+          const result = await res.json();
+          if (!res.ok || !result.success) throw new Error(result.error || 'Gagal menghapus');
+          sfxUploadStatus.textContent = 'SFX berhasil dihapus.';
+          sfxUploadStatus.style.color = '#2ecc71';
+          loadSfxState();
+          setTimeout(() => { sfxUploadStatus.textContent = ''; }, 3000);
+        } catch (e) {
+          alert('Gagal menghapus SFX: ' + e.message);
+        }
+      });
+    }
+
+    loadSfxState();
+  </script></body>
+</html>

@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Secrets & Environment variables
+.env
+.env.*
+!.env.example
+data/youtube_cookies.json
+
+# User conversation history & personal memory
+history.json
+memory.json
+
+# Runtime cache, lock files & temporary data
+*.tmp
+*.lock
+data/*.tmp
+data/.generator.lock
+data/lyrics_cache.json
+data/searches.json
+
+# Large dumps, scratch files & archives
+*-player-script.js
+*.rar
+*.zip
+*.7z
+*.tar.gz
+public/old.html
+hard_test_report.json
+check_info.js
+check_pick.js
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

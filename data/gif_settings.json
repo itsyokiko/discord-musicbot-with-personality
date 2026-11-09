@@ -1,0 +1,33 @@
+{
+  "enabled": true,
+  "apiKey": "",
+  "rating": "pg-13",
+  "contentFilter": "high",
+  "chance": 0.3,
+  "keywords": {
+    "marah": [
+      "angry"
+    ],
+    "senang": [
+      "yay"
+    ],
+    "ketawa": [
+      "lol"
+    ],
+    "bingung": [
+      "eww"
+    ],
+    "mikir": [
+      "okey"
+    ],
+    "malas": [
+      "sleep"
+    ],
+    "jijik": [
+      "eww"
+    ],
+    "creepy": [
+      "iww"
+    ]
+  }
+}

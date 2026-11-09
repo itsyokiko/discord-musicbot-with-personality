@@ -1,0 +1,18 @@
+{
+  "users": {
+    "693089730685829180": {
+      "ignoredCount": 1,
+      "lastTriggeredAt": 1794227857786,
+      "lastTriggeredDate": "2026-11-09",
+      "activeSession": false,
+      "lastChannelId": "CHILLIN di atas ৻( •̀ ᗜ •́ ৻)"
+    }
+  },
+  "lastIncident": {
+    "type": "forced_disconnect",
+    "guildId": "705088409420431451",
+    "kickerName": "seseorang",
+    "channelName": "CHILLIN di atas ৻( •̀ ᗜ •́ ৻)",
+    "timestamp": 1794228453682
+  }
+}

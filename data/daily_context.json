@@ -1,0 +1,122 @@
+{
+  "version": "1.0.0",
+  "date": "2026-10-22",
+  "timezone": "Asia/Jakarta",
+  "status": "ok",
+  "sleep_schedule": {
+    "sleep_time": "02:00",
+    "wake_time": "09:00"
+  },
+  "schedule": [
+    {
+      "start_time": "00:00",
+      "end_time": "01:30",
+      "activity": "Rebahan main game santai sambil scroll YouTube",
+      "availability": "relaxing",
+      "reply_tendency": "casual"
+    },
+    {
+      "start_time": "01:30",
+      "end_time": "02:00",
+      "activity": "Dengerin musik lo-fi sambil siapin tidur",
+      "availability": "relaxing",
+      "reply_tendency": "casual"
+    },
+    {
+      "start_time": "02:00",
+      "end_time": "09:00",
+      "activity": "Tidur lelap di kamar",
+      "availability": "sleeping",
+      "reply_tendency": "unlikely"
+    },
+    {
+      "start_time": "09:00",
+      "end_time": "09:45",
+      "activity": "Bangun, mandi pagi & sarapan",
+      "availability": "active",
+      "reply_tendency": "delayed"
+    },
+    {
+      "start_time": "09:45",
+      "end_time": "11:00",
+      "activity": "Bantu rumah: beresin kamar dan cuci piring",
+      "availability": "busy",
+      "reply_tendency": "delayed"
+    },
+    {
+      "start_time": "11:00",
+      "end_time": "12:30",
+      "activity": "Nonton anime sambil rebahan",
+      "availability": "relaxing",
+      "reply_tendency": "casual"
+    },
+    {
+      "start_time": "12:30",
+      "end_time": "13:30",
+      "activity": "Makan siang & daily commission Genshin Impact",
+      "availability": "active",
+      "reply_tendency": "casual"
+    },
+    {
+      "start_time": "13:30",
+      "end_time": "15:00",
+      "activity": "Nugas ringan sambil cek chat Discord",
+      "availability": "active",
+      "reply_tendency": "casual"
+    },
+    {
+      "start_time": "15:00",
+      "end_time": "17:00",
+      "activity": "Push rank Valorant bareng teman Discord",
+      "availability": "busy",
+      "reply_tendency": "delayed"
+    },
+    {
+      "start_time": "17:00",
+      "end_time": "18:00",
+      "activity": "Istirahat sore, jajan & nonton YouTube",
+      "availability": "relaxing",
+      "reply_tendency": "casual"
+    },
+    {
+      "start_time": "18:00",
+      "end_time": "19:30",
+      "activity": "Mandi, makan malam & bantu beresin rumah",
+      "availability": "away",
+      "reply_tendency": "delayed"
+    },
+    {
+      "start_time": "19:30",
+      "end_time": "21:00",
+      "activity": "Mabar Mobile Legends sambil nobar di Discord",
+      "availability": "busy",
+      "reply_tendency": "delayed"
+    },
+    {
+      "start_time": "21:00",
+      "end_time": "22:30",
+      "activity": "Santai di Discord, dengerin musik & ngobrol",
+      "availability": "active",
+      "reply_tendency": "responsive"
+    },
+    {
+      "start_time": "22:30",
+      "end_time": "23:59",
+      "activity": "Main game santai di kasur sebelum tidur",
+      "availability": "relaxing",
+      "reply_tendency": "casual"
+    }
+  ],
+  "plans": [
+    "Selesaikan daily commission Genshin Impact",
+    "Push rank Valorant bareng circle Discord",
+    "Bantu beresin rumah sebelum sore",
+    "Nobar anime bareng teman di Discord malam ini"
+  ],
+  "daily_events": [
+    "Teman Discord ngajak mabar Valorant jam 3 sore",
+    "Ada update event baru di Genshin Impact hari ini",
+    "Rencana nobar anime bareng circle malam jam 7"
+  ],
+  "updated_at": "2026-10-22T10:13:45.769Z"
+}
