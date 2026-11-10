@@ -23,7 +23,7 @@ const { startServer } = require('./src/server');
 const { startBot } = require('./src/bot');
 
 const config = storage.getConfig();
-const port = process.env.PORT || config.port || 3000;
+const port = process.env.PORT || config.port || 3001;
 startServer(port);
 
 const token = process.env.DISCORD_TOKEN;

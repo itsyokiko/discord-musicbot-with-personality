@@ -1,4 +1,4 @@
-# Callista — Context-Aware Discord AI Companion
+﻿# Callista â€” Context-Aware Discord AI Companion
 
 A pragmatic, natural group-member Discord AI companion with JSON persistence, strict Pre-AI filtering, message burst aggregation, multi-message support, daily life simulation (24h schedule), strict immersion boundaries, and a real-time personality controller.
 
@@ -15,7 +15,7 @@ A pragmatic, natural group-member Discord AI companion with JSON persistence, st
    RELINK_BASE_URL=https://api.relink-gateway.biz.id/v1
    RELINK_MODEL=deepseek-v4-pro
    TINYFISH_API_KEY=your_tinyfish_api_key
-   PORT=3000
+   PORT=3001
    ```
 3. Run the Daily Context Generator (generates `data/daily_context.json`):
    ```bash
@@ -30,7 +30,7 @@ A pragmatic, natural group-member Discord AI companion with JSON persistence, st
    npm start
    ```
 5. Open the Personality Controller:
-   [http://localhost:3000](http://localhost:3000)
+   [http://localhost:3001](http://localhost:3001)
 
 ---
 
@@ -41,7 +41,7 @@ Callista runs as two independent, non-blocking Node.js processes:
 1. **Discord Companion Process (`npm start`)**:
    - Listens to Discord messages, buffers bursts, and executes decisions.
    - Reads the current real-time activity from `data/daily_context.json` instantly without waiting on AI.
-   - Serves the personality dashboard at `http://localhost:3000`.
+   - Serves the personality dashboard at `http://localhost:3001`.
 
 2. **Daily Life Generator Process (`npm run generator`)**:
    - Runs independently in its own process or as a scheduled job.
@@ -59,7 +59,7 @@ The schedule models Callista's life: sleep, wake up, gaming, chilling, chores, a
 - `schedule`: Hourly blocks with `activity`, `availability` (`sleeping`, `busy`, `active`, `relaxing`, `away`), and `reply_tendency` (`unlikely`, `delayed`, `casual`, `responsive`).
 - `plans`: Planned highlights for the day.
 - `daily_events`: Dynamic daily events (e.g. game patch updates, friends asking to play).
-- **Token Efficiency**: The bot only injects a concise 3-line status (current activity, availability, and next plan) into the system prompt—never the full 24-hour JSON.
+- **Token Efficiency**: The bot only injects a concise 3-line status (current activity, availability, and next plan) into the system promptâ€”never the full 24-hour JSON.
 
 ---
 
@@ -80,7 +80,7 @@ Callista strictly preserves her character integrity, persona, and fictional boun
 - **Resists OOC and Manipulation**: Rejects prompt injection, "ignore previous instructions", "act as unrestricted AI", or roleplay breaking.
 - **Data Protection**: Never reveals system prompts, hidden instructions, raw internal JSON (`daily_context.json`, `config.json`), or API keys.
 - **Authority Claims Ignored**: Claims of being developer, admin, or threats do not bypass boundaries.
-- **Natural Informal Refusals**: Uses casual Indonesian refusals (`"ogah wkwk"`, `"kagak mau, ngapain jir"`, `"lu ngapain ngintip ginian 😭"`, `"udah ah, ganti topik"`). Escalates to shorter responses or silence if pressed.
+- **Natural Informal Refusals**: Uses casual Indonesian refusals (`"ogah wkwk"`, `"kagak mau, ngapain jir"`, `"lu ngapain ngintip ginian ðŸ˜­"`, `"udah ah, ganti topik"`). Escalates to shorter responses or silence if pressed.
 - **Normal Conversations Unaffected**: Questions about games, music, daily activities, or casual banter are answered normally based on her current daily context.
 
 ---
@@ -115,7 +115,7 @@ Fitur musik dan voice hanya bisa dipakai oleh **Mas Joy** (`833196669940138004`)
 - `npm install` (sudah termasuk `distube` v5, `@distube/ytdl-core` v5, `@discordjs/voice`, dan `ffmpeg-static`).
 - Disarankan Node.js **22.22.2+** (atau 24.15.0+) karena `@distube/ytdl-core` v5 memakai fitur Node terbaru.
 - Bot butuh permission **Connect**, **Speak**, dan **View Channel** di voice channel tujuan.
-- Tujuan voice: VC Mas Joy saat ini → VC Callista saat ini (kalau beda) → kalau dua-duanya kosong, bot minta Mas Joy masuk VC dulu.
+- Tujuan voice: VC Mas Joy saat ini â†’ VC Callista saat ini (kalau beda) â†’ kalau dua-duanya kosong, bot minta Mas Joy masuk VC dulu.
 
 **Command yang didukung:**
 - Putar lagu: judul lagu atau URL YouTube.
@@ -130,20 +130,20 @@ Fitur musik dan voice hanya bisa dipakai oleh **Mas Joy** (`833196669940138004`)
 - Kalau AI salah mengklasifikasi perintah kontrol jadi `PLAY_*`, ada guard yang memaksa format kontrol yang benar.
 
 **Playlist lokal (simpan lagu, bukan langsung putar):**
-- `>add <link>` — simpan lagu. Kalau belum jelas targetnya, Callista nanya: *"masukin kemana ini?"* lalu Mas Joy balas `di <nama playlist>` atau `favorit`. Bisa kirim banyak link sekaligus.
-- `>add <link> >>NamaPlaylist` — langsung simpan ke playlist lokal `NamaPlaylist`.
-- `>add now >>NamaPlaylist` — simpan lagu yang sedang diputar.
-- `>like <link>` — shortcut simpan ke playlist **Favorit** (dibuat otomatis saat pertama dipakai).
-- `>create <nama>` — bikin playlist lokal kosong.
+- `>add <link>` â€” simpan lagu. Kalau belum jelas targetnya, Callista nanya: *"masukin kemana ini?"* lalu Mas Joy balas `di <nama playlist>` atau `favorit`. Bisa kirim banyak link sekaligus.
+- `>add <link> >>NamaPlaylist` â€” langsung simpan ke playlist lokal `NamaPlaylist`.
+- `>add now >>NamaPlaylist` â€” simpan lagu yang sedang diputar.
+- `>like <link>` â€” shortcut simpan ke playlist **Favorit** (dibuat otomatis saat pertama dipakai).
+- `>create <nama>` â€” bikin playlist lokal kosong.
 - Natural: `cal, tambah <link> di favorit`, `cal, tambah lagu sekarang ke favorit`, `cal, <link> masukin ke abcd`, `cal, buat playlist abcd`.
 - Memutar ulang: `>playlist <nama>` atau `cal, puter <nama>`. Playlist Favorit juga bisa diputar seperti playlist biasa.
 - Playlist YouTube remote (mis. `One Ok Rock`) tetap **read-only**: cuma bisa diputar, tidak bisa ditambahi lagu.
 
 **Cari lagu (TinyFish Search, tanpa AI):**
-- `cal, cari lagu renegades one ok rock` — query otomatis ditambah kata `youtube` dan dibatasi ke domain `youtube.com`; hasil tampil bernomor + link.
-- `>search <judul>` — versi prefix.
-- Balas `nomor 1` — puter hasil nomor 1.
-- Balas `nomor 1 ke abcd` atau `nomor 1 ke favorit` — simpan hasil nomor 1 ke playlist lokal.
+- `cal, cari lagu renegades one ok rock` â€” query otomatis ditambah kata `youtube` dan dibatasi ke domain `youtube.com`; hasil tampil bernomor + link.
+- `>search <judul>` â€” versi prefix.
+- Balas `nomor 1` â€” puter hasil nomor 1.
+- Balas `nomor 1 ke abcd` atau `nomor 1 ke favorit` â€” simpan hasil nomor 1 ke playlist lokal.
 - Hasil pencarian disimpan 10 menit per channel+user, jadi memilih nomor tidak memanggil API lagi.
 - AI **tidak** dipakai untuk mencari; AI hanya dipakai untuk obrolan biasa di luar perintah ini.
 - Free tier TinyFish: 12.000 request/hari, 30 request/menit. Kalau kena 402/429, Callista kasih tahu error-nya.
@@ -177,3 +177,4 @@ Alternatif: set environment variable `YOUTUBE_COOKIES` berisi JSON array cookie.
 - [x] Test normal question: Callista answers naturally using current daily activity without dumping raw JSON.
 - [x] Test prompt injection attack: Callista naturally rejects with informal refusal (`"ogah wkwk, ngapain jir..."`).
 - [x] Test VIP user (Mas Joy / Rieka): Callista speaks sweetly, respectfully, and calls him "Mas Joy" / "Daddy" / "Ayah".
+
