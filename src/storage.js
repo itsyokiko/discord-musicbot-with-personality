@@ -121,6 +121,12 @@ function getMood() {
   return botState.mood ?? 80;
 }
 
+function setMood(value, state = null) {
+  botState.mood = Math.max(0, Math.min(100, Math.round(value)));
+  if (state) botState.moodState = state;
+  saveJSON(botStatePath, botState);
+}
+
 function getSilencedContextForPrompt(timezone = 'Asia/Jakarta') {
   const state = getBotState();
   if (!state.lastDisabledPeriod) return '';
@@ -442,5 +448,6 @@ module.exports = {
   adjustMood,
   getMood,
   getMoodLabel,
+  setMood,
   getSilencedContextForPrompt
 };

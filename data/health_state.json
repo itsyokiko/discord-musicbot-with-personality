@@ -1,0 +1,59 @@
+{
+  "version": "1.0.0",
+  "timezone": "Asia/Jakarta",
+  "last_updated": "2026-11-10",
+  "situational_delta": 0,
+  "sick_system": {
+    "active_illnesses": [
+      {
+        "id": "illness_pilek_2026-11-10",
+        "type": "pilek",
+        "name": "Pilek / Flu",
+        "started_at": "2026-11-09",
+        "ends_at": "2026-11-13",
+        "duration_days": 5,
+        "symptoms": "Hidung mampet sebelah/meler, suara bindeng, kepala agak berat",
+        "penalty": 18
+      }
+    ],
+    "history": [
+      {
+        "type": "alergi",
+        "name": "Alergi Debu",
+        "started_at": "2026-10-29",
+        "ends_at": "2026-10-31",
+        "duration_days": 2
+      },
+      {
+        "type": "sariawan",
+        "name": "Sariawan",
+        "started_at": "2026-10-19",
+        "ends_at": "2026-10-22",
+        "duration_days": 3
+      }
+    ],
+    "last_roll_date": "2026-11-10"
+  },
+  "menstrual_cycle": {
+    "cycle_length_days": 28,
+    "period_duration_days": 5,
+    "last_period_start": "2026-10-15",
+    "last_period_end": "2026-10-20",
+    "next_expected_start": "2026-11-11",
+    "variance_days": -1,
+    "history": [
+      {
+        "start_date": "2026-09-17",
+        "end_date": "2026-09-22",
+        "duration_days": 5,
+        "cycle_length": 28
+      },
+      {
+        "start_date": "2026-10-15",
+        "end_date": "2026-10-20",
+        "duration_days": 5,
+        "cycle_length": 28
+      }
+    ]
+  }
+}

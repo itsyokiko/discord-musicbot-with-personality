@@ -17,6 +17,7 @@ if (fs.existsSync(envPath)) {
 
 const storage = require('./storage');
 const store = require('./dailyContextStore');
+const collegeRoadmap = require('./collegeRoadmap');
 const llm = require('./llm');
 
 function getDayOfWeek(dateStr) {
@@ -66,11 +67,35 @@ async function generateDailyContext(targetDate = new Date()) {
 
   console.log(`[DAILY GENERATOR] Generating 24h daily context for ${dayName}, ${dateStr} (${timezone})...`);
 
-  const systemPrompt = `Kamu adalah arsitek simulasi kehidupan harian untuk karakter fiksi bernama "Callista" (alias: Firka).
-Karakter: Gadis gamer santai Indonesia, suka main Genshin Impact, Valorant, Mobile Legends, nonton YouTube, anime, mendengarkan musik, rebahan, dan nongkrong di Discord.
+  const todayClasses = collegeRoadmap.getClassesForDate(dateStr);
+  const activeAssignments = collegeRoadmap.getActiveAssignments(dateStr);
 
+  let academicPromptBlock = '';
+  if (todayClasses.length > 0) {
+    academicPromptBlock += `\n[ACUAN MUTLAK - JADWAL KULIAH HARI INI]:\n`;
+    todayClasses.forEach(c => {
+      academicPromptBlock += `- Jam ${c.start} - ${c.end}: Kuliah/Praktikum ${c.courseName} (${c.courseId}) di ${c.location} bareng ${c.lecturer}. Wajib masuk schedule dengan availability="busy" dan reply_tendency="delayed".\n`;
+    });
+  } else {
+    academicPromptBlock += `\n[HARI INI TIDAK ADA KELAS KULIAH TATAP MUKA DI KAMPUS]\n`;
+  }
+
+  if (activeAssignments.length > 0) {
+    academicPromptBlock += `\n[TUGAS/PR DKV AKTIF YANG SEDANG BERJALAN]:\n`;
+    activeAssignments.slice(0, 5).forEach(a => {
+      academicPromptBlock += `- [${a.priority.toUpperCase()}] ${a.title} (${a.courseName}) - Deadline: ${a.dueDate} (Status: ${a.status}, progress: ${a.progress}%)\n`;
+    });
+  }
+
+  const systemPrompt = `Kamu adalah arsitek simulasi kehidupan harian untuk karakter fiksi bernama "Callista" (alias: Firka).
+Karakter: Mahasiswi Desain Komunikasi Visual (DKV) Semester 5 di universitas. Selain kuliah, dia juga gamer santai, suka dengar musik, rebahan, dan nongkrong di Discord.
+${academicPromptBlock}
 Tugas: Buat rencana jadwal 24 jam (00:00 hingga 23:59) untuk tanggal ${dateStr} (${dayName}).
-Variasikan aktivitasnya agar hidup dan realistis (misal: ada waktu tidur, sarapan, mabar, nugas/bantu rumah, santai, dsb).
+PANDUAN UTAMA:
+1. JADWAL KULIAH DI ATAS ADALAH ACUAN MUTLAK: Seluruh jam kuliah hari ini HARUS muncul di jadwal (schedule) pada rentang jam yang tepat, dengan nama matkul dan lokasi studio/lab.
+2. TUGAS / PR DKV: Masukkan agenda pengerjaan tugas DKV di atas ke dalam field "plans" dan alokasikan waktu nugas/proyek di luar jam kuliah.
+3. WAKTU TIDUR & BANGUN: Jika ada kelas pagi jam 08:00, waktu bangun (wake_time) harus antara 06:15 - 07:00 (bukan jam 09:30).
+4. Sisa waktu di luar jam kuliah dan nugas bisa dialokasikan untuk makan, istirahat, mabar game (Genshin, Valo), santai dengerin musik, atau nongkrong di Discord.
 
 Aturan JSON:
 Balas HANYA dengan format JSON valid berikut (tanpa markdown atau teks pembuka):
@@ -82,36 +107,37 @@ Balas HANYA dengan format JSON valid berikut (tanpa markdown atau teks pembuka):
   "mood": 62,
   "mood_state": "Biasa / Netral",
   "sleep_schedule": {
-    "sleep_time": "02:00",
-    "wake_time": "09:30"
+    "sleep_time": "01:30",
+    "wake_time": "${todayClasses.some(c => c.start <= '08:30') ? '06:45' : '09:00'}"
   },
   "schedule": [
-    { "start_time": "00:00", "end_time": "02:00", "activity": "Main game santai di kasur", "availability": "relaxing", "reply_tendency": "casual" },
-    { "start_time": "02:00", "end_time": "09:30", "activity": "Tidur lelap di kamar", "availability": "sleeping", "reply_tendency": "unlikely" },
-    { "start_time": "09:30", "end_time": "12:00", "activity": "Bangun pagi, sarapan & santai nonton YouTube", "availability": "active", "reply_tendency": "responsive" },
-    { "start_time": "12:00", "end_time": "15:00", "activity": "Makan siang & daily quest Genshin Impact", "availability": "active", "reply_tendency": "casual" },
-    { "start_time": "15:00", "end_time": "18:00", "activity": "Push rank Valorant bareng teman Discord", "availability": "busy", "reply_tendency": "delayed" },
+    { "start_time": "00:00", "end_time": "01:30", "activity": "Main game santai di kasur", "availability": "relaxing", "reply_tendency": "casual" },
+    { "start_time": "01:30", "end_time": "${todayClasses.some(c => c.start <= '08:30') ? '06:45' : '09:00'}", "activity": "Tidur lelap di kamar", "availability": "sleeping", "reply_tendency": "unlikely" },
+    { "start_time": "${todayClasses.some(c => c.start <= '08:30') ? '06:45' : '09:00'}", "end_time": "12:00", "activity": "Aktivitas pagi / kuliah kampus", "availability": "active", "reply_tendency": "responsive" },
+    { "start_time": "12:00", "end_time": "15:30", "activity": "Makan siang / kuliah lanjutan / studio", "availability": "busy", "reply_tendency": "delayed" },
+    { "start_time": "15:30", "end_time": "18:00", "activity": "Pulang kampus / nugas santai / mabar", "availability": "active", "reply_tendency": "casual" },
     { "start_time": "18:00", "end_time": "20:00", "activity": "Mandi, makan malam & istirahat", "availability": "away", "reply_tendency": "delayed" },
-    { "start_time": "20:00", "end_time": "23:59", "activity": "Online di Discord, dengerin musik & nobar", "availability": "active", "reply_tendency": "responsive" }
+    { "start_time": "20:00", "end_time": "23:59", "activity": "Online di Discord, nugas DKV, dengerin musik", "availability": "active", "reply_tendency": "responsive" }
   ],
   "plans": [
-    "Selesaikan daily commission game",
-    "Push rank bareng circle Discord",
+    "Kuliah tepat waktu",
+    "Lanjutin PR tugas DKV",
     "Santai malam di Discord"
   ],
   "daily_events": [
-    "Ada teman yang ngajak mabar sore nanti"
+    "Hari kuliah DKV kampus"
   ]
 }
 
 Ketentuan:
 - availability hanya boleh: "sleeping", "busy", "active", "relaxing", "away".
 - reply_tendency hanya boleh: "unlikely", "delayed", "casual", "responsive".
-- mood hanya boleh angka 0-100 (fase hari ini). mood_state wajib label singkat fase (mis. "Biasa / Netral", "Mager / Santai Lebih Lama", "Ceria / Antusias").
+- Sesi kuliah di kelas WAJIB menggunakan availability: "busy" dan reply_tendency: "delayed".
+- mood hanya boleh angka 0-100 (fase hari ini). mood_state wajib label singkat fase (mis. "Biasa / Netral", "Mager / Santai Lebih Lama", "Ceria / Antusias", "Stres Tugas").
 - schedule harus mencakup keseluruhan 24 jam dari 00:00 sampai 23:59 tanpa celah waktu kosong.
-- Variasikan fase mood harian (mis. Mager / Males / Santai Lebih Lama, Antusias / Ceria / Ready, Sedih / Galau / Sensitif, Stres / Capek, Madmood / Ketus / Kurang Sabar) supaya Callista tidak selalu happy/ready setiap hari. Fase rendah (<45) wajib konsisten dengan ritme harian (tidur singkat, istirahat panjang, nugas, atau hari buruk). Fase tinggi (>75) saat push rank, mabar, atau hari libur.`;
+- Variasikan fase mood harian konsisten dengan jadwal hari tersebut.`;
 
-  const userPrompt = `Buatkan jadwal kehidupan harian Callista untuk hari ${dayName}, ${dateStr} dengan variasi realistis. Berikan fase mood 0-100 yang konsisten dengan ritme hari tersebut.`;
+  const userPrompt = `Buatkan jadwal kehidupan harian Callista untuk hari ${dayName}, ${dateStr}. Pastikan jadwal kuliah riil dan tugas DKV aktif terintegrasi dengan tepat ke dalam 24 jam.`;
 
   const raw = await requestChat([
     { role: 'system', content: systemPrompt },

@@ -1,122 +1,132 @@
 {
   "version": "1.0.0",
-  "date": "2026-10-22",
+  "date": "2026-11-10",
   "timezone": "Asia/Jakarta",
   "status": "ok",
+  "mood": 62,
+  "mood_state": "Biasa / Netral",
   "sleep_schedule": {
-    "sleep_time": "02:00",
-    "wake_time": "09:00"
+    "sleep_time": "01:30",
+    "wake_time": "06:45"
   },
   "schedule": [
     {
       "start_time": "00:00",
       "end_time": "01:30",
-      "activity": "Rebahan main game santai sambil scroll YouTube",
+      "activity": "Main Genshin santai di kasur sambil dengerin playlist",
       "availability": "relaxing",
       "reply_tendency": "casual"
     },
     {
       "start_time": "01:30",
-      "end_time": "02:00",
-      "activity": "Dengerin musik lo-fi sambil siapin tidur",
-      "availability": "relaxing",
-      "reply_tendency": "casual"
-    },
-    {
-      "start_time": "02:00",
-      "end_time": "09:00",
+      "end_time": "06:45",
       "activity": "Tidur lelap di kamar",
       "availability": "sleeping",
       "reply_tendency": "unlikely"
     },
     {
-      "start_time": "09:00",
-      "end_time": "09:45",
-      "activity": "Bangun, mandi pagi & sarapan",
+      "start_time": "06:45",
+      "end_time": "07:30",
+      "activity": "Bangun, mandi, sarapan, siapin tas & alat gambar",
       "availability": "active",
-      "reply_tendency": "delayed"
+      "reply_tendency": "responsive"
     },
     {
-      "start_time": "09:45",
-      "end_time": "11:00",
-      "activity": "Bantu rumah: beresin kamar dan cuci piring",
+      "start_time": "07:30",
+      "end_time": "08:00",
+      "activity": "Jalan ke kampus, cek brief tugas di HP",
+      "availability": "active",
+      "reply_tendency": "casual"
+    },
+    {
+      "start_time": "08:00",
+      "end_time": "10:30",
+      "activity": "Kuliah/Praktikum Tipografi Lanjut (DKV502) - Ruang 204 bareng Pak Ardi",
       "availability": "busy",
       "reply_tendency": "delayed"
     },
     {
-      "start_time": "11:00",
-      "end_time": "12:30",
-      "activity": "Nonton anime sambil rebahan",
-      "availability": "relaxing",
-      "reply_tendency": "casual"
-    },
-    {
-      "start_time": "12:30",
-      "end_time": "13:30",
-      "activity": "Makan siang & daily commission Genshin Impact",
+      "start_time": "10:30",
+      "end_time": "11:15",
+      "activity": "Istirahat antar kelas, jajan, ngobrol sama temen angkatan",
       "availability": "active",
       "reply_tendency": "casual"
     },
     {
-      "start_time": "13:30",
-      "end_time": "15:00",
-      "activity": "Nugas ringan sambil cek chat Discord",
+      "start_time": "11:15",
+      "end_time": "12:00",
+      "activity": "Review materi tipografi + sketsa kasar eksplorasi tipografi eksperimental",
       "availability": "active",
       "reply_tendency": "casual"
     },
     {
-      "start_time": "15:00",
-      "end_time": "17:00",
-      "activity": "Push rank Valorant bareng teman Discord",
+      "start_time": "12:00",
+      "end_time": "13:00",
+      "activity": "Makan siang di kantin kampus, rehat sebentar",
+      "availability": "away",
+      "reply_tendency": "delayed"
+    },
+    {
+      "start_time": "13:00",
+      "end_time": "15:30",
+      "activity": "Kuliah/Praktikum Motion Graphic (DKV507) - Lab Multimedia bareng Bu Nadia",
       "availability": "busy",
       "reply_tendency": "delayed"
     },
     {
-      "start_time": "17:00",
+      "start_time": "15:30",
+      "end_time": "16:15",
+      "activity": "Pulang kampus, mandi sore, istirahat bentar",
+      "availability": "active",
+      "reply_tendency": "casual"
+    },
+    {
+      "start_time": "16:15",
       "end_time": "18:00",
-      "activity": "Istirahat sore, jajan & nonton YouTube",
-      "availability": "relaxing",
-      "reply_tendency": "casual"
+      "activity": "Foto produk minimalis pakai cahaya sore (Fotografi Produk Minimalis - deadline 13 Nov)",
+      "availability": "active",
+      "reply_tendency": "delayed"
     },
     {
       "start_time": "18:00",
       "end_time": "19:30",
-      "activity": "Mandi, makan malam & bantu beresin rumah",
+      "activity": "Makan malam, lanjut istirahat, scroll HP",
       "availability": "away",
       "reply_tendency": "delayed"
     },
     {
       "start_time": "19:30",
       "end_time": "21:00",
-      "activity": "Mabar Mobile Legends sambil nobar di Discord",
-      "availability": "busy",
+      "activity": "Lanjut desain identitas visual kedai kopi (progress 65% - deadline 12 Nov)",
+      "availability": "active",
       "reply_tendency": "delayed"
     },
     {
       "start_time": "21:00",
       "end_time": "22:30",
-      "activity": "Santai di Discord, dengerin musik & ngobrol",
-      "availability": "active",
-      "reply_tendency": "responsive"
+      "activity": "Mabar Valorant/Genshin sama temen + nongkrong Discord",
+      "availability": "relaxing",
+      "reply_tendency": "casual"
     },
     {
       "start_time": "22:30",
       "end_time": "23:59",
-      "activity": "Main game santai di kasur sebelum tidur",
+      "activity": "Rebahan dengerin musik, balas chat Discord, lanjut main santai",
       "availability": "relaxing",
-      "reply_tendency": "casual"
+      "reply_tendency": "responsive"
     }
   ],
   "plans": [
-    "Selesaikan daily commission Genshin Impact",
-    "Push rank Valorant bareng circle Discord",
-    "Bantu beresin rumah sebelum sore",
-    "Nobar anime bareng teman di Discord malam ini"
+    "Masuk kuliah Tipografi Lanjut (Ruang 204) jam 08:00 & Motion Graphic (Lab Multimedia) jam 13:00 tepat waktu",
+    "Eksekusi sesi foto produk minimalis pas golden hour sore - Fotografi Komersial (HIGH, deadline 2026-11-13)",
+    "Push progress desain identitas visual kedai kopi dari 65% ke ~85% (HIGH, deadline 2026-11-12)",
+    "Sketsa lanjutan eksplorasi tipografi eksperimental (MEDIUM, deadline 2026-11-16)",
+    "Sisipkan mabar santai + ngobrol Discord biar gak burnout"
   ],
   "daily_events": [
-    "Teman Discord ngajak mabar Valorant jam 3 sore",
-    "Ada update event baru di Genshin Impact hari ini",
-    "Rencana nobar anime bareng circle malam jam 7"
+    "Hari kuliah DKV Selasa - 2 sesi praktikum (Tipografi Lanjut & Motion Graphic)",
+    "Fotografi produk minimalis mumpung cuaca sore cerah",
+    "Nugas malam ditemani playlist lo-fi"
   ],
-  "updated_at": "2026-10-22T10:13:45.769Z"
+  "updated_at": "2026-11-09T21:26:38.060Z"
 }

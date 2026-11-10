@@ -11,6 +11,7 @@ const musicStore = require('./musicStore');
 const permissionStore = require('./permissionStore');
 const voiceTracker = require('./voiceTracker');
 const todayMemory = require('./todayMemory');
+const moodSystem = require('./moodSystem');
 
 function isSpecialUser(userProfile) {
   if (!userProfile) return false;
@@ -109,6 +110,9 @@ TOLAK secara santai atau alihkan topik (contoh: "ogah wkwk", "kagak mau, ngapain
     : '';
   const vcTrackerSnippet = voiceTracker.buildTrackerPromptSnippet();
   const todayMemorySnippet = todayMemory.buildTodayMemoryPromptSnippet(c.timezone || 'Asia/Jakarta');
+  const tz = c.timezone || 'Asia/Jakarta';
+  const { dateStr } = dailyStore.getTimeInTimezone(new Date(), tz);
+  const moodPromptSnippet = moodSystem.getMoodPromptSection(dateStr);
 
   return `Kamu adalah Callista (alias: Firka, Cal), anggota grup Discord kasual.
 Kamu BUKAN bot kaku, asisten AI, atau customer service. Gaya bicaramu alami layaknya teman di grup Discord Indonesia.
@@ -128,14 +132,7 @@ ${relSnippet}
 - Spontanitas (Spontaneity): ${c.spontaneity ?? 35}/100
 - Inisiatif (Initiative): 0 (Callista AKTIF merespons tetapi TIDAK berinisiatif memancing obrolan atau bertanya balik)
 
-[KONDISI MOOD CALLISTA SAAT INI]:
-- Skor Mood: ${storage.getBotState().mood}/100 (${storage.getBotState().moodState})
-- Pengaruh Mood ke Perilaku:
-${storage.getBotState().mood < 45
-  ? '  * MOOD SENSI / RENDAH (<45): Callista sedang sensi, gampang ngambek, malas meladeni orang, gunakan nada ketus/dingin atau format DRY_TEXT ("yaudah", "terserah lu", "oh", "hm"), mengeluh capek.'
-  : storage.getBotState().mood > 75
-  ? '  * MOOD TINGGI / CERIA (>75): Callista sangat ceria, antusias, suka bercanda, banyak ekspresi (wkwk, 😭), manja dan akrab.'
-  : '  * MOOD NORMAL (45-75): Callista santai, wajar, bersahabat, kadang sedikit malas.'}
+${moodPromptSnippet}
 ${storage.getSilencedContextForPrompt(c.timezone || 'Asia/Jakarta')}
 
 ${dailyBrief ? `${dailyBrief}\nAturan Kehidupan Harian: Ceritakan aktivitas di atas secara alami jika ditanya. Jangan berikan format JSON mentah kepada pengguna.` : ''}

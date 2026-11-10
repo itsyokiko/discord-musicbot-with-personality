@@ -243,6 +243,113 @@ async function runTests() {
   assert.strictEqual(dailyStore.acquireLock(), true); // re-acquireable
   dailyStore.releaseLock();
 
+  console.log('--- Testing College Roadmap & Class Session Manager ---');
+  const collegeRoadmap = require('../src/collegeRoadmap');
+  const classSessionManager = require('../src/classSessionManager');
+
+  // 1. College Roadmap loading & template count
+  const roadmap = collegeRoadmap.loadRoadmap();
+  assert.ok(roadmap, 'Roadmap data harus berhasil dimuat');
+  assert.strictEqual(roadmap.profile.major, 'Desain Komunikasi Visual');
+  assert.strictEqual(roadmap.profile.semester, 5);
+  assert.strictEqual(collegeRoadmap.CLASS_BUSY_TEMPLATES.length, 30, 'Harus ada 30 template saat kelas');
+
+  // 2. Class schedule for Tuesday (2026-11-10)
+  const tuesdayClasses = collegeRoadmap.getClassesForDate('2026-11-10');
+  assert.strictEqual(tuesdayClasses.length, 2, 'Selasa harus memiliki 2 sesi kuliah');
+  assert.strictEqual(tuesdayClasses[0].courseId, 'DKV502');
+  assert.strictEqual(tuesdayClasses[0].start, '08:00');
+  assert.strictEqual(tuesdayClasses[0].end, '10:30');
+  assert.strictEqual(tuesdayClasses[1].courseId, 'DKV507');
+
+  // 3. Active assignments tracking & ordering
+  const activeAssignments = collegeRoadmap.getActiveAssignments('2026-11-10');
+  assert.ok(activeAssignments.length >= 3, 'Harus ada tugas aktif');
+  assert.ok(activeAssignments[0].dueDate <= activeAssignments[1].dueDate, 'Tugas harus urut deadline terdekat');
+  // Pastikan tugas completed tidak masuk
+  assert.ok(activeAssignments.every(a => a.status !== 'completed'));
+
+  // 4. In-class session detection
+  // Jam 09:00 WIB (02:00 UTC) pada 2026-11-10 -> berada di dalam kelas DKV502 (08:00-10:30)
+  const inClassDate = new Date('2026-11-10T02:00:00.000Z');
+  const classStatus = collegeRoadmap.getCurrentClassSession(inClassDate, 'Asia/Jakarta');
+  assert.strictEqual(classStatus.inClass, true, 'Harus terdeteksi sedang di dalam kelas');
+  assert.strictEqual(classStatus.session.courseId, 'DKV502');
+  assert.strictEqual(classStatus.session.location, 'Ruang 204');
+  assert.strictEqual(classStatus.session.remainingMinutes, 90);
+
+  // Jam 11:30 WIB (04:30 UTC) pada 2026-11-10 -> istirahat / di luar jam kelas
+  const outClassDate = new Date('2026-11-10T04:30:00.000Z');
+  const outStatus = collegeRoadmap.getCurrentClassSession(outClassDate, 'Asia/Jakarta');
+  assert.strictEqual(outStatus.inClass, false, 'Di luar jam kelas harus inClass=false');
+
+  // 5. Class Session Manager: Notifikasi 1x per user & Enqueue maks 10 pesan
+  const testSessionKey = 'test_session_2026-11-10_DKV502';
+  const testClassInfo = {
+    dateStr: '2026-11-10',
+    courseName: 'Tipografi Lanjut',
+    location: 'Ruang 204',
+    start: '08:00',
+    end: '10:30',
+  };
+
+  assert.strictEqual(classSessionManager.hasBeenNotified(testSessionKey, 'user-joy'), false);
+  classSessionManager.markNotified(testSessionKey, 'user-joy');
+  assert.strictEqual(classSessionManager.hasBeenNotified(testSessionKey, 'user-joy'), true);
+
+  // Enqueue 12 pesan -> harus dibatasi tepat 10 pesan terakhir
+  for (let i = 1; i <= 12; i++) {
+    classSessionManager.enqueueMessage(testSessionKey, testClassInfo, {
+      channelId: 'test-chan-99',
+      userId: `user-${i}`,
+      username: `User${i}`,
+      content: `Pesan nomor ${i}`,
+      timestamp: Date.now() + i * 1000,
+    });
+  }
+
+  const sessionObj = classSessionManager.__test.pendingData.sessions[testSessionKey];
+  assert.ok(sessionObj, 'Sesi harus tersimpan di manager');
+  assert.strictEqual(sessionObj.messages.length, 10, 'Antrian pending harus dibatasi maksimal 10 pesan');
+  assert.strictEqual(sessionObj.messages[0].content, 'Pesan nomor 3', 'Pesan pertama harus bergeser (FIFO)');
+  assert.strictEqual(sessionObj.messages[9].content, 'Pesan nomor 12', 'Pesan terakhir nomor 12');
+
+  // 6. Expired session detection saat jam kelas usai
+  // Waktu simulasi jam 10:35 WIB (03:35 UTC) -> kelas selesai jam 10:30
+  const afterClassDate = new Date('2026-11-10T03:35:00.000Z');
+  const expiredList = classSessionManager.getExpiredSessions(afterClassDate, 'Asia/Jakarta');
+  assert.ok(expiredList.some(e => e.sessionKey === testSessionKey), 'Sesi kelas harus terdeteksi expired setelah jam 10:30');
+
+  // Bersihkan data tes
+  classSessionManager.removeSession(testSessionKey);
+  assert.strictEqual(classSessionManager.hasBeenNotified(testSessionKey, 'user-joy'), false);
+
+  // 7. Verifikasi Fallback Daily Context mengintegrasikan jadwal kuliah riil
+  const fallbackWithClasses = dailyStore.getFallbackDailyContext(inClassDate, 'Asia/Jakarta');
+  assert.ok(fallbackWithClasses.schedule.some(s => s.activity.includes('Tipografi Lanjut')), 'Fallback harus mengandung matkul Tipografi Lanjut');
+  assert.ok(fallbackWithClasses.plans.some(p => p.includes('Tipografi Lanjut')), 'Plans fallback harus memuat jadwal kuliah');
+
+  // 8. Academic Status: on_break, preparing_next_semester, no classes during break
+  const breakStatus = collegeRoadmap.getAcademicStatus('2027-02-05', roadmap);
+  assert.strictEqual(breakStatus.status, 'on_break', 'Harus terdeteksi masa libur semester');
+  const breakClasses = collegeRoadmap.getClassesForDate('2027-02-05', roadmap);
+  assert.deepStrictEqual(breakClasses, [], 'Saat libur semester tidak boleh ada perkuliahan');
+
+  const krsStatus = collegeRoadmap.getAcademicStatus('2027-02-18', roadmap);
+  assert.strictEqual(krsStatus.status, 'preparing_next_semester', 'Harus terdeteksi periode persiapan/KRS');
+
+  // 9. Generate Next Semester Roadmap
+  try {
+    const nextSemResult = collegeRoadmap.generateNextSemesterRoadmap();
+    assert.strictEqual(nextSemResult.profile.semester, 6, 'Semester harus naik ke semester 6');
+    assert.strictEqual(nextSemResult.courses.length, 6, 'Harus ada 6 matkul baru DKV semester 6');
+    assert.ok(nextSemResult.academic_history.completed_assignments.length > 0, 'Tugas semester lama harus diarsipkan');
+  } finally {
+    // Revert back so test doesn't mutate persistent state permanently
+    collegeRoadmap.saveRoadmap(roadmap);
+  }
+  assert.strictEqual(collegeRoadmap.loadRoadmap().profile.semester, 5, 'Roadmap harus kembali ke semester 5');
+
   console.log('--- Testing AI System Prompt with Token Efficiency & Profiles ---');
   // A. Mas Joy: should contain clingy instructions, but NOT contain Sonasona or Fusyu hostile rules
   const vipUser = storage.getUserMemory('833196669940138004', 'Rieka');
@@ -860,6 +967,9 @@ async function runTests() {
   }
 
   try {
+    const permissionStore = require('../src/permissionStore');
+    permissionStore.grant('693089730685829180', 'Fusyu >_<', 'Mas Joy');
+
     // 1. Mock channel members
     const mockChannel = {
       name: 'General Voice',
@@ -1206,6 +1316,11 @@ async function runTests() {
     assert.ok(lyricsWithArtist, 'Harus menemukan lirik dengan artist');
     assert.strictEqual(lyricsWithArtist.hasSynced, true, 'Harus memiliki synced lyrics');
   } finally {
+    try {
+      const permissionStore = require('../src/permissionStore');
+      permissionStore.revoke('693089730685829180');
+    } catch (_) {}
+
     // Restore original file
     if (originalVcTracker !== null) {
       fs.writeFileSync(vcTrackerFile, originalVcTracker, 'utf8');
@@ -1215,8 +1330,7 @@ async function runTests() {
   }
 
   // Cleanup test fixtures
-  const mem = storage.getMemory();
-  delete mem.users['user-100'];
+  const mem = storage.getMemory();  delete mem.users['user-100'];
   delete mem.users['unknown-id-1'];
   delete mem.users['other-sona-id'];
   delete mem.users['fusyu-id-123'];
@@ -1225,6 +1339,49 @@ async function runTests() {
   delete mem.users['normal-user-1'];
   delete mem.users['gen-user-99'];
   require('node:fs').writeFileSync(require('node:path').resolve(__dirname, '../memory.json'), JSON.stringify(mem, null, 2));
+
+  // --- Testing Mood System ---
+  console.log('--- Testing Mood System ---');
+  const moodSystem = require('../src/moodSystem');
+
+  // Shared mock health state (no persist)
+  const healthMock = {
+    sick_system: { active_illnesses: [], history: [], last_roll_date: '2026-01-01' },
+    menstrual_cycle: { next_expected_start: '2026-12-31', period_duration_days: 5, cycle_length_days: 28 },
+    situational_delta: 0
+  };
+
+  // Academic pressure: break period should have no/low penalty
+  const breakPressure = moodSystem.getAcademicPressure('2027-02-05');
+  assert.ok(typeof breakPressure.penalty === 'number', 'Break period academic penalty harus number');
+  assert.ok(breakPressure.penalty <= 10, 'Break period tidak boleh ada penalti akademik besar');
+
+  // Sick system — isolation (persist=false)
+  const sickResult = moodSystem.evaluateSickSystem('2026-11-10', JSON.parse(JSON.stringify(healthMock)), false);
+  assert.ok(typeof sickResult.penalty === 'number', 'Sick penalty harus angka');
+  assert.ok(Array.isArray(sickResult.activeIllnesses), 'activeIllnesses harus array');
+
+  // Menstrual cycle — haid_heavy on start date
+  const healthHaid = JSON.parse(JSON.stringify(healthMock));
+  healthHaid.menstrual_cycle.next_expected_start = '2026-11-10';
+  const mensHaid = moodSystem.evaluateMenstrualCycle('2026-11-10', healthHaid, false);
+  assert.strictEqual(mensHaid.phase, 'haid_heavy', 'Haid hari 1 harus haid_heavy');
+  assert.ok(mensHaid.penalty >= 25, 'Haid hari 1 penalti harus >= 25');
+
+  // Menstrual cycle — PMS 2 days before
+  const healthPMS = JSON.parse(JSON.stringify(healthMock));
+  healthPMS.menstrual_cycle.next_expected_start = '2026-11-12';
+  const mensPMS = moodSystem.evaluateMenstrualCycle('2026-11-10', healthPMS, false);
+  assert.strictEqual(mensPMS.phase, 'pms', 'Harus terdeteksi fase PMS');
+
+  // Full mood calculation (no persist, no sync)
+  const moodResult = moodSystem.calculateMood('2026-11-10', { persist: false, syncBotState: false, healthData: healthMock });
+  assert.ok(moodResult.mood >= 0 && moodResult.mood <= 100, 'Mood harus 0-100');
+  assert.ok(typeof moodResult.moodState === 'string', 'moodState harus string');
+  assert.ok(typeof moodResult.isLowMood === 'boolean', 'isLowMood harus boolean');
+  assert.ok(typeof moodResult.isCriticalDrop === 'boolean', 'isCriticalDrop harus boolean');
+  assert.ok(typeof moodResult.factors === 'object', 'factors harus object');
+  console.log('Mood System tests passed!');
 
   console.log('All tests passed successfully!');
 }

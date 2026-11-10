@@ -138,6 +138,92 @@ function startServer(port) {
       return;
     }
 
+    if (req.method === 'GET' && url.pathname === '/api/health/state') {
+      const moodSystem = require('./moodSystem');
+      const dailyStore = require('./dailyContextStore');
+      const cfg = storage.getConfig();
+      const tz = cfg.timezone || 'Asia/Jakarta';
+      const { dateStr } = dailyStore.getTimeInTimezone(new Date(), tz);
+      const result = moodSystem.calculateMood(dateStr, { syncBotState: false });
+      const healthData = moodSystem.loadHealthState(dateStr);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ...result, healthData }));
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/academic/roadmap') {
+      const collegeRoadmap = require('./collegeRoadmap');
+      const dailyStore = require('./dailyContextStore');
+      const cfg = storage.getConfig();
+      const tz = cfg.timezone || 'Asia/Jakarta';
+      const { dateStr } = dailyStore.getTimeInTimezone(new Date(), tz);
+
+      const roadmap = collegeRoadmap.loadRoadmap();
+      const status = collegeRoadmap.getAcademicStatus(dateStr, roadmap);
+      const classesToday = collegeRoadmap.getClassesForDate(dateStr, roadmap);
+      const activeAssignments = collegeRoadmap.getActiveAssignments(dateStr, roadmap);
+      const currentSession = collegeRoadmap.getCurrentClassSession(new Date(), tz);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        date: dateStr,
+        roadmap,
+        academicStatus: status,
+        currentSession,
+        classesToday,
+        activeAssignments,
+      }));
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/academic/next-semester') {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const collegeRoadmap = require('./collegeRoadmap');
+          const options = JSON.parse(body || '{}');
+          const updated = collegeRoadmap.generateNextSemesterRoadmap(options);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, roadmap: updated }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message || 'Gagal generate semester' }));
+        }
+      });
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/academic/set-break') {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const collegeRoadmap = require('./collegeRoadmap');
+          const roadmap = collegeRoadmap.loadRoadmap();
+          if (!roadmap) throw new Error('Roadmap tidak ditemukan');
+
+          const { startDate, endDate, description } = JSON.parse(body || '{}');
+          if (!roadmap.semester_transition) roadmap.semester_transition = {};
+          roadmap.semester_transition.break_period = {
+            start_date: startDate || null,
+            end_date: endDate || null,
+            status: startDate ? 'scheduled' : 'not_scheduled',
+            description: description || 'Libur jeda antar-semester',
+          };
+          roadmap.last_updated = new Date().toISOString();
+          collegeRoadmap.saveRoadmap(roadmap);
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, breakPeriod: roadmap.semester_transition.break_period }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message || 'Gagal mengatur libur' }));
+        }
+      });
+      return;
+    }
+
     if (req.method === 'GET' && url.pathname === '/api/relationships') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(storage.getConfig().relationships || {}));

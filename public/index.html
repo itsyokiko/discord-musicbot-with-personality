@@ -275,7 +275,7 @@ body{max-width:none;margin:0;padding:0;background:#f5f5fb;line-height:1.55}
 @media(max-width:560px){.content-area{padding-left:12px;padding-right:12px}.topbar{padding-left:12px;padding-right:12px}.card{padding:16px;border-radius:12px}#configForm .actions{bottom:8px}#configForm .actions .btn{width:100%}#configForm .actions{align-items:stretch}}
 </style>
 </head>
-<body><div class="app-shell"><aside class="sidebar" id="sidebar"><div class="brand"><div class="brand-mark">C</div><div class="brand-copy"><strong>CALLISTA</strong><span>AI Companion Control</span></div></div><nav aria-label="Navigasi pengaturan" class="side-nav"><div class="nav-caption">MONITORING</div><button class="nav-item active" data-page="page-overview" type="button"><span class="nav-icon">⌂</span><span>Ringkasan</span></button><div class="nav-caption">PERSONA</div><button class="nav-item" data-page="page-background" type="button"><span class="nav-icon">✦</span><span>Persona &amp; Latar</span></button><div class="nav-caption">KEPRIBADIAN</div><button class="nav-item" data-page="page-social" type="button"><span class="nav-icon">◉</span><span>Dinamika Sosial</span></button><button class="nav-item" data-page="page-tone" type="button"><span class="nav-icon">☷</span><span>Nada &amp; Karakter</span></button><button class="nav-item" data-page="page-language" type="button"><span class="nav-icon">文</span><span>Bahasa &amp; Deteksi</span></button><div class="nav-caption">INTERAKSI</div><button class="nav-item" data-page="page-relationships" type="button"><span class="nav-icon">♡</span><span>Hubungan Pengguna</span></button><div class="nav-caption">MEDIA</div><button class="nav-item" data-page="page-stickers" type="button"><span class="nav-icon">▧</span><span>Sticker &amp; Emoji</span></button><button class="nav-item" data-page="page-gifs" type="button"><span class="nav-icon">▶</span><span>GIF Reaksi</span></button><button class="nav-item" data-page="page-music" type="button"><span class="nav-icon">♪</span><span>Music Player</span></button></nav><div class="sidebar-foot"><span class="online-dot"></span> Panel kontrol lokal</div></aside><main class="main-area"><div class="topbar"><button aria-label="Buka menu" class="menu-toggle" id="menuToggle" type="button">☰</button><header>
+<body><div class="app-shell"><aside class="sidebar" id="sidebar"><div class="brand"><div class="brand-mark">C</div><div class="brand-copy"><strong>CALLISTA</strong><span>AI Companion Control</span></div></div><nav aria-label="Navigasi pengaturan" class="side-nav"><div class="nav-caption">MONITORING</div><button class="nav-item active" data-page="page-overview" type="button"><span class="nav-icon">⌂</span><span>Ringkasan</span></button><div class="nav-caption">PERSONA</div><button class="nav-item" data-page="page-background" type="button"><span class="nav-icon">✦</span><span>Persona &amp; Latar</span></button><button class="nav-item" data-page="page-academic" type="button"><span class="nav-icon">🎓</span><span>Akademik &amp; Kampus</span></button><div class="nav-caption">KEPRIBADIAN</div><button class="nav-item" data-page="page-social" type="button"><span class="nav-icon">◉</span><span>Dinamika Sosial</span></button><button class="nav-item" data-page="page-tone" type="button"><span class="nav-icon">☷</span><span>Nada &amp; Karakter</span></button><button class="nav-item" data-page="page-language" type="button"><span class="nav-icon">文</span><span>Bahasa &amp; Deteksi</span></button><div class="nav-caption">INTERAKSI</div><button class="nav-item" data-page="page-relationships" type="button"><span class="nav-icon">♡</span><span>Hubungan Pengguna</span></button><div class="nav-caption">MEDIA</div><button class="nav-item" data-page="page-stickers" type="button"><span class="nav-icon">▧</span><span>Sticker &amp; Emoji</span></button><button class="nav-item" data-page="page-gifs" type="button"><span class="nav-icon">▶</span><span>GIF Reaksi</span></button><button class="nav-item" data-page="page-music" type="button"><span class="nav-icon">♪</span><span>Music Player</span></button></nav><div class="sidebar-foot"><span class="online-dot"></span> Panel kontrol lokal</div></aside><main class="main-area"><div class="topbar"><button aria-label="Buka menu" class="menu-toggle" id="menuToggle" type="button">☰</button><header>
 <div>
 <h1>Callista — Pengendali Kepribadian &amp; Hubungan</h1>
 <p class="header-sub">Panel kontrol dinamis langsung untuk Discord AI Companion</p>
@@ -321,8 +321,22 @@ body{max-width:none;margin:0;padding:0;background:#f5f5fb;line-height:1.55}
 <span id="moodStateLabel" style="font-size: 13px; font-weight: 600; color: var(--success);">😊 Senang / Baik</span>
 <span style="font-size: 11px; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px;">Terkunci / Read-Only</span>
 </div>
+<div style="margin-top: 10px; display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <span style="color: var(--muted);">📚 Tekanan Akademik:</span>
+    <span id="moodAcadFactor" style="font-weight: 600; color: var(--text);">-</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <span style="color: var(--muted);">🤒 Kondisi Fisik:</span>
+    <span id="moodSickFactor" style="font-weight: 600; color: var(--text);">-</span>
+  </div>
+  <div style="display: flex; justify-content: space-between; align-items: center;">
+    <span style="color: var(--muted);">🌸 Siklus Haid:</span>
+    <span id="moodMensFactor" style="font-weight: 600; color: var(--text);">-</span>
+  </div>
+</div>
 <p class="desc" style="font-size: 12px; margin-top: 8px;">
-          Semakin sering disuruh diam atau dikritik, mood akan turun. Dalam kondisi sensi/ngambek (&lt;45), Callista akan baper saat disuruh diam: <em>"MAS JOY JUJUR AKU SALAH APA YA T_T"</em>.
+          Mood dihitung dari 3 faktor: tekanan akademik, kondisi fisik, dan siklus menstruasi. Kombinasi ketiganya bisa menyebabkan mood drop signifikan.
         </p>
 </div>
 </div>
@@ -367,7 +381,105 @@ body{max-width:none;margin:0;padding:0;background:#f5f5fb;line-height:1.55}
 <button class="btn btn-sm btn-secondary" id="reloadBackgroundBtn" type="button">🔄 Muat Ulang File</button>
 <span class="status-msg" id="backgroundSaveStatus"></span>
 </div>
-</div></section><form id="configForm">
+</div></section><section class="view-page" data-subtitle="Roadmap akademik, jadwal kuliah, libur semester &amp; tugas DKV" data-title="Akademik &amp; Kampus" id="page-academic">
+<!-- Status Utama & Profil Mahasiswa -->
+<div class="card" style="margin-bottom: 20px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 14px;">
+    <h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">🎓 Status Akademik Real-Time</h2>
+    <span class="badge" id="academicStatusBadge">Memuat roadmap...</span>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 16px;">
+    <div class="panel" style="padding: 12px;">
+      <span style="color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Identitas Mahasiswa</span>
+      <strong id="acadProfileName" style="font-size: 14px; display: block;">Callista Clarissa Firka</strong>
+      <span id="acadProfileMajor" style="font-size: 12px; color: var(--muted);">Desain Komunikasi Visual (DKV)</span>
+    </div>
+    <div class="panel" style="padding: 12px;">
+      <span style="color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Semester &amp; Tahun</span>
+      <strong id="acadProfileSemester" style="font-size: 14px; display: block;">Semester 5 • 2026/2027</strong>
+      <span id="acadProfilePeriod" style="font-size: 12px; color: var(--muted);">-</span>
+    </div>
+    <div class="panel" style="padding: 12px;">
+      <span style="color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Kondisi Akademik Hari Ini</span>
+      <strong id="acadCurrentStatus" style="font-size: 14px; display: block; color: var(--accent);">-</strong>
+      <span id="acadStatusDetail" style="font-size: 12px; color: var(--muted);">-</span>
+    </div>
+    <div class="panel" style="padding: 12px;">
+      <span style="color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Sesi Kelas Saat Ini</span>
+      <strong id="acadCurrentSession" style="font-size: 14px; display: block; color: #2ecc71;">Tidak Ada Kelas</strong>
+      <span id="acadSessionDetail" style="font-size: 12px; color: var(--muted);">Bebas / Chat Normal</span>
+    </div>
+  </div>
+  <div style="display: flex; gap: 8px; align-items: center;">
+    <button class="btn btn-sm btn-secondary" id="btnRefreshAcademic" type="button">🔄 Refresh Data</button>
+    <span class="status-msg" id="academicRefreshStatus"></span>
+  </div>
+</div>
+
+<!-- Jadwal Kuliah Hari Ini -->
+<div class="card" style="margin-bottom: 20px;">
+  <h2 style="margin-bottom: 8px;">📅 Jadwal Kuliah Hari Ini</h2>
+  <p style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">
+    Ketika sesi kuliah berlangsung, pesan dari user yang bukan musik akan ditahan sementara (maksimal 10 pesan) dengan auto-reply santai "lagi di kelas", lalu dibalas otomatis setelah kelas selesai.
+  </p>
+  <div id="todayClassesList" style="display: flex; flex-direction: column; gap: 8px;">
+    <p style="color: var(--muted); font-size: 13px;">Memuat jadwal hari ini...</p>
+  </div>
+</div>
+
+<!-- Transisi Antar Semester & Libur Kuliah -->
+<div class="card" style="margin-bottom: 20px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+    <h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">🏖️ Masa Libur &amp; Transisi Semester</h2>
+    <span class="badge" id="breakStatusBadge">-</span>
+  </div>
+  <p style="color: var(--muted); font-size: 13px; margin-bottom: 14px;">
+    Siklus perkuliahan riil memiliki jeda libur semester dan periode registrasi KRS sebelum semester baru dimulai. Selama masa libur, Callista tidak memiliki jam kuliah sehingga bebas beraktivitas santai bersama Mas Joy.
+  </p>
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; margin-bottom: 16px;">
+    <div class="panel" style="padding: 12px;">
+      <span style="font-weight: 600; font-size: 13px; color: var(--accent); display: block; margin-bottom: 6px;">Jeda Libur Semester (Break Period)</span>
+      <div style="font-size: 12.5px; line-height: 1.6; color: var(--text);">
+        <div>Periode: <strong id="acadBreakDates">-</strong></div>
+        <div>Durasi: <span id="acadBreakDuration">-</span></div>
+        <div>Keterangan: <span id="acadBreakDesc">-</span></div>
+      </div>
+    </div>
+    <div class="panel" style="padding: 12px;">
+      <span style="font-weight: 600; font-size: 13px; color: var(--accent); display: block; margin-bottom: 6px;">Persiapan Semester Depan (KRS)</span>
+      <div style="font-size: 12.5px; line-height: 1.6; color: var(--text);">
+        <div>Periode KRS: <strong id="acadKrsDates">-</strong></div>
+        <div>Kalender Akademik: <span id="acadKrsCalStatus">-</span></div>
+        <div>Jadwal Kuliah Baru: <span id="acadKrsScheduleStatus">-</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="panel" style="padding: 14px; background: rgba(90, 80, 201, 0.04); border-left: 3px solid var(--accent);">
+    <h3 style="font-size: 13.5px; margin-bottom: 6px; color: var(--accent);">⚡ Generator Semester Berikutnya</h3>
+    <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px; line-height: 1.5;">
+      Fitur ini akan mengarsipkan seluruh riwayat mata kuliah &amp; ujian semester ini ke riwayat akademik (history), menetapkan jeda libur antar semester, serta meng-generate mata kuliah dan jadwal studio DKV baru untuk semester berikutnya secara otomatis.
+    </p>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <button class="btn btn-sm" id="btnGenerateNextSemester" type="button">🚀 Generate Semester Berikutnya</button>
+      <span class="status-msg" id="generateSemesterStatus"></span>
+    </div>
+  </div>
+</div>
+
+<!-- Tugas & Proyek Studio DKV Aktif -->
+<div class="card">
+  <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+    <h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">📌 Tugas &amp; Proyek Studio DKV Aktif</h2>
+    <span class="badge" id="assignmentCountBadge">0 Tugas</span>
+  </div>
+  <p style="color: var(--muted); font-size: 13px; margin-bottom: 12px;">
+    Daftar PR dan proyek studio yang sedang berjalan. Acuan mutlak ini terintegrasi ke <code>daily_context.json</code> harian sehingga konteks tugas Callista tidak hilang saat reset harian.
+  </p>
+  <div id="acadAssignmentsList" style="display: flex; flex-direction: column; gap: 8px;">
+    <p style="color: var(--muted); font-size: 13px;">Memuat tugas aktif...</p>
+  </div>
+</div>
+</section><form id="configForm">
 
 
 <section class="view-page" data-subtitle="Atur keaktifan, inisiatif, dan pola interaksi" data-title="Dinamika Sosial" id="page-social"><div class="card">
@@ -1106,6 +1218,17 @@ body{max-width:none;margin:0;padding:0;background:#f5f5fb;line-height:1.55}
           bar.style.backgroundColor = 'var(--danger)';
           stateLabel.style.color = 'var(--danger)';
         }
+
+        // Mood factor breakdown dari health state
+        fetch('/api/health/state').then(r => r.json()).then(h => {
+          const f = h.factors || {};
+          const acadEl = document.getElementById('moodAcadFactor');
+          const sickEl = document.getElementById('moodSickFactor');
+          const mensEl = document.getElementById('moodMensFactor');
+          if (acadEl) acadEl.textContent = f.academic ? (f.academic.penalty > 0 ? `-${f.academic.penalty} (${f.academic.classCount || 0} kelas)` : 'Santai / Libur') : '-';
+          if (sickEl) sickEl.textContent = f.sick && f.sick.activeIllnesses && f.sick.activeIllnesses.length > 0 ? f.sick.activeIllnesses.join(', ') : 'Sehat';
+          if (mensEl) mensEl.textContent = f.menstruation ? (f.menstruation.phaseName || 'Normal') : '-';
+        }).catch(() => {});
       } catch (e) {}
     }
 
@@ -1872,6 +1995,203 @@ body{max-width:none;margin:0;padding:0;background:#f5f5fb;line-height:1.55}
         }
       });
     }
+
+    
+    // ===== Academic Roadmap v3.1.0 =====
+    async function loadAcademicRoadmap() {
+      const statusBadge = document.getElementById('academicStatusBadge');
+      if (statusBadge) statusBadge.textContent = 'Memuat...';
+
+      try {
+        const res = await fetch('/api/academic/roadmap');
+        const data = await res.json();
+        if (!res.ok || !data.roadmap) throw new Error('Gagal memuat data akademik');
+
+        const roadmap = data.roadmap;
+        const profile = roadmap.profile || {};
+        const st = data.academicStatus || {};
+        const breakPeriod = roadmap.semester_transition?.break_period || {};
+        const prep = roadmap.semester_transition?.next_semester_preparation || {};
+
+        if (document.getElementById('acadProfileName')) document.getElementById('acadProfileName').textContent = profile.name || 'Callista Clarissa Firka';
+        if (document.getElementById('acadProfileMajor')) document.getElementById('acadProfileMajor').textContent = profile.major || 'Desain Komunikasi Visual';
+        if (document.getElementById('acadProfileSemester')) document.getElementById('acadProfileSemester').textContent = 'Semester ' + (profile.semester || '-') + ' • ' + (profile.academic_year || '-');
+        if (document.getElementById('acadProfilePeriod')) document.getElementById('acadProfilePeriod').textContent = (profile.semester_start || '-') + ' s/d ' + (profile.semester_end || '-');
+
+        const statusLabels = {
+          'on_break': '🏖️ Libur Antar Semester (Break)',
+          'preparing_next_semester': '📝 Periode Pengisian KRS',
+          'exam_period': '📝 Masa Ujian (UTS / UAS)',
+          'holiday': '🌴 Libur Kalender / Nasional',
+          'ongoing': '📚 Perkuliahan Normal'
+        };
+        if (document.getElementById('acadCurrentStatus')) document.getElementById('acadCurrentStatus').textContent = statusLabels[st.status] || st.status || 'Berjalan';
+        if (document.getElementById('acadStatusDetail')) document.getElementById('acadStatusDetail').textContent = st.detail || ('Semester ' + (profile.semester || '-'));
+
+        const activeClass = data.currentSession?.inClass ? data.currentSession.session : (st.currentClass || null);
+        const sessionElem = document.getElementById('acadCurrentSession');
+        const sessionDetail = document.getElementById('acadSessionDetail');
+        if (activeClass) {
+          const cName = activeClass.courseName || activeClass.course_name || activeClass.courseId || activeClass.course_code || 'Kuliah';
+          const cTime = (activeClass.start && activeClass.end) ? (activeClass.start + ' - ' + activeClass.end) : (activeClass.time || '');
+          const cLoc = activeClass.location || activeClass.room || 'Studio';
+          const cRem = activeClass.remainingMinutes ? ' (' + activeClass.remainingMinutes + ' menit lagi)' : '';
+          if (sessionElem) {
+            sessionElem.textContent = '🔴 Kelas: ' + cName;
+            sessionElem.style.color = '#e74c3c';
+          }
+          if (sessionDetail) {
+            sessionDetail.textContent = (cTime ? cTime + ' • ' + cLoc : cLoc) + cRem + ' • Pesan ditunda';
+          }
+        } else {
+          if (sessionElem) {
+            sessionElem.textContent = '🟢 Tidak Ada Kelas';
+            sessionElem.style.color = '#2ecc71';
+          }
+          if (sessionDetail) sessionDetail.textContent = 'Bebas / Chat langsung diproses';
+        }
+
+        if (statusBadge) {
+          statusBadge.textContent = 'Semester ' + (profile.semester || '-') + ': ' + (profile.semester_status || 'ongoing');
+          statusBadge.style.color = '#5a50c9';
+        }
+
+        const classesList = document.getElementById('todayClassesList');
+        if (classesList) {
+          if (data.classesToday && data.classesToday.length > 0) {
+            classesList.innerHTML = data.classesToday.map(c => {
+              const name = c.courseName || c.course_name || c.name || 'Mata Kuliah';
+              const code = c.courseId || c.course_id || c.code || '';
+              const time = (c.start && c.end) ? (c.start + ' - ' + c.end) : (c.time || '-');
+              const room = c.location || c.room || '-';
+              const lecturer = c.lecturer || c.dosen || '-';
+              const credits = c.credits || c.sks || 3;
+              const type = c.type || 'Kuliah';
+              return (
+                '<div class="panel" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px;">' +
+                  '<div>' +
+                    '<strong style="color: var(--text); font-size: 13.5px;">' + name + (code ? ' (' + code + ')' : '') + '</strong>' +
+                    '<div style="font-size: 12px; color: var(--muted); margin-top: 2px;">' +
+                      'Ruang: ' + room + ' • Dosen: ' + lecturer + ' • ' + credits + ' SKS • Tipe: ' + type +
+                    '</div>' +
+                  '</div>' +
+                  '<span class="badge" style="background: rgba(90, 80, 201, 0.1); color: var(--accent); font-weight: 600;">' + time + '</span>' +
+                '</div>'
+              );
+            }).join('');
+          } else {
+            const reason = st.status === 'on_break' ? 'Sedang libur antar semester! Tidak ada perkuliahan.' : 'Tidak ada jadwal kelas hari ini. Waktu santai / eksplorasi karya.';
+            classesList.innerHTML = '<div class="panel" style="padding: 12px; color: var(--muted); font-size: 13px;">' + reason + '</div>';
+          }
+        }
+
+        if (document.getElementById('breakStatusBadge')) {
+          const bBadge = document.getElementById('breakStatusBadge');
+          bBadge.textContent = breakPeriod.status === 'active' ? 'Aktif (Sedang Libur)' : (breakPeriod.status === 'scheduled' ? 'Terjadwal' : (breakPeriod.status || '-'));
+        }
+        if (document.getElementById('acadBreakDates')) document.getElementById('acadBreakDates').textContent = (breakPeriod.start_date || '-') + ' s/d ' + (breakPeriod.end_date || '-');
+        if (document.getElementById('acadBreakDuration')) document.getElementById('acadBreakDuration').textContent = (breakPeriod.duration_days || '-') + ' hari';
+        if (document.getElementById('acadBreakDesc')) document.getElementById('acadBreakDesc').textContent = breakPeriod.description || '-';
+
+        if (document.getElementById('acadKrsDates')) document.getElementById('acadKrsDates').textContent = (prep.course_registration_start || '-') + ' s/d ' + (prep.course_registration_end || '-');
+        if (document.getElementById('acadKrsCalStatus')) document.getElementById('acadKrsCalStatus').textContent = prep.academic_calendar_available ? 'Tersedia' : 'Belum Tersedia';
+        if (document.getElementById('acadKrsScheduleStatus')) document.getElementById('acadKrsScheduleStatus').textContent = prep.class_schedule_available ? 'Tersedia' : 'Belum Tersedia';
+
+        const assignList = document.getElementById('acadAssignmentsList');
+        const assignBadge = document.getElementById('assignmentCountBadge');
+        if (assignList) {
+          if (data.activeAssignments && data.activeAssignments.length > 0) {
+            if (assignBadge) assignBadge.textContent = data.activeAssignments.length + ' Tugas';
+            assignList.innerHTML = data.activeAssignments.map(a => {
+              const title = a.title || a.name || 'Tugas DKV';
+              const course = a.courseName || a.course_name || a.courseId || a.course_id || '-';
+              const deadline = (a.dueDate || a.deadline || '-') + (a.dueTime ? ' ' + a.dueTime : '');
+              const priority = a.priority || 'medium';
+              const status = a.status || 'in_progress';
+              const progress = a.progress !== undefined ? a.progress : 0;
+              const desc = a.description || '';
+              return (
+                '<div class="panel" style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px;">' +
+                  '<div style="flex: 1; margin-right: 12px;">' +
+                    '<div style="display: flex; align-items: center; gap: 8px;">' +
+                      '<strong style="font-size: 13px; color: var(--text);">' + title + '</strong>' +
+                      '<span class="badge" style="font-size: 10px; ' + (priority === 'urgent' ? 'background: #ff7675; color: #fff;' : (priority === 'high' ? 'background: #ffeaa7; color: #d63031;' : '')) + '">' + priority + '</span>' +
+                    '</div>' +
+                    '<div style="font-size: 12px; color: var(--muted); margin-top: 3px;">' +
+                      'Matkul: ' + course + (desc ? ' • ' + desc : '') +
+                    '</div>' +
+                  '</div>' +
+                  '<div style="text-align: right; min-width: 140px;">' +
+                    '<div style="font-size: 12px; font-weight: 600; color: #e74c3c;">Deadline: ' + deadline + '</div>' +
+                    '<div style="font-size: 11px; color: var(--muted); margin-top: 2px;">Status: <strong>' + status + '</strong> (' + progress + '%)</div>' +
+                  '</div>' +
+                '</div>'
+              );
+            }).join('');
+          } else {
+            if (assignBadge) assignBadge.textContent = '0 Tugas';
+            assignList.innerHTML = '<div class="panel" style="padding: 12px; color: var(--muted); font-size: 13px;">Tidak ada tugas aktif saat ini. Semua tugas telah terselesaikan!</div>';
+          }
+        }
+      } catch (err) {
+        if (statusBadge) {
+          statusBadge.textContent = 'Gagal memuat';
+          statusBadge.style.color = '#e74c3c';
+        }
+        console.error('Error loading academic roadmap:', err);
+      }
+    }
+
+    const btnGenSem = document.getElementById('btnGenerateNextSemester');
+    const genStatus = document.getElementById('generateSemesterStatus');
+    if (btnGenSem) {
+      btnGenSem.addEventListener('click', async () => {
+        if (!confirm('Yakin ingin meng-generate roadmap semester berikutnya? Generator akan mengarsipkan riwayat semester saat ini ke history, menetapkan jeda libur antar semester, serta meng-generate mata kuliah dan jadwal studio DKV baru.')) {
+          return;
+        }
+        btnGenSem.disabled = true;
+        genStatus.textContent = 'Sedang meng-generate...';
+        genStatus.style.color = 'var(--muted)';
+        try {
+          const res = await fetch('/api/academic/next-semester', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+          const data = await res.json();
+          if (!res.ok || !data.success) throw new Error(data.error || 'Gagal generate');
+          genStatus.textContent = data.message || 'Semester berikutnya berhasil dibuat!';
+          genStatus.style.color = '#2ecc71';
+          await loadAcademicRoadmap();
+          setTimeout(() => { genStatus.textContent = ''; }, 4000);
+        } catch (err) {
+          genStatus.textContent = 'Error: ' + err.message;
+          genStatus.style.color = '#e74c3c';
+        } finally {
+          btnGenSem.disabled = false;
+        }
+      });
+    }
+
+    const btnRefreshAcad = document.getElementById('btnRefreshAcademic');
+    if (btnRefreshAcad) {
+      btnRefreshAcad.addEventListener('click', async () => {
+        const s = document.getElementById('academicRefreshStatus');
+        if (s) { s.textContent = 'Memperbarui...'; s.style.color = 'var(--muted)'; }
+        await loadAcademicRoadmap();
+        if (s) {
+          s.textContent = 'Data diperbarui!';
+          s.style.color = '#2ecc71';
+          setTimeout(() => { s.textContent = ''; }, 2000);
+        }
+      });
+    }
+
+    document.querySelector('[data-page="page-academic"]')?.addEventListener('click', () => {
+      loadAcademicRoadmap();
+    });
+
+    loadAcademicRoadmap();
 
     loadSfxState();
   </script></body>

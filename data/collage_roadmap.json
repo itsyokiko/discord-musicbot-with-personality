@@ -1,10 +1,8 @@
-
 {
-  "version": "2.0.0",
+  "version": "3.1.0",
   "type": "college_roadmap",
   "timezone": "Asia/Jakarta",
   "last_updated": "2026-11-09",
-
   "profile": {
     "name": "Callista Clarissa Firka",
     "major": "Desain Komunikasi Visual",
@@ -14,9 +12,9 @@
     "semester_start": "2026-09-01",
     "semester_end": "2027-01-31",
     "total_credits": 23,
-    "academic_status": "active"
+    "academic_status": "active",
+    "semester_status": "ongoing"
   },
-
   "courses": [
     {
       "id": "DKV501",
@@ -75,7 +73,6 @@
       "type": "theory"
     }
   ],
-
   "class_schedule": {
     "valid_from": "2026-09-01",
     "valid_until": "2027-01-31",
@@ -154,7 +151,6 @@
       "sunday": []
     }
   },
-
   "assignments": [
     {
       "id": "A001",
@@ -505,7 +501,6 @@
       "description": "Membuat poster dengan tipografi sebagai elemen visual utama."
     }
   ],
-
   "academic_events": [
     {
       "id": "E001",
@@ -570,27 +565,56 @@
       "description": "Tidak ada kegiatan perkuliahan."
     }
   ],
-
   "calendar_exceptions": [
     {
       "date": "2026-11-13",
       "type": "class_replaced",
-      "course_ids": ["DKV501"],
+      "course_ids": [
+        "DKV501"
+      ],
       "description": "Jadwal kuliah reguler digantikan presentasi."
     },
     {
       "date": "2026-12-25",
       "type": "holiday",
-      "cancelled_course_ids": ["all"]
+      "cancelled_course_ids": [
+        "all"
+      ]
     },
     {
       "date": "2027-01-01",
       "type": "holiday",
-      "cancelled_course_ids": ["all"]
+      "cancelled_course_ids": [
+        "all"
+      ]
     }
   ],
-
   "academic_history": {
+    "midterm": {
+      "name": "Ujian Tengah Semester",
+      "start": "2026-10-26",
+      "end": "2026-11-06",
+      "status": "completed",
+      "course_results": [
+        {
+          "course_id": "DKV501",
+          "grade": "A-",
+          "notes": "Portofolio identitas visual sangat baik"
+        },
+        {
+          "course_id": "DKV502",
+          "grade": "A",
+          "notes": "Eksplorasi tipografi vernakular sangat kuat"
+        }
+      ]
+    },
+    "final_exam": {
+      "name": "Ujian Akhir Semester",
+      "start": "2027-01-11",
+      "end": "2027-01-23",
+      "status": "upcoming",
+      "course_results": []
+    },
     "completed_assignments": [],
     "completed_events": [],
     "notes": [
@@ -600,7 +624,6 @@
       }
     ]
   },
-
   "rules": {
     "assignment_status_values": [
       "not_started",
@@ -613,6 +636,94 @@
     "preserve_incomplete_assignments": true,
     "holiday_overrides_class_schedule": true,
     "milestone_deadlines_are_independent": true,
-    "timezone_required": true
+    "timezone_required": true,
+    "semester_status_values": [
+      "not_started",
+      "ongoing",
+      "exam_period",
+      "completed",
+      "break"
+    ],
+    "transition_status_values": [
+      "not_started",
+      "waiting_for_break",
+      "on_break",
+      "preparing_next_semester",
+      "completed"
+    ],
+    "automatic_progress_update": false,
+    "past_events_are_history": true,
+    "generator_may_read_but_not_rewrite_roadmap": true,
+    "semester_transition_rules": {
+      "wait_for_semester_completion": true,
+      "do_not_start_next_semester_immediately": true,
+      "break_period_required": true,
+      "break_duration_must_follow_academic_calendar": true,
+      "do_not_assume_fixed_break_duration": true,
+      "course_registration_may_occur_during_break": true,
+      "next_semester_requires_new_roadmap": true,
+      "do_not_invent_official_academic_dates": true
+    },
+    "next_semester_generation": {
+      "generate_after_previous_semester_closes": true,
+      "increment_semester_number": true,
+      "carry_forward_academic_history": true,
+      "carry_forward_unresolved_assignments": true,
+      "do_not_copy_previous_course_list": true,
+      "do_not_copy_previous_class_schedule": true,
+      "generate_new_courses": true,
+      "generate_new_assignments": true,
+      "generate_new_exam_calendar": true,
+      "preserve_student_identity": true
+    },
+    "daily_context_integration": {
+      "roadmap_is_academic_source_of_truth": true,
+      "daily_context_reads_current_semester": true,
+      "daily_context_reads_break_period": true,
+      "daily_context_reads_next_semester_preparation": true,
+      "do_not_schedule_classes_during_break": true,
+      "allow_personal_activities_during_break": true,
+      "allow_spontaneous_activities": true
+    }
+  },
+  "semester_transition": {
+    "previous_semester": 4,
+    "next_semester": 6,
+    "transition_status": "waiting_for_break",
+    "transition_start": "2027-02-01",
+    "transition_end": "2027-02-21",
+    "break_period": {
+      "start_date": "2027-02-01",
+      "end_date": "2027-02-21",
+      "duration_days": 21,
+      "status": "scheduled",
+      "description": "Libur jeda semester ganjil menuju genap (Semester 5 ke 6). Masa istirahat studio dan eksplorasi karya bebas."
+    },
+    "next_semester_preparation": {
+      "academic_calendar_available": true,
+      "course_registration_start": "2027-02-15",
+      "course_registration_end": "2027-02-20",
+      "class_schedule_available": true,
+      "preparation_activities": [
+        "Pengisian Kartu Rencana Studi (KRS) online",
+        "Bimbingan Dosen Pembimbing Akademik (DPA)",
+        "Penyusunan jadwal studio dan mata kuliah peminatan DKV Semester 6"
+      ]
+    }
+  },
+  "semester_closure": {
+    "final_grades_available_date": "2027-01-30",
+    "academic_status": "pending_exams",
+    "all_assignments_resolved": false,
+    "semester_completed": false,
+    "notes": []
+  },
+  "next_semester": {
+    "semester": 6,
+    "academic_year": "2026/2027",
+    "expected_start": "2027-02-22",
+    "expected_end": "2027-07-16",
+    "generation_status": "ready_to_generate",
+    "roadmap_file": null
   }
 }

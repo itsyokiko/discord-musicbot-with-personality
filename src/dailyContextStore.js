@@ -49,6 +49,72 @@ function getTimeInTimezone(date = new Date(), timezone = 'Asia/Jakarta') {
 
 function getFallbackDailyContext(date = new Date(), timezone = 'Asia/Jakarta') {
   const { dateStr } = getTimeInTimezone(date, timezone);
+  const collegeRoadmap = require('./collegeRoadmap');
+  const todayClasses = collegeRoadmap.getClassesForDate(dateStr);
+  const activeAssignments = collegeRoadmap.getActiveAssignments(dateStr);
+
+  const hasMorningClass = todayClasses.some(c => c.start <= '08:30');
+  const wakeTime = hasMorningClass ? '06:45' : '08:30';
+  const sleepTime = hasMorningClass ? '01:00' : '02:00';
+
+  let schedule = [];
+  if (todayClasses.length > 0) {
+    schedule.push({ start_time: '00:00', end_time: sleepTime, activity: 'Main game santai di kasur & scroll sosmed', availability: 'relaxing', reply_tendency: 'casual' });
+    schedule.push({ start_time: sleepTime, end_time: wakeTime, activity: 'Tidur lelap di kamar', availability: 'sleeping', reply_tendency: 'unlikely' });
+    schedule.push({ start_time: wakeTime, end_time: todayClasses[0].start, activity: 'Bangun pagi, sarapan & berangkat ke kampus', availability: 'active', reply_tendency: 'responsive' });
+
+    for (let i = 0; i < todayClasses.length; i++) {
+      const c = todayClasses[i];
+      schedule.push({
+        start_time: c.start,
+        end_time: c.end,
+        activity: `Kuliah ${c.courseName} di ${c.location} (${c.lecturer})`,
+        availability: 'busy',
+        reply_tendency: 'delayed'
+      });
+
+      if (i < todayClasses.length - 1) {
+        const nextC = todayClasses[i + 1];
+        if (c.end < nextC.start) {
+          schedule.push({
+            start_time: c.end,
+            end_time: nextC.start,
+            activity: 'Istirahat di kampus, makan siang & nongkrong santai',
+            availability: 'relaxing',
+            reply_tendency: 'responsive'
+          });
+        }
+      }
+    }
+
+    const lastClassEnd = todayClasses[todayClasses.length - 1].end;
+    if (lastClassEnd < '17:30') {
+      schedule.push({ start_time: lastClassEnd, end_time: '17:30', activity: 'Pulang dari kampus & rebahan santai di kamar', availability: 'active', reply_tendency: 'casual' });
+    }
+    schedule.push({ start_time: '17:30', end_time: '19:30', activity: 'Mandi, makan malam, & santai sore', availability: 'away', reply_tendency: 'delayed' });
+    schedule.push({ start_time: '19:30', end_time: '21:30', activity: activeAssignments.length ? `Nugas DKV: ${activeAssignments[0].title}` : 'Nugas santai / dengerin musik di Discord', availability: 'active', reply_tendency: 'responsive' });
+    schedule.push({ start_time: '21:30', end_time: '23:59', activity: 'Online di Discord, dengerin musik & santai', availability: 'active', reply_tendency: 'responsive' });
+  } else {
+    schedule = [
+      { start_time: '00:00', end_time: '02:00', activity: 'Main game santai di kasur & scroll sosmed', availability: 'relaxing', reply_tendency: 'casual' },
+      { start_time: '02:00', end_time: '09:00', activity: 'Tidur lelap di kamar', availability: 'sleeping', reply_tendency: 'unlikely' },
+      { start_time: '09:00', end_time: '12:00', activity: 'Bangun, sarapan, & santai YouTube / game', availability: 'active', reply_tendency: 'responsive' },
+      { start_time: '12:00', end_time: '14:30', activity: 'Makan siang & rebahan santai', availability: 'relaxing', reply_tendency: 'responsive' },
+      { start_time: '14:30', end_time: '17:30', activity: activeAssignments.length ? `Nugas DKV: ${activeAssignments[0].title}` : 'Mabar / nugas DKV santai di kamar', availability: 'busy', reply_tendency: 'delayed' },
+      { start_time: '17:30', end_time: '19:30', activity: 'Mandi, makan malam, & santai sore', availability: 'away', reply_tendency: 'delayed' },
+      { start_time: '19:30', end_time: '23:59', activity: 'Online di Discord, dengerin musik bareng circle', availability: 'active', reply_tendency: 'responsive' }
+    ];
+  }
+
+  const plans = [];
+  if (todayClasses.length) {
+    plans.push(`Masuk kelas ${todayClasses.map(c => c.courseName).join(' & ')}`);
+  }
+  if (activeAssignments.length) {
+    plans.push(`Garap tugas ${activeAssignments[0].title}`);
+  }
+  plans.push('Santai online di Discord malam');
+
   return {
     version: '1.0.0',
     date: dateStr,
@@ -56,28 +122,14 @@ function getFallbackDailyContext(date = new Date(), timezone = 'Asia/Jakarta') {
     updated_at: new Date().toISOString(),
     status: 'fallback',
     sleep_schedule: {
-      sleep_time: '02:00',
-      wake_time: '09:30'
+      sleep_time: sleepTime,
+      wake_time: wakeTime
     },
-    schedule: [
-      { start_time: '00:00', end_time: '02:00', activity: 'Main game santai di kasur & scroll sosmed', availability: 'relaxing', reply_tendency: 'casual' },
-      { start_time: '02:00', end_time: '09:30', activity: 'Tidur lelap di kamar', availability: 'sleeping', reply_tendency: 'unlikely' },
-      { start_time: '09:30', end_time: '11:00', activity: 'Bangun, sarapan, & nonton YouTube santai', availability: 'active', reply_tendency: 'responsive' },
-      { start_time: '11:00', end_time: '13:00', activity: 'Mabar santai Genshin / nugas ringan', availability: 'active', reply_tendency: 'casual' },
-      { start_time: '13:00', end_time: '14:30', activity: 'Makan siang & rebahan santai', availability: 'relaxing', reply_tendency: 'responsive' },
-      { start_time: '14:30', end_time: '17:00', activity: 'Push rank Valorant bareng circle Discord', availability: 'busy', reply_tendency: 'delayed' },
-      { start_time: '17:00', end_time: '19:00', activity: 'Mandi, bantu rumah, & santai sore', availability: 'away', reply_tendency: 'delayed' },
-      { start_time: '19:00', end_time: '21:30', activity: 'Online di Discord, dengerin musik di kamar', availability: 'active', reply_tendency: 'responsive' },
-      { start_time: '21:30', end_time: '23:59', activity: 'Mabar malam atau nobar santai bareng teman', availability: 'active', reply_tendency: 'responsive' }
-    ],
-    plans: [
-      'Selesaikan daily quest game siang nanti',
-      'Push rank bareng circle sore nanti',
-      'Santai online di Discord malam'
-    ],
-    daily_events: [
-      'Bangun pagi terasa segar, siap santai seharian'
-    ],
+    schedule,
+    plans,
+    daily_events: todayClasses.length
+      ? [`Hari ini ada ${todayClasses.length} sesi perkuliahan di kampus`]
+      : ['Hari tenang tanpa jadwal kelas tatap muka'],
     mood: 60,
     mood_state: 'Biasa / Netral'
   };

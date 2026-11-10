@@ -18,6 +18,7 @@ data/*.tmp
 data/.generator.lock
 data/lyrics_cache.json
 data/searches.json
+data/class_pending.json
 
 # Large dumps, scratch files & archives
 *-player-script.js

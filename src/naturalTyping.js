@@ -175,6 +175,11 @@ function humanizeTyping(text, options = {}) {
   // 2. Suntikkan typo alami (maksimal 1 typo per pesan)
   result = injectKeyboardTypo(result, typoChance);
 
+  // 3. Jika mood sedang rendah/sensi (< 45), hilangkan tawa ceria wkwk/haha
+  if (options.noWkwk || (typeof options.mood === 'number' && options.mood < 45)) {
+    result = result.replace(/\b(w+k+w+k+|w+l+w+l+|ha+ha+|he+he+|xi+xi+)\b/gi, '').replace(/\s{2,}/g, ' ').trim();
+  }
+
   return result;
 }
 

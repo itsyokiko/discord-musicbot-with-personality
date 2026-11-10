@@ -19,6 +19,9 @@ const sfxStore = require('./sfxStore');
 const lyricsStore = require('./lyricsStore');
 const voiceTracker = require('./voiceTracker');
 const todayMemory = require('./todayMemory');
+const collegeRoadmap = require('./collegeRoadmap');
+const classSessionManager = require('./classSessionManager');
+const moodSystem = require('./moodSystem');
 
 const processedMessageIds = new Set();
 const activeBursts = new Map();
@@ -1145,7 +1148,6 @@ async function processBurst(channelId, client) {
   // B. Mas Joy memberikan instruksi untuk nimbrung kembali (Unmute Command)
   if (isUnmute) {
     storage.setBotResponding(true, 'Diaktifkan kembali oleh Mas Joy via Discord');
-    storage.adjustMood(15, 'Dibolehkan nimbrung kembali oleh Mas Joy');
     const moodScore = storage.getMood();
 
     const rawUnmute = moodScore < 45
@@ -1173,7 +1175,6 @@ async function processBurst(channelId, client) {
   // C. Mas Joy memberikan instruksi untuk diam (Silence Command)
   const isSilence = isMasJoy && decision.isSilenceCommand(lastMsg.content);
   if (isSilence) {
-    storage.adjustMood(-18, 'Disuruh diam oleh Mas Joy');
     const moodScore = storage.getMood();
 
     const silenceReply = moodScore < 45
@@ -1269,6 +1270,54 @@ async function processBurst(channelId, client) {
   // SKENARIO 2: Berbicara DENGAN Callista (TO_CALLISTA) -> Jawab pertanyaan sesuai kepribadian
   const dailyInfo = dailyStore.getCurrentActivityInfo(dailyStore.loadDailyContext(config.timezone));
   console.log(`[DAILY CONTEXT] Status: [${dailyInfo.availability.toUpperCase()}] | Activity: "${dailyInfo.current_activity}" (Time: ${dailyInfo.time})`);
+
+  // Cek apakah Callista sedang di dalam jam perkuliahan di kelas (Acuan Mutlak dari collage_roadmap.json)
+  const classStatus = collegeRoadmap.getCurrentClassSession(new Date(), config.timezone);
+  if (classStatus.inClass && classStatus.session) {
+    const session = classStatus.session;
+    const authorId = lastDiscordMessage.author.id;
+    const authorName = lastDiscordMessage.author.displayName || lastDiscordMessage.author.username;
+
+    // 1. Tampung pesan ke antrian sesi kelas (maksimal 10 pesan terakhir)
+    classSessionManager.enqueueMessage(session.sessionKey, session, {
+      channelId,
+      userId: authorId,
+      username: authorName,
+      content: lastMsg.content,
+      timestamp: Date.now(),
+    });
+
+    // 2. Kirim 1 template pemberitahuan jika user belum diberi tahu di sesi kelas ini
+    if (!classSessionManager.hasBeenNotified(session.sessionKey, authorId)) {
+      const template = collegeRoadmap.getRandomClassTemplate(session.courseName);
+      const replyText = naturalTyping.humanizeTyping(template);
+      console.log(`[CLASS_MODE] [${channelLabel}] User ${authorName} menyapa saat kelas "${session.courseName}". Mengirim template sibuk: "${replyText}"`);
+
+      if (lastDiscordMessage.channel.sendTyping) {
+        await lastDiscordMessage.channel.sendTyping().catch(() => {});
+      }
+      await sleep(500);
+      const sentMsg = await lastDiscordMessage.reply({ content: replyText, allowedMentions: { repliedUser: false } }).catch(() => {});
+      if (sentMsg) {
+        storage.addHistory(channelId, {
+          id: sentMsg.id,
+          channelId,
+          userId: client.user.id,
+          authorName: config.name || 'Callista',
+          content: replyText,
+          timestamp: sentMsg.createdTimestamp,
+          isBot: true,
+        });
+      }
+
+      classSessionManager.markNotified(session.sessionKey, authorId);
+    } else {
+      console.log(`[CLASS_MODE] [${channelLabel}] User ${authorName} mengirim pesan lagi saat kelas "${session.courseName}". Ditampung ke antrian pending tanpa spam template.`);
+    }
+
+    // Callista sedang di dalam kelas: tidak panggil LLM saat ini
+    return;
+  }
 
   console.log(`[AI] Evaluating conversation context & generating response...`);
   const result = await ai.evaluateAndGenerate(history, messages, userProfile, {
@@ -2127,7 +2176,32 @@ function startBot(token) {
       voiceTracker.scanOnStartup(client).catch(err => {
         console.error('[VC_TRACKER] Startup scan error:', err.message);
       });
+      const cfg = storage.getConfig();
+      classSessionManager.checkAndFlushSessions(client, cfg.timezone || 'Asia/Jakarta').catch(err => {
+        console.error('[CLASS_MANAGER] Startup flush error:', err.message);
+      });
     }, 3000);
+
+    // Periodic check setiap 30 detik untuk memproses pesan pending saat kelas berakhir
+    setInterval(() => {
+      const cfg = storage.getConfig();
+      classSessionManager.checkAndFlushSessions(client, cfg.timezone || 'Asia/Jakarta').catch(() => {});
+    }, 30000);
+
+    // Recalculate mood harian di startup + setiap 60 menit
+    function recalculateDailyMood() {
+      try {
+        const cfg = storage.getConfig();
+        const tz = cfg.timezone || 'Asia/Jakarta';
+        const { dateStr } = dailyStore.getTimeInTimezone(new Date(), tz);
+        moodSystem.calculateMood(dateStr, { syncBotState: true });
+        console.log('[MOOD] Recalculated for', dateStr, '→', storage.getMood());
+      } catch (e) {
+        console.error('[MOOD] Recalculation error:', e.message);
+      }
+    }
+    recalculateDailyMood();
+    setInterval(recalculateDailyMood, 60 * 60 * 1000);
   });
 
   client.on('voiceStateUpdate', (oldState, newState) => {
