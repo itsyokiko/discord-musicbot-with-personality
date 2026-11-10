@@ -3,14 +3,32 @@
   "silencedAt": null,
   "silencedReason": null,
   "lastDisabledPeriod": {
-    "disabledAt": 1794309635333,
-    "enabledAt": 1794309635335,
+    "disabledAt": 1794312949860,
+    "enabledAt": 1794312949861,
     "durationMinutes": 1,
     "reason": "Test silence"
   },
   "mood": 15,
-  "silenceCount": 11,
+  "silenceCount": 12,
   "moodLog": [
+    {
+      "timestamp": 1794312949923,
+      "delta": 100,
+      "newMood": 100,
+      "reason": "Dipuji Mas Joy"
+    },
+    {
+      "timestamp": 1794312949915,
+      "delta": -45,
+      "newMood": 55,
+      "reason": "Disuruh diam berulang kali"
+    },
+    {
+      "timestamp": 1794312949862,
+      "delta": 85,
+      "newMood": 100,
+      "reason": "Reset ke 100 untuk test"
+    },
     {
       "timestamp": 1794309635515,
       "delta": 100,
@@ -79,24 +97,6 @@
     },
     {
       "timestamp": 1794260979099,
-      "delta": 0,
-      "newMood": 100,
-      "reason": "Reset ke 100 untuk test"
-    },
-    {
-      "timestamp": 1794260962256,
-      "delta": 100,
-      "newMood": 100,
-      "reason": "Dipuji Mas Joy"
-    },
-    {
-      "timestamp": 1794260962254,
-      "delta": -45,
-      "newMood": 55,
-      "reason": "Disuruh diam berulang kali"
-    },
-    {
-      "timestamp": 1794260962229,
       "delta": 0,
       "newMood": 100,
       "reason": "Reset ke 100 untuk test"
