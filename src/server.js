@@ -130,11 +130,14 @@ function startServer(port) {
 
     if (req.method === 'GET' && url.pathname === '/api/daily-context') {
       const dailyStore = require('./dailyContextStore');
+      const todayMemory = require('./todayMemory');
       const cfg = storage.getConfig();
-      const ctx = dailyStore.loadDailyContext(cfg.timezone || 'Asia/Jakarta');
+      const tz = cfg.timezone || 'Asia/Jakarta';
+      const ctx = dailyStore.loadDailyContext(tz);
       const current = dailyStore.getCurrentActivityInfo(ctx);
+      const todayEntries = todayMemory.getTodayEntries(tz);
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ context: ctx, current }));
+      res.end(JSON.stringify({ context: ctx, current, todayMemory: todayEntries }));
       return;
     }
 
@@ -147,12 +150,20 @@ function startServer(port) {
       const result = moodSystem.calculateMood(dateStr, { syncBotState: false });
       const healthData = moodSystem.loadHealthState(dateStr);
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ...result, healthData }));
+      res.end(JSON.stringify({
+        ...result,
+        healthData,
+        noWkwk: result.mood < 45,
+        healthSummary: !result.factors.sick.hasIllness
+          ? 'Kesehatan Baik & Prima'
+          : `Kurang Sehat: ${result.factors.sick.summary}`
+      }));
       return;
     }
 
     if (req.method === 'GET' && url.pathname === '/api/academic/roadmap') {
       const collegeRoadmap = require('./collegeRoadmap');
+      const classSessionManager = require('./classSessionManager');
       const dailyStore = require('./dailyContextStore');
       const cfg = storage.getConfig();
       const tz = cfg.timezone || 'Asia/Jakarta';
@@ -164,6 +175,17 @@ function startServer(port) {
       const activeAssignments = collegeRoadmap.getActiveAssignments(dateStr, roadmap);
       const currentSession = collegeRoadmap.getCurrentClassSession(new Date(), tz);
 
+      const pendingSessions = classSessionManager.getPendingSessions();
+      let pendingMessagesCount = 0;
+      let currentSessionPending = [];
+      if (currentSession && currentSession.inClass && currentSession.session) {
+        const s = pendingSessions[currentSession.session.sessionKey];
+        if (s && Array.isArray(s.messages)) {
+          pendingMessagesCount = s.messages.length;
+          currentSessionPending = s.messages;
+        }
+      }
+
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
         date: dateStr,
@@ -172,6 +194,10 @@ function startServer(port) {
         currentSession,
         classesToday,
         activeAssignments,
+        pendingClassInfo: {
+          count: pendingMessagesCount,
+          messages: currentSessionPending,
+        }
       }));
       return;
     }

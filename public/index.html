@@ -281,89 +281,198 @@ body{max-width:none;margin:0;padding:0;background:#f5f5fb;line-height:1.55}
 <p class="header-sub">Panel kontrol dinamis langsung untuk Discord AI Companion</p>
 </div>
 <div class="badge" id="statusBadge">Memuat pengaturan...</div>
-</header></div><div class="content-area"><div class="page-heading"><div class="eyebrow">CONTROL CENTER</div><h2 id="currentPageTitle">Ringkasan</h2><p id="currentPageSubtitle">Status bot dan kondisi Callista</p></div><section class="view-page" data-subtitle="Status bot dan kondisi Callista" data-title="Ringkasan" id="page-overview"><div class="card" style="margin-bottom: 20px;">
-<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px;">
-<h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0; font-size: 16px; display: flex; align-items: center; gap: 8px;">
-<span>⚡ Status Operasional &amp; Indikator Mood</span>
-</h2>
-<span class="badge" id="liveIndicatorBadge" style="background: var(--success-soft); color: var(--success); border-color: var(--success);">🟢 Real-Time Sync</span>
-</div>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
-<!-- Toggle Saklar Respon -->
-<div class="panel" style="display: flex; flex-direction: column; justify-content: space-between;">
-<div>
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-<span style="font-weight: 600; font-size: 14px;">Saklar Respon Callista</span>
-<span class="badge" id="respondingBadge" style="font-weight: 600;">Memuat...</span>
-</div>
-<p class="desc" id="respondingDesc" style="font-size: 12.5px; margin-bottom: 14px;">
+</header></div><div class="content-area"><div class="page-heading"><div class="eyebrow">CONTROL CENTER</div><h2 id="currentPageTitle">Ringkasan</h2><p id="currentPageSubtitle">Status bot dan kondisi Callista</p></div><section class="view-page" data-subtitle="Pusat pemantauan real-time status fisik, psikologis, akademik, dan aktivitas Callista" data-title="Ringkasan" id="page-overview">
+  <!-- KARTU 1: Status Operasional & Saklar Bot -->
+  <div class="card" style="margin-bottom: 18px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 12px;">
+      <h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+        <span>⚡ Status Operasional &amp; Kendali Respon</span>
+      </h2>
+      <span class="badge" id="liveIndicatorBadge" style="background: var(--success-soft); color: var(--success); border-color: var(--success);">🟢 Live 2s Sync</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px;">
+      <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-weight: 600; font-size: 13.5px;">Saklar Respon Callista</span>
+            <span class="badge" id="respondingBadge" style="font-weight: 600;">Memuat...</span>
+          </div>
+          <p class="desc" id="respondingDesc" style="font-size: 12px; margin-bottom: 12px;">
             Jika dimatikan, Callista MURNI tidak akan membalas siapapun apapun triggernya, sampai diaktifkan kembali.
           </p>
-</div>
-<div style="display: flex; align-items: center; gap: 10px;">
-<button class="btn" id="toggleRespondingBtn" style="flex: 1; padding: 10px 16px; font-weight: 600; font-size: 13.5px; transition: all 0.2s ease;" type="button">
-            Memuat Status...
-          </button>
-</div>
-</div>
-<!-- Skor Mood Callista (Read-Only) -->
-<div class="panel">
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-<span style="font-weight: 600; font-size: 14px;">Parameter Mood (Otomatis &amp; Real-Time)</span>
-<span id="moodScoreBadge" style="font-size: 16px; font-weight: 700; color: var(--text);">80 / 100</span>
-</div>
-<div style="margin: 8px 0;">
-<div style="background: var(--border); border-radius: 6px; height: 12px; overflow: hidden; border: 1px solid var(--border-strong);">
-<div id="moodProgressBar" style="width: 80%; height: 100%; background: var(--success); transition: width 0.4s ease, background-color 0.4s ease;"></div>
-</div>
-</div>
-<div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
-<span id="moodStateLabel" style="font-size: 13px; font-weight: 600; color: var(--success);">😊 Senang / Baik</span>
-<span style="font-size: 11px; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 6px; border-radius: 4px;">Terkunci / Read-Only</span>
-</div>
-<div style="margin-top: 10px; display: flex; flex-direction: column; gap: 4px; font-size: 12px;">
-  <div style="display: flex; justify-content: space-between; align-items: center;">
-    <span style="color: var(--muted);">📚 Tekanan Akademik:</span>
-    <span id="moodAcadFactor" style="font-weight: 600; color: var(--text);">-</span>
+        </div>
+        <button class="btn" id="toggleRespondingBtn" style="width: 100%; padding: 9px 14px; font-weight: 600; font-size: 13px;" type="button">
+          Memuat Status...
+        </button>
+      </div>
+
+      <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <span style="font-weight: 600; font-size: 13.5px; display: block; margin-bottom: 6px;">Koneksi &amp; Prioritas Mas Joy</span>
+          <p class="desc" style="font-size: 12px; margin-bottom: 10px;">
+            Sistem memprioritaskan perintah musik &amp; interaksi dari Mas Joy (Rieka). Perintah musik deterministik tidak pernah terhalang jam kuliah.
+          </p>
+        </div>
+        <div style="display: flex; gap: 8px; font-size: 12px;">
+          <span class="badge" style="background: var(--card); border-color: var(--border);">Music: Mas Joy Only</span>
+          <span class="badge" style="background: var(--card); border-color: var(--border);">Deterministic: &gt; Prefix</span>
+        </div>
+      </div>
+    </div>
   </div>
-  <div style="display: flex; justify-content: space-between; align-items: center;">
-    <span style="color: var(--muted);">🤒 Kondisi Fisik:</span>
-    <span id="moodSickFactor" style="font-weight: 600; color: var(--text);">-</span>
+
+  <!-- KARTU 2: Status Kesehatan, Siklus Menstruasi & Parameter Mood -->
+  <div class="card" style="margin-bottom: 18px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px;">
+      <h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+        <span>💖 Kondisi Kesehatan &amp; Psikologis (Fisik, Siklus &amp; Mood)</span>
+      </h2>
+      <span class="badge" id="healthOverallBadge" style="background: var(--success-soft); color: var(--success); border-color: var(--success);">Memuat kesehatan...</span>
+    </div>
+
+    <!-- Grid 3 Kolom: Fisik, Menstruasi, Mood Bar -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin-bottom: 14px;">
+      <!-- Kolom 1: Fisik & Sick System -->
+      <div class="panel" style="padding: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600;">🤒 Kondisi Fisik (Sick System)</span>
+          <span class="badge" id="sickPenaltyBadge" style="font-size: 11px;">-</span>
+        </div>
+        <strong id="healthActiveIllness" style="font-size: 14px; display: block; margin-bottom: 4px; color: var(--text);">-</strong>
+        <p id="healthSymptoms" style="font-size: 12px; color: var(--muted); margin-bottom: 8px; line-height: 1.4;">Memuat data penyakit...</p>
+        <span style="font-size: 11px; color: var(--muted); display: block; border-top: 1px dashed var(--border); padding-top: 6px;">
+          RNG independen: pilek, alergi debu, sariawan, demam (maks 3 hari). Minimal 3-7 sakit per 2 bulan.
+        </span>
+      </div>
+
+      <!-- Kolom 2: Siklus Menstruasi -->
+      <div class="panel" style="padding: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600;">🌸 Siklus Menstruasi</span>
+          <span class="badge" id="mensPhaseBadge" style="font-size: 11px;">Memuat...</span>
+        </div>
+        <strong id="mensPhaseDesc" style="font-size: 14px; display: block; margin-bottom: 4px; color: var(--text);">-</strong>
+        <p id="mensNextDate" style="font-size: 12px; color: var(--muted); margin-bottom: 8px; line-height: 1.4;">Perkiraan siklus...</p>
+        <span style="font-size: 11px; color: var(--muted); display: block; border-top: 1px dashed var(--border); padding-top: 6px;">
+          Pola dunia nyata: siklus 28±2 hari, durasi haid 4-7 hari. PMS 1-2 hari sebelumnya menyebabkan mood drop.
+        </span>
+      </div>
+
+      <!-- Kolom 3: Mood Bar & Status Sikap -->
+      <div class="panel" style="padding: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600;">🧠 Parameter Mood Live</span>
+          <span id="moodScoreBadge" style="font-size: 15px; font-weight: 700; color: var(--text);">80 / 100</span>
+        </div>
+        <div style="background: var(--border); border-radius: 6px; height: 10px; overflow: hidden; border: 1px solid var(--border-strong); margin: 6px 0 8px 0;">
+          <div id="moodProgressBar" style="width: 80%; height: 100%; background: var(--success); transition: width 0.4s ease, background-color 0.4s ease;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <strong id="moodStateLabel" style="font-size: 13px; color: var(--success);">😊 Senang / Baik</strong>
+          <span class="badge" id="wkwkFilterBadge" style="font-size: 10.5px;">😄 Tawa Aktif</span>
+        </div>
+        <div style="font-size: 11.5px; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 6px;">
+          <strong>Contoh Sambat / Curhat Real-Time:</strong>
+          <div id="moodSampleComplaint" style="font-style: italic; color: var(--text); margin-top: 2px;">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ringkasan Kalkulasi Faktor Pengurang Mood -->
+    <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; font-size: 12px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; align-items: center;">
+      <span><strong>Formula Mood:</strong> Base (85) - Penalti Akademik - Penalti Sakit - Penalti Haid + Situasional Mas Joy</span>
+      <div style="display: flex; gap: 14px;">
+        <span>📚 Akademik: <strong id="moodAcadFactor">-</strong></span>
+        <span>🤒 Fisik: <strong id="moodSickFactor">-</strong></span>
+        <span>🌸 Haid: <strong id="moodMensFactor">-</strong></span>
+      </div>
+    </div>
   </div>
-  <div style="display: flex; justify-content: space-between; align-items: center;">
-    <span style="color: var(--muted);">🌸 Siklus Haid:</span>
-    <span id="moodMensFactor" style="font-weight: 600; color: var(--text);">-</span>
+
+  <!-- KARTU 3: Status Perkuliahan & Jam Kelas Real-Time -->
+  <div class="card" style="margin-bottom: 18px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px;">
+      <h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+        <span>🎓 Status Kuliah &amp; Jam Kelas (Acuan Mutlak Roadmap)</span>
+      </h2>
+      <span class="badge" id="classCurrentBadge" style="background: var(--success-soft); color: var(--success); border-color: var(--success);">Memuat sesi...</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px;">
+      <!-- Sesi Aktif Saat Ini -->
+      <div class="panel" style="padding: 12px;">
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 4px;">Sesi Kuliah Saat Ini</span>
+        <strong id="classCurrentCourse" style="font-size: 15px; display: block; color: var(--text); margin-bottom: 4px;">-</strong>
+        <span id="classCurrentLecturer" style="font-size: 12px; color: var(--muted); display: block; margin-bottom: 10px;">-</span>
+
+        <!-- Panel Notifikasi Antrian Kelas -->
+        <div id="classPendingNotice" style="display: none; background: var(--warn-soft); border: 1px solid var(--warn); border-radius: 6px; padding: 10px; font-size: 12px;">
+          <strong id="classPendingStatusText" style="color: var(--warn); display: block; margin-bottom: 4px;">⏳ Menahan pesan masuk...</strong>
+          <span style="color: var(--muted); line-height: 1.4; display: block;">
+            Pesan non-musik dari user ditampung (maks 10 pesan) dengan auto-reply santai "lagi di kelas". Balasan AI terpadu dikirim otomatis begitu kelas usai.
+          </span>
+        </div>
+      </div>
+
+      <!-- Jadwal Hari Ini & Tugas Aktif -->
+      <div class="panel" style="padding: 12px;">
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 6px;">Mata Kuliah Hari Ini</span>
+        <div id="overviewClassesTodayList" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
+          <span style="color: var(--muted); font-size: 12px;">Memuat jadwal...</span>
+        </div>
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600; display: block; margin-bottom: 4px;">Tugas DKV Mendekati Deadline</span>
+        <div id="overviewAssignmentsList" style="font-size: 12px;">
+          <span style="color: var(--muted);">Memuat tugas...</span>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
-<p class="desc" style="font-size: 12px; margin-top: 8px;">
-          Mood dihitung dari 3 faktor: tekanan akademik, kondisi fisik, dan siklus menstruasi. Kombinasi ketiganya bisa menyebabkan mood drop signifikan.
-        </p>
-</div>
-</div>
-</div><div class="card" style="margin-bottom: 20px;">
-<div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
-<h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">Kondisi Kehidupan Harian Callista (24 Jam)</h2>
-<span class="badge" id="dailyStatusBadge">Memuat jadwal harian...</span>
-</div>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; font-size: 13px;">
-<div>
-<span style="color: var(--muted); display: block;">Aktivitas Saat Ini:</span>
-<strong id="dailyCurrentActivity" style="color: var(--text);">-</strong>
-</div>
-<div>
-<span style="color: var(--muted); display: block;">Ketersediaan / Mood:</span>
-<strong id="dailyAvailability" style="color: var(--accent);">-</strong>
-</div>
-<div>
-<span style="color: var(--muted); display: block;">Rencana Terdekat:</span>
-<strong id="dailyUpcomingPlan" style="color: var(--text);">-</strong>
-</div>
-<div>
-<span style="color: var(--muted); display: block;">Jadwal Tidur:</span>
-<strong id="dailySleepSchedule" style="color: var(--muted);">-</strong>
-</div>
-</div>
-</div></section><section class="view-page" data-subtitle="Kelola memori inti dan latar belakang Callista" data-title="Persona &amp; Latar" id="page-background"><div class="card" style="margin-bottom: 20px;">
+
+  <!-- KARTU 4: Siklus Harian (24 Jam) & Catatan Hari Ini (Today Memory) -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
+      <h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0; font-size: 15px; display: flex; align-items: center; gap: 8px;">
+        <span>🕒 Siklus Kehidupan 24 Jam &amp; Catatan Hari Ini (Today Memory)</span>
+      </h2>
+      <span class="badge" id="dailyStatusBadge">Memuat jadwal harian...</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+      <!-- Aktivitas 24 Jam -->
+      <div class="panel" style="padding: 12px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12.5px;">
+          <div>
+            <span style="color: var(--muted); display: block; font-size: 11px;">Aktivitas Saat Ini:</span>
+            <strong id="dailyCurrentActivity" style="color: var(--text);">-</strong>
+          </div>
+          <div>
+            <span style="color: var(--muted); display: block; font-size: 11px;">Ketersediaan / Mood:</span>
+            <strong id="dailyAvailability" style="color: var(--accent);">-</strong>
+          </div>
+          <div>
+            <span style="color: var(--muted); display: block; font-size: 11px;">Rencana Terdekat:</span>
+            <strong id="dailyUpcomingPlan" style="color: var(--text);">-</strong>
+          </div>
+          <div>
+            <span style="color: var(--muted); display: block; font-size: 11px;">Jadwal Tidur:</span>
+            <strong id="dailySleepSchedule" style="color: var(--muted);">-</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Log Ingatan Hari Ini (Carry-over Context) -->
+      <div class="panel" style="padding: 12px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); font-weight: 600;">Ingatan Hari Ini (Today Memory)</span>
+          <span style="font-size: 10.5px; color: var(--muted);">Episodic Layer 1</span>
+        </div>
+        <div id="overviewTodayMemoryList" style="max-height: 100px; overflow-y: auto; font-size: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; line-height: 1.45;">
+          <span style="color: var(--muted);">Belum ada catatan baru hari ini.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section><section class="view-page" data-subtitle="Kelola memori inti dan latar belakang Callista" data-title="Persona &amp; Latar" id="page-background"><div class="card" style="margin-bottom: 20px;">
 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-bottom: 12px;">
 <h2 style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">Latar Belakang &amp; Persona Callista (Lore Editor)</h2>
 <span class="badge" id="backgroundStatus">Memuat background...</span>
@@ -1167,69 +1276,267 @@ body{max-width:none;margin:0;padding:0;background:#f5f5fb;line-height:1.55}
       loadUsers();
     });
 
-    let currentBotResponding = true;
+        let currentBotResponding = true;
 
-    async function loadBotState() {
+    async function loadOverviewData() {
       try {
-        const res = await fetch('/api/bot-state');
-        if (!res.ok) return;
-        const data = await res.json();
-        currentBotResponding = Boolean(data.isResponding);
+        const [botRes, healthRes, acadRes, dailyRes] = await Promise.all([
+          fetch('/api/bot-state').then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch('/api/health/state').then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch('/api/academic/roadmap').then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch('/api/daily-context').then(r => r.ok ? r.json() : null).catch(() => null),
+        ]);
 
-        const badge = document.getElementById('respondingBadge');
-        const btn = document.getElementById('toggleRespondingBtn');
-        const desc = document.getElementById('respondingDesc');
-
-        if (currentBotResponding) {
-          badge.textContent = '🟢 AKTIF (Merespon)';
-          badge.style.color = 'var(--success)';
-          badge.style.borderColor = 'var(--success)';
-          badge.style.background = 'var(--success-soft)';
-          btn.textContent = '⏸️ Matikan Respon (Paksa Diam Total)';
-          btn.style.background = 'var(--danger)';
-          btn.style.borderColor = 'transparent';
-          desc.textContent = 'Callista sedang AKTIF merespon obrolan sesuai jadwal dan filter perilakunya.';
-        } else {
-          badge.textContent = '🔴 DIAM TOTAL (Mati)';
-          badge.style.color = 'var(--danger)';
-          badge.style.borderColor = 'var(--danger)';
-          badge.style.background = 'var(--danger-soft)';
-          btn.textContent = '▶️ Nyalakan Respon (Boleh Nimbrung)';
-          btn.style.background = 'var(--success)';
-          btn.style.borderColor = 'transparent';
-          const dur = data.silencedDurationMinutes ? `${data.silencedDurationMinutes} menit` : 'baru saja';
-          desc.textContent = `Callista sedang DIAM TOTAL sejak ${dur}. Alasan: ${data.silencedReason || 'Manual'}. Tidak akan merespon apapun sampai dinyalakan lagi.`;
+        // 1. Bot State & Responding switch
+        if (botRes) {
+          currentBotResponding = Boolean(botRes.isResponding);
+          const badge = document.getElementById('respondingBadge');
+          const btn = document.getElementById('toggleRespondingBtn');
+          const desc = document.getElementById('respondingDesc');
+          if (badge && btn && desc) {
+            if (currentBotResponding) {
+              badge.textContent = '🟢 AKTIF (Merespon)';
+              badge.style.color = 'var(--success)';
+              badge.style.borderColor = 'var(--success)';
+              badge.style.background = 'var(--success-soft)';
+              btn.textContent = '⏸️ Matikan Respon (Paksa Diam Total)';
+              btn.style.background = 'var(--danger)';
+              btn.style.borderColor = 'transparent';
+              desc.textContent = 'Callista sedang AKTIF merespon obrolan sesuai jadwal dan filter perilakunya.';
+            } else {
+              badge.textContent = '🔴 DIAM TOTAL (Mati)';
+              badge.style.color = 'var(--danger)';
+              badge.style.borderColor = 'var(--danger)';
+              badge.style.background = 'var(--danger-soft)';
+              btn.textContent = '▶️ Nyalakan Respon (Boleh Nimbrung)';
+              btn.style.background = 'var(--success)';
+              btn.style.borderColor = 'transparent';
+              const dur = botRes.silencedDurationMinutes ? `${botRes.silencedDurationMinutes} menit` : 'baru saja';
+              desc.textContent = `Callista sedang DIAM TOTAL sejak ${dur}. Alasan: ${botRes.silencedReason || 'Manual'}. Tidak akan merespon apapun sampai dinyalakan lagi.`;
+            }
+          }
         }
 
-        const mood = data.mood ?? 80;
-        document.getElementById('moodScoreBadge').textContent = `${mood} / 100`;
-        const bar = document.getElementById('moodProgressBar');
-        bar.style.width = `${mood}%`;
-        const stateLabel = document.getElementById('moodStateLabel');
-        stateLabel.textContent = data.moodState || 'Biasa / Netral';
+        // 2. Health & Mood state
+        if (healthRes) {
+          const mood = healthRes.mood ?? 80;
+          const scoreEl = document.getElementById('moodScoreBadge');
+          if (scoreEl) scoreEl.textContent = `${mood} / 100`;
+          const bar = document.getElementById('moodProgressBar');
+          if (bar) bar.style.width = `${mood}%`;
+          const stateLabel = document.getElementById('moodStateLabel');
+          if (stateLabel) stateLabel.textContent = healthRes.moodState || 'Biasa / Netral';
 
-        if (mood >= 65) {
-          bar.style.backgroundColor = 'var(--success)';
-          stateLabel.style.color = 'var(--success)';
-        } else if (mood >= 45) {
-          bar.style.backgroundColor = 'var(--warn)';
-          stateLabel.style.color = 'var(--warn)';
-        } else {
-          bar.style.backgroundColor = 'var(--danger)';
-          stateLabel.style.color = 'var(--danger)';
-        }
+          if (mood >= 65) {
+            if (bar) bar.style.backgroundColor = 'var(--success)';
+            if (stateLabel) stateLabel.style.color = 'var(--success)';
+          } else if (mood >= 45) {
+            if (bar) bar.style.backgroundColor = 'var(--warn)';
+            if (stateLabel) stateLabel.style.color = 'var(--warn)';
+          } else {
+            if (bar) bar.style.backgroundColor = 'var(--danger)';
+            if (stateLabel) stateLabel.style.color = 'var(--danger)';
+          }
 
-        // Mood factor breakdown dari health state
-        fetch('/api/health/state').then(r => r.json()).then(h => {
-          const f = h.factors || {};
+          // Filter tawa (wkwk) badge
+          const wkwkBadge = document.getElementById('wkwkFilterBadge');
+          if (wkwkBadge) {
+            if (healthRes.noWkwk) {
+              wkwkBadge.textContent = '🔇 Tawa Dimatikan (Mood Rendah)';
+              wkwkBadge.style.color = 'var(--danger)';
+              wkwkBadge.style.borderColor = 'var(--danger)';
+              wkwkBadge.style.background = 'var(--danger-soft)';
+            } else {
+              wkwkBadge.textContent = '😄 Tawa Aktif ("wkwk" diizinkan)';
+              wkwkBadge.style.color = 'var(--success)';
+              wkwkBadge.style.borderColor = 'var(--success)';
+              wkwkBadge.style.background = 'var(--success-soft)';
+            }
+          }
+
+          // Sample complaint
+          const complaintEl = document.getElementById('moodSampleComplaint');
+          if (complaintEl) {
+            complaintEl.textContent = healthRes.sampleComplaint ? `"${healthRes.sampleComplaint}"` : 'Tidak ada keluhan saat ini.';
+          }
+
+          // Factors breakdown
+          const f = healthRes.factors || {};
           const acadEl = document.getElementById('moodAcadFactor');
           const sickEl = document.getElementById('moodSickFactor');
           const mensEl = document.getElementById('moodMensFactor');
-          if (acadEl) acadEl.textContent = f.academic ? (f.academic.penalty > 0 ? `-${f.academic.penalty} (${f.academic.classCount || 0} kelas)` : 'Santai / Libur') : '-';
-          if (sickEl) sickEl.textContent = f.sick && f.sick.activeIllnesses && f.sick.activeIllnesses.length > 0 ? f.sick.activeIllnesses.join(', ') : 'Sehat';
-          if (mensEl) mensEl.textContent = f.menstruation ? (f.menstruation.phaseName || 'Normal') : '-';
-        }).catch(() => {});
-      } catch (e) {}
+          if (acadEl) acadEl.textContent = f.academic ? (f.academic.penalty > 0 ? `-${f.academic.penalty} (${f.academic.level || ''})` : '0 (Santai/Libur)') : '-';
+          if (sickEl) sickEl.textContent = f.sick ? (f.sick.penalty > 0 ? `-${f.sick.penalty} (${f.sick.summary})` : '0 (Sehat)') : '-';
+          if (mensEl) mensEl.textContent = f.menstruation ? (f.menstruation.penalty > 0 ? `-${f.menstruation.penalty} (${f.menstruation.phaseName})` : '0 (Normal)') : '-';
+
+          // Physical Health Details
+          const overallBadge = document.getElementById('healthOverallBadge');
+          const activeIllness = document.getElementById('healthActiveIllness');
+          const symptoms = document.getElementById('healthSymptoms');
+          const sickPenaltyBadge = document.getElementById('sickPenaltyBadge');
+
+          if (f.sick && f.sick.hasIllness) {
+            if (overallBadge) {
+              overallBadge.textContent = '🟡 Kurang Sehat';
+              overallBadge.style.color = 'var(--warn)';
+              overallBadge.style.borderColor = 'var(--warn)';
+              overallBadge.style.background = 'var(--warn-soft)';
+            }
+            if (activeIllness) activeIllness.textContent = f.sick.summary || 'Sakit aktif';
+            if (symptoms) symptoms.textContent = f.sick.symptoms ? `Gejala: ${f.sick.symptoms}` : '-';
+            if (sickPenaltyBadge) {
+              sickPenaltyBadge.textContent = `Penalti: -${f.sick.penalty}`;
+              sickPenaltyBadge.style.color = 'var(--warn)';
+            }
+          } else {
+            if (overallBadge) {
+              overallBadge.textContent = '🟢 Kesehatan Baik & Prima';
+              overallBadge.style.color = 'var(--success)';
+              overallBadge.style.borderColor = 'var(--success)';
+              overallBadge.style.background = 'var(--success-soft)';
+            }
+            if (activeIllness) activeIllness.textContent = 'Tidak ada keluhan fisik';
+            if (symptoms) symptoms.textContent = 'Kondisi tubuh fit untuk kuliah & beraktivitas.';
+            if (sickPenaltyBadge) {
+              sickPenaltyBadge.textContent = 'Fit';
+              sickPenaltyBadge.style.color = 'var(--success)';
+            }
+          }
+
+          // Menstrual Cycle Details
+          const mensBadge = document.getElementById('mensPhaseBadge');
+          const mensDesc = document.getElementById('mensPhaseDesc');
+          const mensNext = document.getElementById('mensNextDate');
+          if (f.menstruation) {
+            const m = f.menstruation;
+            if (mensBadge) {
+              if (m.phase === 'haid_heavy' || m.phase === 'haid_light') {
+                mensBadge.textContent = '🩸 Sedang Haid';
+                mensBadge.style.color = 'var(--danger)';
+                mensBadge.style.borderColor = 'var(--danger)';
+                mensBadge.style.background = 'var(--danger-soft)';
+              } else if (m.phase === 'pms') {
+                mensBadge.textContent = '🌸 Fase PMS';
+                mensBadge.style.color = 'var(--warn)';
+                mensBadge.style.borderColor = 'var(--warn)';
+                mensBadge.style.background = 'var(--warn-soft)';
+              } else {
+                mensBadge.textContent = '🌸 Siklus Normal';
+                mensBadge.style.color = 'var(--success)';
+                mensBadge.style.borderColor = 'var(--success)';
+                mensBadge.style.background = 'var(--success-soft)';
+              }
+            }
+            if (mensDesc) mensDesc.textContent = m.description || m.phaseName || '-';
+            if (mensNext) mensNext.textContent = m.nextExpectedStart ? `Perkiraan haid berikutnya: ${m.nextExpectedStart}` : 'Jadwal siklus normal';
+          }
+        }
+
+        // 3. Academic & Class Session
+        if (acadRes) {
+          const curSess = acadRes.currentSession || {};
+          const classBadge = document.getElementById('classCurrentBadge');
+          const classCourse = document.getElementById('classCurrentCourse');
+          const classLecturer = document.getElementById('classCurrentLecturer');
+          const classPendingNotice = document.getElementById('classPendingNotice');
+          const classPendingText = document.getElementById('classPendingStatusText');
+
+          if (curSess.inClass && curSess.session) {
+            const sess = curSess.session;
+            if (classBadge) {
+              classBadge.textContent = '🔴 Sedang di Dalam Kelas';
+              classBadge.style.color = 'var(--danger)';
+              classBadge.style.borderColor = 'var(--danger)';
+              classBadge.style.background = 'var(--danger-soft)';
+            }
+            if (classCourse) classCourse.textContent = `${sess.courseName} (${sess.start} - ${sess.end} WIB)`;
+            if (classLecturer) classLecturer.textContent = `Ruang: ${sess.location || '-'} • Dosen: ${sess.lecturer || '-'} • Tipe: ${sess.type || '-'}`;
+            
+            const pCount = acadRes.pendingClassInfo ? acadRes.pendingClassInfo.count : 0;
+            if (classPendingNotice) classPendingNotice.style.display = 'block';
+            if (classPendingText) {
+              classPendingText.textContent = `⏳ Menahan pesan masuk (${pCount}/10 pesan pending). Auto-reply template aktif. Balasan AI terpadu dikirim otomatis pasca-kelas (${sess.end} WIB).`;
+            }
+          } else {
+            if (classBadge) {
+              classBadge.textContent = '🟢 Di Luar Jam Kelas';
+              classBadge.style.color = 'var(--success)';
+              classBadge.style.borderColor = 'var(--success)';
+              classBadge.style.background = 'var(--success-soft)';
+            }
+            if (classCourse) classCourse.textContent = 'Tidak ada sesi perkuliahan aktif saat ini.';
+            if (classLecturer) classLecturer.textContent = 'Callista bebas membuka chat dan merespon obrolan.';
+            if (classPendingNotice) classPendingNotice.style.display = 'none';
+          }
+
+          // Classes today list
+          const classesList = document.getElementById('overviewClassesTodayList');
+          if (classesList) {
+            if (acadRes.classesToday && acadRes.classesToday.length > 0) {
+              classesList.innerHTML = acadRes.classesToday.map(c => `
+                <div style="padding: 6px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; display: flex; justify-content: space-between; align-items: center;">
+                  <strong>${c.time} • ${c.name}</strong>
+                  <span style="color: var(--muted); font-size: 11.5px;">${c.location} (${c.type})</span>
+                </div>
+              `).join('');
+            } else {
+              classesList.innerHTML = '<span style="color: var(--muted);">Tidak ada jadwal kelas hari ini (Libur / Belajar Mandiri).</span>';
+            }
+          }
+
+          // Assignments
+          const assignList = document.getElementById('overviewAssignmentsList');
+          if (assignList) {
+            if (acadRes.activeAssignments && acadRes.activeAssignments.length > 0) {
+              assignList.innerHTML = acadRes.activeAssignments.slice(0, 3).map(a => `
+                <div style="padding: 3px 0; color: var(--text);">
+                  📌 <strong>${a.title}</strong> (${a.courseName}) — Deadline: ${a.due_date || '-'}
+                </div>
+              `).join('');
+            } else {
+              assignList.innerHTML = '<span style="color: var(--muted);">Tidak ada tugas mendesak.</span>';
+            }
+          }
+        }
+
+        // 4. Daily Context & Today Memory
+        if (dailyRes) {
+          const cur = dailyRes.current || {};
+          const ctx = dailyRes.context || {};
+          const actEl = document.getElementById('dailyCurrentActivity');
+          const availEl = document.getElementById('dailyAvailability');
+          const planEl = document.getElementById('dailyUpcomingPlan');
+          const sleepEl = document.getElementById('dailySleepSchedule');
+          const badge = document.getElementById('dailyStatusBadge');
+
+          if (badge) badge.textContent = `${ctx.date || ''} (${cur.status || 'Aktif'})`;
+          if (actEl) actEl.textContent = cur.current_activity || '-';
+          if (availEl) availEl.textContent = `${(cur.availability || '').toUpperCase()} (${cur.reply_tendency || ''})`;
+          if (planEl) planEl.textContent = cur.upcoming_plan || '-';
+          if (sleepEl && ctx.sleep_schedule) {
+            sleepEl.textContent = `${ctx.sleep_schedule.sleep_time} - ${ctx.sleep_schedule.wake_time} WIB`;
+          }
+
+          // Today Memory list
+          const memList = document.getElementById('overviewTodayMemoryList');
+          if (memList) {
+            const entries = dailyRes.todayMemory || [];
+            if (entries.length > 0) {
+              memList.innerHTML = entries.map(e => `
+                <div style="padding: 2.5px 0; border-bottom: 1px dashed var(--border);">${e}</div>
+              `).join('');
+            } else {
+              memList.innerHTML = '<span style="color: var(--muted);">Belum ada catatan baru hari ini.</span>';
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('[OVERVIEW] Error:', e);
+      }
+    }
+
+    async function loadBotState() {
+      await loadOverviewData();
     }
 
     document.getElementById('toggleRespondingBtn').addEventListener('click', async () => {

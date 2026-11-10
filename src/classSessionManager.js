@@ -251,6 +251,10 @@ async function checkAndFlushSessions(client, timezone = 'Asia/Jakarta') {
   return processedCount;
 }
 
+function getPendingSessions() {
+  return pendingData.sessions || {};
+}
+
 module.exports = {
   loadState,
   saveState,
@@ -261,6 +265,7 @@ module.exports = {
   removeSession,
   evaluatePendingBatch,
   checkAndFlushSessions,
+  getPendingSessions,
   MAX_PENDING_PER_SESSION,
   __test: {
     pendingData,
