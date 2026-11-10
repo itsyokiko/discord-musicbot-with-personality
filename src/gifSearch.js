@@ -294,6 +294,45 @@ function buildGifPromptSnippet() {
   return lines.join('\n');
 }
 
+/**
+ * Search GIF by raw query string (bukan expression), random pick dari index 1–limit.
+ * Dipakai untuk fitur greeting GIF dan sejenisnya.
+ */
+async function searchGifByQuery(query, limit = 10) {
+  const settings = loadGifSettings();
+  if (!settings.enabled) return null;
+  if (!settings.apiKey) return null;
+
+  try {
+    const url = new URL(GIPHY_SEARCH_URL);
+    url.searchParams.set('api_key', settings.apiKey);
+    url.searchParams.set('q', query);
+    url.searchParams.set('limit', String(limit));
+    url.searchParams.set('rating', settings.rating || 'pg-13');
+    url.searchParams.set('lang', 'en');
+
+    const res = await fetch(url.toString(), { signal: AbortSignal.timeout(8000) });
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const results = data?.data || [];
+    if (results.length === 0) return null;
+
+    // ponytail: random dari seluruh hasil (sudah dibatasi limit 10 dari API)
+    const picked = results[Math.floor(Math.random() * results.length)];
+    const gifUrl = picked?.images?.downsized?.url
+      || picked?.images?.original?.url
+      || picked?.url;
+
+    if (!gifUrl) return null;
+    console.log(`[GIF] searchGifByQuery "${query}" -> ${results.length} results, picked one`);
+    return { url: gifUrl, query };
+  } catch (err) {
+    console.error(`[GIF ERROR] searchGifByQuery: ${err.message}`);
+    return null;
+  }
+}
+
 module.exports = {
   GIF_SETTINGS_FILE,
   DEFAULT_KEYWORDS,
@@ -303,6 +342,7 @@ module.exports = {
   updateGifSettings,
   getKeywordsForExpression,
   searchRandomGif,
+  searchGifByQuery,
   buildGifPromptSnippet,
   EMOTION_MAP,
   normalizeEmotion,

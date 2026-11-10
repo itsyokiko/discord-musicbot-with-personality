@@ -294,6 +294,21 @@ function isFavoritesName(name) {
 }
 
 /**
+ * Deteksi ucapan salam/greeting dan return query GIF yang cocok.
+ * Return null kalau bukan greeting.
+ */
+function detectGreetingGifQuery(content) {
+  if (!content || typeof content !== 'string') return null;
+  const t = content.toLowerCase().trim();
+  if (/\b(selamat pagi|good morning|gm[!\s]|pagi[!\s]|morning[!\s!]|ohayo|おはよう)\b/i.test(t)) return 'good morning cute anime';
+  if (/\b(selamat siang|good afternoon|siang[!\s]|afternoon)\b/i.test(t)) return 'good afternoon cute';
+  if (/\b(selamat sore|good evening|sore[!\s]|evening greeting)\b/i.test(t)) return 'good evening wave';
+  if (/\b(selamat malam|good night|malem|malam[!\s]|goodnight|おやすみ)\b/i.test(t)) return 'good night kawaii';
+  if (/\b(hai|halo|hello|hey|hei|haii|heyy|howdy)\b/i.test(t)) return 'hello wave cute';
+  return null;
+}
+
+/**
  * Eksekusi perintah musik deterministik. Proses aksi dulu, reaksi belakangan.
  * Dipanggil dari messageCreate sebelum gate/AI, jadi tidak ada overhead LLM.
  */
@@ -2623,6 +2638,20 @@ function startBot(token) {
         } catch (_) {}
       }
       return;
+    }
+
+    // Greeting GIF: 30% chance kirim GIF vibe pagi/sore/malam kalau ada ucapan salam.
+    // Fire-and-forget — tidak blok pipeline, tidak butuh mention/gate.
+    // Skip kalau bot sedang di-silence total.
+    if (botState.isResponding !== false) {
+      const greetingQuery = detectGreetingGifQuery(content);
+      if (greetingQuery && Math.random() < 0.30) {
+        gifSearch.searchGifByQuery(greetingQuery, 10).then(async (gif) => {
+          if (!gif) return;
+          const sent = await message.channel.send(gif.url).catch(() => null);
+          if (sent) console.log(`[GIF] Greeting GIF "${greetingQuery}": ${gif.url}`);
+        }).catch(() => {});
+      }
     }
 
     const gateCheck = decision.checkPreAIGate(msgData, focus, config, botState);
