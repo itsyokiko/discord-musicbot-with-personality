@@ -21,7 +21,7 @@
   "brevity": 88,
   "spontaneity": 48,
   "emojiFrequency": 26,
-  "directAddressThreshold": 60,
+  "directAddressThreshold": null,
   "conversationFocus": 102,
   "interruptionTolerance": 38
 }

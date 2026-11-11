@@ -1,0 +1,14 @@
+{
+  "enabled": true,
+  "apiKey": "sk_64babaaa2683b6de55b1a79bd73e8cd97ba0606f693c3b3d",
+  "voiceId": "chK5ip2v7YJohMYsebig",
+  "modelId": "eleven_v4_turbo",
+  "chance": 1,
+  "creditsRemaining": 1002,
+  "voiceSettings": {
+    "stability": 0.55,
+    "similarity_boost": 0.8,
+    "style": 0.15,
+    "use_speaker_boost": true
+  }
+}

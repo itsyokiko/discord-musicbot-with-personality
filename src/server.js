@@ -1,4 +1,4 @@
-﻿const http = require('node:http');
+const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const storage = require('./storage');
@@ -836,7 +836,6 @@ function startServer(port) {
       return;
     }
 
-
     // ===== ELEVENLABS =====
     if (req.method === 'GET' && url.pathname === '/api/elevenlabs/settings') {
       const s = elevenLabs.getSettings();
@@ -847,12 +846,15 @@ function startServer(port) {
 
     if (req.method === 'POST' && url.pathname === '/api/elevenlabs/settings') {
       let body = '';
-      req.on('data', c => { body += c; });
+      req.on('data', chunk => { body += chunk; });
       req.on('end', () => {
         try {
           const updated = elevenLabs.updateSettings(JSON.parse(body || '{}'));
           res.writeHead(200, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ success: true, settings: { ...updated, apiKey: updated.apiKey ? updated.apiKey.slice(0, 8) + '\u2026' : '' } }));
+          res.end(JSON.stringify({
+            success: true,
+            settings: { ...updated, apiKey: updated.apiKey ? updated.apiKey.slice(0, 8) + '\u2026' : '' },
+          }));
         } catch (e) {
           res.writeHead(400, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({ error: e.message }));
@@ -863,7 +865,7 @@ function startServer(port) {
 
     if (req.method === 'POST' && url.pathname === '/api/elevenlabs/apikey') {
       let body = '';
-      req.on('data', c => { body += c; });
+      req.on('data', chunk => { body += chunk; });
       req.on('end', () => {
         try {
           const { apiKey } = JSON.parse(body || '{}');
@@ -915,7 +917,7 @@ function startServer(port) {
 
     if (req.method === 'POST' && url.pathname === '/api/elevenlabs/credits') {
       let body = '';
-      req.on('data', c => { body += c; });
+      req.on('data', chunk => { body += chunk; });
       req.on('end', () => {
         try {
           const { creditsRemaining } = JSON.parse(body || '{}');
@@ -931,6 +933,7 @@ function startServer(port) {
       return;
     }
     // ===== END ELEVENLABS =====
+
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Not found');
   });

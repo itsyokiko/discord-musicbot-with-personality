@@ -1167,7 +1167,7 @@
             <h3 style="margin-bottom:0;border:none;padding:0;">🎙️ ElevenLabs — Voice Note</h3>
             <span class="badge" id="elStatusBadge">Memuat...</span>
           </div>
-          <p class="desc" style="margin-bottom:14px;">Callista bisa mengirim pesan sebagai voice note (file audio MP3). Kredit dihitung per karakter yang di-synthesize.</p>
+          <p class="desc" style="margin-bottom:14px;">Callista bisa mengirim pesan sebagai voice note Discord (OGG/Opus) dengan tag ekspresi Jepang. Kredit dihitung per karakter yang di-synthesize.</p>
 
           <!-- API Key -->
           <div class="panel" style="margin-bottom:12px;">
@@ -1221,9 +1221,11 @@
                 <button class="btn btn-sm btn-secondary" id="elFetchModelsBtn" type="button" style="font-size:11px;">🔄 Muat Model</button>
               </div>
               <select id="elModelSelect" style="width:100%;font-size:12px;">
-                <option value="eleven_multilingual_v2">eleven_multilingual_v2 (Recommended)</option>
-                <option value="eleven_turbo_v2_5">eleven_turbo_v2_5 (Hemat)</option>
-                <option value="eleven_monolingual_v1">eleven_monolingual_v1</option>
+                <option value="eleven_v3">eleven_v3 (Audio tag Jepang — recommended)</option>
+                <option value="eleven_v4">eleven_v4 (Audio tag, terbaru)</option>
+                <option value="eleven_multilingual_v2">eleven_multilingual_v2 (tanpa tag)</option>
+                <option value="eleven_turbo_v2_5">eleven_turbo_v2_5 (hemat)</option>
+                <option value="eleven_flash_v2_5">eleven_flash_v2_5 (paling cepat)</option>
               </select>
               <span class="status-msg" id="elModelStatus" style="font-size:11px;display:block;margin-top:4px;"></span>
             </div>
@@ -2704,6 +2706,8 @@
     loadSfxState();
     // ===== ELEVENLABS MANAGER =====
     let elCreditsMax = 10000;
+    let elSavedVoiceId = '';
+    let elSavedModelId = '';
 
     async function loadElSettings() {
       try {
@@ -2712,8 +2716,9 @@
         document.querySelector('input[name="elEnabled"][value="' + (s.enabled ? '1' : '0') + '"]').checked = true;
         document.getElementById('elChanceSlider').value = Math.round((s.chance || 0.30) * 100);
         document.getElementById('elChanceVal').textContent = Math.round((s.chance || 0.30) * 100) + '%';
+        if (s.voiceId) elSavedVoiceId = s.voiceId;
         if (s.voiceId) document.getElementById('elVoiceSelect').value = s.voiceId;
-        if (s.modelId) document.getElementById('elModelSelect').value = s.modelId;
+        if (s.modelId) { elSavedModelId = s.modelId; document.getElementById('elModelSelect').value = s.modelId; }
         document.getElementById('elApiKeyInput').placeholder = s.apiKey ? 'API Key tersimpan (' + s.apiKey + ')' : 'Masukkan ElevenLabs API Key...';
         const cr = s.creditsRemaining ?? 10000;
         elCreditsMax = Math.max(elCreditsMax, cr);
@@ -2780,6 +2785,7 @@
         sel.innerHTML = '<option value="">— Pilih suara —</option>' +
           data.voices.map(v => '<option value="' + v.voice_id + '">' + v.name + ' (' + (v.category || 'premade') + ')</option>').join('');
         if (current) sel.value = current;
+        else if (elSavedVoiceId) sel.value = elSavedVoiceId;
         if (st) { st.textContent = data.voices.length + ' suara dimuat'; st.style.color = 'var(--success)'; }
       } catch(e) {
         if (st) { st.textContent = 'Gagal: ' + e.message; st.style.color = 'var(--danger)'; }
@@ -2799,6 +2805,7 @@
         const current = sel.value;
         sel.innerHTML = data.models.map(m => '<option value="' + m.model_id + '">' + m.name + '</option>').join('');
         if (current) sel.value = current;
+        else if (elSavedModelId) sel.value = elSavedModelId;
         if (st) { st.textContent = data.models.length + ' model dimuat'; st.style.color = 'var(--success)'; }
       } catch(e) {
         if (st) { st.textContent = 'Gagal: ' + e.message; st.style.color = 'var(--danger)'; }
@@ -2812,7 +2819,7 @@
       const st = document.getElementById('elSaveStatus');
       const enabled = document.querySelector('input[name="elEnabled"]:checked')?.value === '1';
       const chance = parseInt(document.getElementById('elChanceSlider').value, 10) / 100;
-      const voiceId = document.getElementById('elVoiceSelect').value;
+      const voiceId = document.getElementById('elVoiceSelect').value || elSavedVoiceId;
       const modelId = document.getElementById('elModelSelect').value;
       try {
         const res = await fetch('/api/elevenlabs/settings', {

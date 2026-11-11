@@ -261,7 +261,10 @@ async function cleanupAnomalyMessages(channel, client) {
     const fetched = await channel.messages.fetch({ limit: 20 }).catch(() => null);
     if (!fetched) return;
     for (const msg of fetched.values()) {
-      if (msg.author?.id === client.user.id && isAnomalyText(msg.content)) {
+      if (msg.author?.id !== client.user.id) continue;
+      // Pesan non-teks (voice note, audio, stiker, embed) tidak punya teks — bukan anomali.
+      if (msg.attachments?.size > 0 || msg.stickers?.size > 0 || msg.embeds?.length > 0) continue;
+      if (isAnomalyText(msg.content)) {
         console.log(`[VC_TRACKER] Menghapus pesan anomali Callista (ID: ${msg.id}) di #${channel.name}`);
         await msg.delete().catch(() => {});
         storage.removeHistoryMessage(channel.id, msg.id);
