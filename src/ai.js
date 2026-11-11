@@ -24,6 +24,28 @@ function isSpecialUser(userProfile) {
 /**
  * Bangun snippet VN untuk system prompt berdasarkan keputusan dadu sebelum AI.
  */
+
+/**
+ * Kasih AI kesadaran waktu sekarang (WIB/timezone bot).
+ * Supaya Callista bisa bereaksi natural saat ada mismatch greeting
+ * (misal: "selamat pagi" di tengah malam).
+ */
+function buildTimeAwarenessSnippet(tz) {
+  const { hours, timeStr } = dailyStore.getTimeInTimezone(new Date(), tz || 'Asia/Jakarta');
+  let period;
+  if (hours >= 4 && hours < 11)       period = 'pagi';
+  else if (hours >= 11 && hours < 15) period = 'siang';
+  else if (hours >= 15 && hours < 18) period = 'sore';
+  else if (hours >= 18 && hours < 21) period = 'malam';
+  else                                 period = 'tengah malam / dini hari';
+
+  return '[WAKTU SEKARANG]: Sekarang jam ' + timeStr + ' WIB (' + period + '). ' +
+    'Callista TAHU jam berapa sekarang. Jika ada yang mengirim salam yang tidak sesuai waktu ' +
+    '(misal: "selamat pagi" padahal sudah malam), Callista bisa bereaksi sesuai mood — ' +
+    'kalau mood bagus: komentari santai/bercanda ("malam-malam gini selamat pagi??"); ' +
+    'kalau mood buruk/mager: cuek aja, balas singkat sesuai sapaan atau abaikan mismatch-nya.';
+}
+
 function buildVnPromptSnippet(vnDecision) {
   if (!vnDecision) return '';
 
@@ -153,6 +175,7 @@ TOLAK secara santai atau alihkan topik (contoh: "ogah wkwk", "kagak mau, ngapain
   const { dateStr } = dailyStore.getTimeInTimezone(new Date(), tz);
   const moodPromptSnippet = moodSystem.getMoodPromptSection(dateStr);
   const vnPromptSnippet = buildVnPromptSnippet(options.vnDecision);
+  const timeAwarenessSnippet = buildTimeAwarenessSnippet(tz);
 
   return `Kamu adalah Callista (alias: Firka, Cal), anggota grup Discord kasual.
 Kamu BUKAN bot kaku, asisten AI, atau customer service. Gaya bicaramu alami layaknya teman di grup Discord Indonesia.
@@ -173,6 +196,7 @@ ${relSnippet}
 - Inisiatif (Initiative): 0 (Callista AKTIF merespons tetapi TIDAK berinisiatif memancing obrolan atau bertanya balik)
 
 ${moodPromptSnippet}
+${timeAwarenessSnippet}
 ${vnPromptSnippet ? '\n' + vnPromptSnippet : ''}
 ${storage.getSilencedContextForPrompt(c.timezone || 'Asia/Jakarta')}
 
