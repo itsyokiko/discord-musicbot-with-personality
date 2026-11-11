@@ -14,6 +14,16 @@
         "duration_days": 5,
         "symptoms": "Hidung mampet sebelah/meler, suara bindeng, kepala agak berat",
         "penalty": 18
+      },
+      {
+        "id": "illness_demam_2026-11-11",
+        "type": "demam",
+        "name": "Demam Meriang",
+        "started_at": "2026-11-11",
+        "ends_at": "2026-11-11",
+        "duration_days": 1,
+        "symptoms": "Badan meriang panas dingin, lemas menggigil di kasur",
+        "penalty": 35
       }
     ],
     "history": [
@@ -32,7 +42,7 @@
         "duration_days": 3
       }
     ],
-    "last_roll_date": "2026-11-10"
+    "last_roll_date": "2026-11-11"
   },
   "menstrual_cycle": {
     "cycle_length_days": 28,
