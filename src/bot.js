@@ -318,15 +318,24 @@ function callistaHasSentVnRecently(channelId) {
  * Dadu diroll sekali di sini — tidak diroll ulang di output handler.
  * Return: { isVnRequest, canVn, willSendVn, hasVnHistory }
  */
+// ponytail: 100 chars = perkiraan VN terpendek realistis; upgrade path -> estimasi dinamis dari rata-rata histori.
+const VN_MIN_CREDITS = 100;
+
 function resolveVnDecision(channelId, content) {
   const isVnRequest = detectVnRequest(content);
   const hasVnHistory = callistaHasSentVnRecently(channelId);
   const elSettings = elevenLabs.loadSettings();
-  const elReady = elSettings.enabled && elSettings.apiKey && elSettings.voiceId && (elSettings.creditsRemaining || 0) > 0;
-  if (!elReady) return { isVnRequest, canVn: false, willSendVn: false, hasVnHistory };
+
+  if (!elSettings.enabled || !elSettings.apiKey || !elSettings.voiceId) {
+    return { isVnRequest, canVn: false, willSendVn: false, hasVnHistory, reason: 'disabled' };
+  }
+  if ((elSettings.creditsRemaining || 0) < VN_MIN_CREDITS) {
+    return { isVnRequest, canVn: false, willSendVn: false, hasVnHistory, reason: 'credits' };
+  }
+
   const chance = Number.isFinite(elSettings.chance) ? elSettings.chance : 0.30;
   const diceHit = Math.random() < chance;
-  return { isVnRequest, canVn: true, willSendVn: diceHit, hasVnHistory };
+  return { isVnRequest, canVn: true, willSendVn: diceHit, hasVnHistory, reason: 'ok' };
 }
 
 /**

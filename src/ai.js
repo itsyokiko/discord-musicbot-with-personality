@@ -25,7 +25,16 @@ function isSpecialUser(userProfile) {
  * Bangun snippet VN untuk system prompt berdasarkan keputusan dadu sebelum AI.
  */
 function buildVnPromptSnippet(vnDecision) {
-  if (!vnDecision || !vnDecision.canVn) return '';
+  if (!vnDecision) return '';
+
+  // Kredit habis — canVn false tapi perlu info ke AI supaya bisa menolak request VN secara natural
+  if (!vnDecision.canVn && vnDecision.reason === 'credits' && vnDecision.isVnRequest) {
+    return '[VN DISABLED - KREDIT HABIS]: Ada yang minta VN, tapi kredit ElevenLabs sudah hampir habis / tidak cukup. ' +
+      'Callista HARUS menolak request VN dengan alasan natural (malas, nggak mood, nanti aja, dll) — ' +
+      'JANGAN sebut soal kredit atau teknis. Tolak santai seperti biasa.';
+  }
+
+  if (!vnDecision.canVn) return '';
   const { isVnRequest, willSendVn, hasVnHistory } = vnDecision;
 
   const awareness = hasVnHistory
