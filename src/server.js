@@ -1,4 +1,4 @@
-const http = require('node:http');
+﻿const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const storage = require('./storage');
@@ -7,6 +7,7 @@ const stickerEmoji = require('./stickerEmojiStore');
 const gifSearch = require('./gifSearch');
 const musicStore = require('./musicStore');
 const sfxStore = require('./sfxStore');
+const elevenLabs = require('./elevenLabs');
 
 function startServer(port) {
   sfxStore.setServerPort(port);
@@ -835,6 +836,101 @@ function startServer(port) {
       return;
     }
 
+
+    // ===== ELEVENLABS =====
+    if (req.method === 'GET' && url.pathname === '/api/elevenlabs/settings') {
+      const s = elevenLabs.getSettings();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ...s, apiKey: s.apiKey ? s.apiKey.slice(0, 8) + '\u2026' : '' }));
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/elevenlabs/settings') {
+      let body = '';
+      req.on('data', c => { body += c; });
+      req.on('end', () => {
+        try {
+          const updated = elevenLabs.updateSettings(JSON.parse(body || '{}'));
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, settings: { ...updated, apiKey: updated.apiKey ? updated.apiKey.slice(0, 8) + '\u2026' : '' } }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/elevenlabs/apikey') {
+      let body = '';
+      req.on('data', c => { body += c; });
+      req.on('end', () => {
+        try {
+          const { apiKey } = JSON.parse(body || '{}');
+          if (!apiKey || typeof apiKey !== 'string') throw new Error('apiKey diperlukan');
+          elevenLabs.updateSettings({ apiKey });
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/elevenlabs/voices') {
+      const apiKey = url.searchParams.get('apiKey') || '';
+      elevenLabs.fetchVoices(apiKey || undefined).then(voices => {
+        if (!voices) {
+          res.writeHead(502, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Gagal fetch voices — cek API key' }));
+        } else {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ voices }));
+        }
+      }).catch(e => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+      });
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/elevenlabs/models') {
+      const apiKey = url.searchParams.get('apiKey') || '';
+      elevenLabs.fetchModels(apiKey || undefined).then(models => {
+        if (!models) {
+          res.writeHead(502, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Gagal fetch models — cek API key' }));
+        } else {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ models }));
+        }
+      }).catch(e => {
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: e.message }));
+      });
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/elevenlabs/credits') {
+      let body = '';
+      req.on('data', c => { body += c; });
+      req.on('end', () => {
+        try {
+          const { creditsRemaining } = JSON.parse(body || '{}');
+          if (typeof creditsRemaining !== 'number') throw new Error('creditsRemaining (number) diperlukan');
+          const updated = elevenLabs.updateSettings({ creditsRemaining });
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, creditsRemaining: updated.creditsRemaining }));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+      return;
+    }
+    // ===== END ELEVENLABS =====
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Not found');
   });

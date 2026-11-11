@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Partials, EmbedBuilder } = require('discord.js');
+﻿const { Client, GatewayIntentBits, Partials, EmbedBuilder } = require('discord.js');
 const storage = require('./storage');
 const ai = require('./ai');
 const decision = require('./decision');
@@ -22,6 +22,7 @@ const todayMemory = require('./todayMemory');
 const collegeRoadmap = require('./collegeRoadmap');
 const classSessionManager = require('./classSessionManager');
 const moodSystem = require('./moodSystem');
+const elevenLabs = require('./elevenLabs');
 
 const processedMessageIds = new Set();
 const activeBursts = new Map();
@@ -46,42 +47,42 @@ function pick(arr) {
 }
 
 // --- Kontrol musik ---
-const SKIP_SUCCESS = ['⏭️', 'udah di-skip, lagu berikutnya yuk', 'oki skip, cabut dari lagunya wkwk', 'skipnya udah aku lakuin'];
-const SKIP_FAIL = ['ga ada yang lagi diputer buat di-skip nih 😭', 'antreannya kosong banget, skip apa sih wkwk', 'nyala dulu baru bisa di-skip wkwk'];
+const SKIP_SUCCESS = ['â­ï¸', 'udah di-skip, lagu berikutnya yuk', 'oki skip, cabut dari lagunya wkwk', 'skipnya udah aku lakuin'];
+const SKIP_FAIL = ['ga ada yang lagi diputer buat di-skip nih ðŸ˜­', 'antreannya kosong banget, skip apa sih wkwk', 'nyala dulu baru bisa di-skip wkwk'];
 const STOP_SUCCESS = ['oke stop, aku cabut dulu ya', 'stop, aku keluar dari VC', 'udah, aku cabut wkwk', 'berhenti dulu, sampai situ ya', 'oke, gue stop dan cabut'];
-const STOP_FAIL = ['ga lagi muter musik kok 😭', 'gak ada musik yang nyala, stop apa sih wkwk', 'udah mati kok, stop apa sih'];
-const PAUSE_SUCCESS = ['⏸️', 'udah di-pause, lanjut nanti ya', 'diem dulu lagunya wkwk', 'jedanya udah aku nyalakan'];
-const PAUSE_FAIL = ['ga lagi muter bos 😭', 'nyala dulu baru bisa di-pause wkwk', 'udah di-pause kok, pause apa sih'];
-const RESUME_SUCCESS = ['▶️', 'lanjutin lagi wkwk', 'nyalain balik lagunya', 'oke, lanjutin lagi'];
-const RESUME_FAIL = ['ga ada yang di-pause bjir 😭', 'udah nyala kok, resume apa sih wkwk', 'gak ada yang jeda, resume apa'];
-const SHUFFLE_SUCCESS = ['oke di-shuffle wkwk 🎲', 'udah di-acak2, akak-acak wkwk', 'shuffle selesai, random mode on', 'antreannya udah di-acak'];
-const SHUFFLE_FAIL_NONE = ['ga ada queue buat di-shuffle mas joy 😭', 'antreannya kosong, acak apa sih wkwk', 'kosong banget, shuffle apa'];
-const SHUFFLE_FAIL_LESS = ['lagu di queue kurang dari 2, ga bisa di-shuffle bjir 😭', 'cuma 1 lagu, acak-acak gimana sih wkwk', 'butuh minimal 2 lagu buat di-shuffle'];
-const QUEUE_EMPTY = ['queue kosong mas joy 😭', 'antreannya kosong banget wkwk', 'belum ada lagu yang diantre'];
-const NP_FAIL = ['ga ada lagu yang lagi diputer bjir 😭', 'nyala dulu baru tau now playing wkwk', 'udah mati kok, np apa sih'];
-const PLAY_FAIL_NO_ARGS = ['mau puter lagu apa mas joy? 😭', 'judulnya apa sih, mas joy?', 'lagu apa yang mau diputar?'];
-const PLAY_FAIL_NO_VC = ['mas joy masuk VC dulu, atau suruh gue join dulu 😭', 'masuk VC dulu baru aku bantu puter wkwk', 'gabisa kalau mas joy belum masuk VC'];
+const STOP_FAIL = ['ga lagi muter musik kok ðŸ˜­', 'gak ada musik yang nyala, stop apa sih wkwk', 'udah mati kok, stop apa sih'];
+const PAUSE_SUCCESS = ['â¸ï¸', 'udah di-pause, lanjut nanti ya', 'diem dulu lagunya wkwk', 'jedanya udah aku nyalakan'];
+const PAUSE_FAIL = ['ga lagi muter bos ðŸ˜­', 'nyala dulu baru bisa di-pause wkwk', 'udah di-pause kok, pause apa sih'];
+const RESUME_SUCCESS = ['â–¶ï¸', 'lanjutin lagi wkwk', 'nyalain balik lagunya', 'oke, lanjutin lagi'];
+const RESUME_FAIL = ['ga ada yang di-pause bjir ðŸ˜­', 'udah nyala kok, resume apa sih wkwk', 'gak ada yang jeda, resume apa'];
+const SHUFFLE_SUCCESS = ['oke di-shuffle wkwk ðŸŽ²', 'udah di-acak2, akak-acak wkwk', 'shuffle selesai, random mode on', 'antreannya udah di-acak'];
+const SHUFFLE_FAIL_NONE = ['ga ada queue buat di-shuffle mas joy ðŸ˜­', 'antreannya kosong, acak apa sih wkwk', 'kosong banget, shuffle apa'];
+const SHUFFLE_FAIL_LESS = ['lagu di queue kurang dari 2, ga bisa di-shuffle bjir ðŸ˜­', 'cuma 1 lagu, acak-acak gimana sih wkwk', 'butuh minimal 2 lagu buat di-shuffle'];
+const QUEUE_EMPTY = ['queue kosong mas joy ðŸ˜­', 'antreannya kosong banget wkwk', 'belum ada lagu yang diantre'];
+const NP_FAIL = ['ga ada lagu yang lagi diputer bjir ðŸ˜­', 'nyala dulu baru tau now playing wkwk', 'udah mati kok, np apa sih'];
+const PLAY_FAIL_NO_ARGS = ['mau puter lagu apa mas joy? ðŸ˜­', 'judulnya apa sih, mas joy?', 'lagu apa yang mau diputar?'];
+const PLAY_FAIL_NO_VC = ['mas joy masuk VC dulu, atau suruh gue join dulu ðŸ˜­', 'masuk VC dulu baru aku bantu puter wkwk', 'gabisa kalau mas joy belum masuk VC'];
 const PLAYLIST_EMPTY = (name) => `playlist lokal **${name}** masih kosong. Tambahin dulu: \`>add <link> >>${name}\``;
-const PLAYLIST_NOT_FOUND = (name) => `ga nemu playlist "${name}" mas joy 😭`;
-const PLAYLIST_FAIL_NO_VC = ['mas joy masuk VC dulu, atau suruh gue join dulu 😭', 'masuk VC dulu baru bisa puter playlist wkwk'];
-const BACK_SUCCESS = (name) => `oke, aku balik ke **${name}** ya Mas Joy 🎵`;
-const BACK_ALREADY = ['gue udah di sini mas joy 😭', 'udah ada di sini kok, balik kemana wkwk', 'udah ada di VC itu kok'];
-const BACK_FAIL_NO_VC = ['mas joy belum masuk VC mana-mana, mau balik kemana? 😭', 'masuk VC dulu baru bisa balik wkwk'];
-const LOOP_SUCCESS = ['oke, lagu ini di-loop terus ya 🔂', 'loop nyala, ulang-ulang aja wkwk', 'loop-mode: ON, ulang terus wkwk'];
-const LOOP_FAIL = ['ga ada lagu yang lagi diputer buat di-loop 😭', 'nyala dulu baru bisa di-loop wkwk', 'udah mati kok, loop apa sih'];
-const UNLOOP_SUCCESS = ['oke, loop-nya dimatiin 👍', 'udah mati loopnya wkwk', 'loop sudah aku matiin'];
-const UNLOOP_FAIL = ['ga ada lagu yang lagi diputer 😭', 'udah mati kok, unloop apa sih wkwk'];
-const JOIN_FAIL_NOT_IN_VC = ['mas joy lu sendiri aja belum masuk VC wkwk, masuk dulu dong 😭', 'masuk VC dulu baru aku ikut wkwk', 'gabisa kalau mas joy belum ada di VC'];
-const MOVE_FAIL_NOT_FOUND = (name) => `ga nemu VC "${name}" mas joy 😭`;
+const PLAYLIST_NOT_FOUND = (name) => `ga nemu playlist "${name}" mas joy ðŸ˜­`;
+const PLAYLIST_FAIL_NO_VC = ['mas joy masuk VC dulu, atau suruh gue join dulu ðŸ˜­', 'masuk VC dulu baru bisa puter playlist wkwk'];
+const BACK_SUCCESS = (name) => `oke, aku balik ke **${name}** ya Mas Joy ðŸŽµ`;
+const BACK_ALREADY = ['gue udah di sini mas joy ðŸ˜­', 'udah ada di sini kok, balik kemana wkwk', 'udah ada di VC itu kok'];
+const BACK_FAIL_NO_VC = ['mas joy belum masuk VC mana-mana, mau balik kemana? ðŸ˜­', 'masuk VC dulu baru bisa balik wkwk'];
+const LOOP_SUCCESS = ['oke, lagu ini di-loop terus ya ðŸ”‚', 'loop nyala, ulang-ulang aja wkwk', 'loop-mode: ON, ulang terus wkwk'];
+const LOOP_FAIL = ['ga ada lagu yang lagi diputer buat di-loop ðŸ˜­', 'nyala dulu baru bisa di-loop wkwk', 'udah mati kok, loop apa sih'];
+const UNLOOP_SUCCESS = ['oke, loop-nya dimatiin ðŸ‘', 'udah mati loopnya wkwk', 'loop sudah aku matiin'];
+const UNLOOP_FAIL = ['ga ada lagu yang lagi diputer ðŸ˜­', 'udah mati kok, unloop apa sih wkwk'];
+const JOIN_FAIL_NOT_IN_VC = ['mas joy lu sendiri aja belum masuk VC wkwk, masuk dulu dong ðŸ˜­', 'masuk VC dulu baru aku ikut wkwk', 'gabisa kalau mas joy belum ada di VC'];
+const MOVE_FAIL_NOT_FOUND = (name) => `ga nemu VC "${name}" mas joy ðŸ˜­`;
 const LEAVE_FAIL = ['ga lagi di VC, Mas Joy', 'udah keluar kok, leave apa sih wkwk', 'udah di luar kok'];
 
 // --- Playlist / Library ---
-const LIB_INFO_EMPTY = (name) => `playlist **${name}** masih kosong mas joy 😭`;
-const LIB_CREATE_EXISTS = (name) => `playlist **${name}** udah ada mas joy 😭`;
-const LIB_CREATE_REMOTE = (name) => `nama **${name}** udah dipakai playlist YouTube remote. Pilih nama lain dong 😭`;
+const LIB_INFO_EMPTY = (name) => `playlist **${name}** masih kosong mas joy ðŸ˜­`;
+const LIB_CREATE_EXISTS = (name) => `playlist **${name}** udah ada mas joy ðŸ˜­`;
+const LIB_CREATE_REMOTE = (name) => `nama **${name}** udah dipakai playlist YouTube remote. Pilih nama lain dong ðŸ˜­`;
 const LIB_CREATE_FAIL = (err) => `gagal bikin playlist: ${err}`;
 const LIB_ADD_NO_URL = ['link YouTube/TikTok/Spotify-nya mana? contoh: `>add https://youtu.be/... >>Favorit`', 'link-nya mana sih wkwk, kasih link YouTube, TikTok, atau Spotify-nya'];
-const LIB_ADD_NO_CURRENT = ['ga ada lagu yang lagi diputer buat disimpen 😭', 'nyala dulu baru bisa simpan lagu sekarang wkwk'];
+const LIB_ADD_NO_CURRENT = ['ga ada lagu yang lagi diputer buat disimpen ðŸ˜­', 'nyala dulu baru bisa simpan lagu sekarang wkwk'];
 const LIB_ADD_NO_TARGET = (options) => `masukin kemana ini?\n${options}\n\nBalas \`di ${options.split('\n')[0] || 'Favorit'}\` atau nama playlist lokal lain. Playlist YouTube remote nggak bisa ditambahin.`;
 const LIB_ADD_REMOTE = (name) => `playlist **${name}** itu YouTube remote, cuma bisa diputar. Nggak bisa ditambahin lagu. Bikin playlist lokal dulu: \`cal, buat playlist ${name}\``;
 const LIB_ADD_DUPLICATE = (name, total) => `semua lagu udah ada di **${name}** (${total} lagu)`;
@@ -92,15 +93,15 @@ const LIB_ADD_SUCCESS = (name, added, duplicate, total) => {
   return msg;
 };
 const LIB_ADD_FAIL = (err) => `gagal nyimpen: ${err}`;
-const LIB_INFO_NOT_FOUND = (name) => `ga nemu playlist lokal "${name}" mas joy 😭`;
+const LIB_INFO_NOT_FOUND = (name) => `ga nemu playlist lokal "${name}" mas joy ðŸ˜­`;
 
 // --- Search (TinyFish) ---
-const SEARCH_NO_RESULTS = (query) => `ga nemu hasil buat "${query}" di YouTube 😭 coba kata kunci lain.`;
-const SEARCH_ERROR = (err) => `uhh gagal nyari di YouTube: ${err.message} 😭`;
+const SEARCH_NO_RESULTS = (query) => `ga nemu hasil buat "${query}" di YouTube ðŸ˜­ coba kata kunci lain.`;
+const SEARCH_ERROR = (err) => `uhh gagal nyari di YouTube: ${err.message} ðŸ˜­`;
 const SEARCH_PICK_FAIL_INDEX = (total) => `hasil pencarian cuma ada ${total}. Pilih nomor 1-${total} ya.`;
-const SEARCH_PICK_NO_VC = ['mas joy masuk VC dulu, atau suruh gue join dulu 😭', 'masuk VC dulu baru bisa muter hasil cari wkwk'];
-const SEARCH_PICK_ERROR = (err) => `uhh gagal muter: ${err.message} 😭`;
-const SEARCH_PLAY_OK = (title) => `oke, muter **${title}** 🎵`;
+const SEARCH_PICK_NO_VC = ['mas joy masuk VC dulu, atau suruh gue join dulu ðŸ˜­', 'masuk VC dulu baru bisa muter hasil cari wkwk'];
+const SEARCH_PICK_ERROR = (err) => `uhh gagal muter: ${err.message} ðŸ˜­`;
+const SEARCH_PLAY_OK = (title) => `oke, muter **${title}** ðŸŽµ`;
 
 /* ==================================================================== */
 
@@ -142,12 +143,12 @@ async function waitForVoiceLeave(client, guildId, timeoutMs = 2000) {
 function formatQueueText(q) {
   if (!q) return null;
   const lines = [];
-  const status = q.isPaused ? '⏸️' : (q.isPlaying ? '▶️' : '⏹️');
-  const shuf = q.isShuffled ? ' 🔀' : '';
-  const rep = q.repeatMode === 1 ? ' 🔂' : (q.repeatMode === 2 ? ' 🔁' : '');
+  const status = q.isPaused ? 'â¸ï¸' : (q.isPlaying ? 'â–¶ï¸' : 'â¹ï¸');
+  const shuf = q.isShuffled ? ' ðŸ”€' : '';
+  const rep = q.repeatMode === 1 ? ' ðŸ”‚' : (q.repeatMode === 2 ? ' ðŸ”' : '');
   lines.push(`${status}${shuf}${rep} Antrian lagu (total ${q.total}):`);
   q.songs.forEach((s) => {
-    const marker = s.isCurrent ? '▶️ ' : '   ';
+    const marker = s.isCurrent ? 'â–¶ï¸ ' : '   ';
     lines.push(`${marker}${s.position}. ${s.name} (${s.duration})`);
   });
   if (q.total > q.songs.length) {
@@ -159,47 +160,47 @@ function formatQueueText(q) {
 function buildHelpEmbed() {
   return new EmbedBuilder()
     .setColor(0x9B59B6)
-    .setAuthor({ name: '🎵 Panduan Perintah Musik Callista' })
+    .setAuthor({ name: 'ðŸŽµ Panduan Perintah Musik Callista' })
     .setDescription('Gunakan prefix `>` untuk perintah cepat, atau sapa Callista secara natural.')
     .addFields(
       {
-        name: '▶️ Pemutar Musik',
+        name: 'â–¶ï¸ Pemutar Musik',
         value: [
-          '`>play <judul/link>` / `>p` — Putar lagu atau playlist acak',
-          '`>p <judul> >>loop` — Putar lagu lalu langsung loop',
-          '`>skip` (`>sk`) · `>stop` (`>st`) · `>pause` · `>resume`',
-          '`>loop` / `>unloop` — Ulangi lagu / matikan loop',
-          '`>shuffle` (`>sh`) — Acak urutan antrian',
-          '`>queue` (`>q`) — Buka/tutup antrian di embed player',
-          '`>player` (`>plr`) — Segarkan tampilan pemutar aktif',
-          '`>jump <menit>` — Lompat ke posisi menit (cth: `>jump 1.5`)',
-          '`>sfx` — Putar audio lokal / SFX dari Dashboard',
-          '`>lyrics` (`>lirik`) — Tampilkan lirik lagu lengkap',
-          '`>np` — Informasi lagu yang sedang diputar',
-          '`>join` / `>leave` — Masuk / keluar Voice Channel',
+          '`>play <judul/link>` / `>p` â€” Putar lagu atau playlist acak',
+          '`>p <judul> >>loop` â€” Putar lagu lalu langsung loop',
+          '`>skip` (`>sk`) Â· `>stop` (`>st`) Â· `>pause` Â· `>resume`',
+          '`>loop` / `>unloop` â€” Ulangi lagu / matikan loop',
+          '`>shuffle` (`>sh`) â€” Acak urutan antrian',
+          '`>queue` (`>q`) â€” Buka/tutup antrian di embed player',
+          '`>player` (`>plr`) â€” Segarkan tampilan pemutar aktif',
+          '`>jump <menit>` â€” Lompat ke posisi menit (cth: `>jump 1.5`)',
+          '`>sfx` â€” Putar audio lokal / SFX dari Dashboard',
+          '`>lyrics` (`>lirik`) â€” Tampilkan lirik lagu lengkap',
+          '`>np` â€” Informasi lagu yang sedang diputar',
+          '`>join` / `>leave` â€” Masuk / keluar Voice Channel',
         ].join('\n'),
       },
       {
-        name: '🔍 Pencarian Lagu (YouTube)',
+        name: 'ðŸ” Pencarian Lagu (YouTube)',
         value: [
-          '`>sc <judul>` / `>search` — Cari 10 lagu (embed interaktif)',
-          '`>p 1` / `nomor 1` — Putar nomor hasil pencarian',
-          '`nomor 1 ke <nama>` — Simpan hasil ke playlist lokal',
+          '`>sc <judul>` / `>search` â€” Cari 10 lagu (embed interaktif)',
+          '`>p 1` / `nomor 1` â€” Putar nomor hasil pencarian',
+          '`nomor 1 ke <nama>` â€” Simpan hasil ke playlist lokal',
         ].join('\n'),
       },
       {
-        name: '📁 Playlist Lokal & Remote',
+        name: 'ðŸ“ Playlist Lokal & Remote',
         value: [
-          '`>playlist <nama>` / `>pl` — Putar playlist tersimpan',
-          '`>add <link>` — Simpan lagu ke playlist lokal',
-          '`>like <link>` — Simpan langsung ke Favorit',
-          '`>create <nama>` — Buat playlist lokal baru',
-          '`>pl-rm <link> >>Nama` — Simpan playlist YouTube remote',
+          '`>playlist <nama>` / `>pl` â€” Putar playlist tersimpan',
+          '`>add <link>` â€” Simpan lagu ke playlist lokal',
+          '`>like <link>` â€” Simpan langsung ke Favorit',
+          '`>create <nama>` â€” Buat playlist lokal baru',
+          '`>pl-rm <link> >>Nama` â€” Simpan playlist YouTube remote',
         ].join('\n'),
       },
       {
-        name: '🛡️ Izin Perintah (Mas Joy)',
-        value: '`>permit @user` · `>unpermit @user` · `>permit` (cek daftar)',
+        name: 'ðŸ›¡ï¸ Izin Perintah (Mas Joy)',
+        value: '`>permit @user` Â· `>unpermit @user` Â· `>permit` (cek daftar)',
       }
     )
     .setFooter({ text: 'Singkatan cepat hanya berlaku memakai prefix >' });
@@ -207,28 +208,28 @@ function buildHelpEmbed() {
 
 function formatHelpText() {
   return [
-    '🎵 **Command Musik Callista**',
-    '`>play <judul/link>` / `>p` — putar lagu / playlist acak',
-    '`>p <judul> >>loop` — putar lalu langsung loop',
-    '`>skip` / `>stop` / `>pause` / `>resume` — kontrol pemutar',
-    '`>loop` / `>unloop` — ulang lagu / matikan loop',
-    '`>shuffle` / `>queue` (`>q`) / `>player` (`>plr`) — antrian & controller',
-    '`>jump <menit>` — lompat ke menit tertentu (cth: `>jump 1.5`)',
-    '`>sfx` — putar audio lokal / SFX dari Dashboard',
-    '`>lyrics` (`>lirik`) — tampilkan lirik lagu lengkap',
-    '`>np` — lagu yang sedang diputar',
-    '`>join` / `>leave` — masuk / keluar VC',
-    '`>playlist <nama>` — putar playlist',
+    'ðŸŽµ **Command Musik Callista**',
+    '`>play <judul/link>` / `>p` â€” putar lagu / playlist acak',
+    '`>p <judul> >>loop` â€” putar lalu langsung loop',
+    '`>skip` / `>stop` / `>pause` / `>resume` â€” kontrol pemutar',
+    '`>loop` / `>unloop` â€” ulang lagu / matikan loop',
+    '`>shuffle` / `>queue` (`>q`) / `>player` (`>plr`) â€” antrian & controller',
+    '`>jump <menit>` â€” lompat ke menit tertentu (cth: `>jump 1.5`)',
+    '`>sfx` â€” putar audio lokal / SFX dari Dashboard',
+    '`>lyrics` (`>lirik`) â€” tampilkan lirik lagu lengkap',
+    '`>np` â€” lagu yang sedang diputar',
+    '`>join` / `>leave` â€” masuk / keluar VC',
+    '`>playlist <nama>` â€” putar playlist',
     '',
     '**Pencarian (YouTube):**',
-    '`>sc <judul>` — cari 10 lagu dengan embed interaktif',
-    '`>p 1` / `nomor 1` — putar nomor hasil pencarian',
-    '`nomor 1 ke <nama>` — simpan hasil ke playlist',
+    '`>sc <judul>` â€” cari 10 lagu dengan embed interaktif',
+    '`>p 1` / `nomor 1` â€” putar nomor hasil pencarian',
+    '`nomor 1 ke <nama>` â€” simpan hasil ke playlist',
     '',
     '**Playlist:**',
-    '`>add <link> >>Nama` / `>like <link>` — simpan lagu',
-    '`>create <nama>` — buat playlist lokal baru',
-    '`>pl-rm <link> >>Nama` — simpan playlist YouTube remote',
+    '`>add <link> >>Nama` / `>like <link>` â€” simpan lagu',
+    '`>create <nama>` â€” buat playlist lokal baru',
+    '`>pl-rm <link> >>Nama` â€” simpan playlist YouTube remote',
     '',
     '**Izin (Mas Joy):** `>permit @user` / `>unpermit @user` / `>permit`',
   ].join('\n');
@@ -294,16 +295,51 @@ function isFavoritesName(name) {
 }
 
 /**
+ * Deteksi apakah pesan adalah permintaan VN kepada Callista.
+ */
+function detectVnRequest(content) {
+  if (!content) return false;
+  return /\b(vn|voice\s*note|voice\s*message|kirim\s*vn|coba\s*vn|minta\s*vn|dong\s*vn|suaramu|denger\s*suara(mu)?|kasih\s*vn|send\s*vn)\b/i.test(content);
+}
+
+/**
+ * Cek apakah Callista pernah kirim VN di 10 chat bot terakhir di channel ini.
+ */
+function callistaHasSentVnRecently(channelId) {
+  try {
+    const history = storage.getHistory(channelId) || [];
+    const botMessages = history.filter(m => m.isBot).slice(-10);
+    return botMessages.some(m => typeof m.content === 'string' && m.content.startsWith('[voice_note]'));
+  } catch (e) { return false; }
+}
+
+/**
+ * Putuskan apakah Callista kirim VN SEBELUM AI dipanggil.
+ * Dadu diroll sekali di sini — tidak diroll ulang di output handler.
+ * Return: { isVnRequest, canVn, willSendVn, hasVnHistory }
+ */
+function resolveVnDecision(channelId, content) {
+  const isVnRequest = detectVnRequest(content);
+  const hasVnHistory = callistaHasSentVnRecently(channelId);
+  const elSettings = elevenLabs.loadSettings();
+  const elReady = elSettings.enabled && elSettings.apiKey && elSettings.voiceId && (elSettings.creditsRemaining || 0) > 0;
+  if (!elReady) return { isVnRequest, canVn: false, willSendVn: false, hasVnHistory };
+  const chance = Number.isFinite(elSettings.chance) ? elSettings.chance : 0.30;
+  const diceHit = Math.random() < chance;
+  return { isVnRequest, canVn: true, willSendVn: diceHit, hasVnHistory };
+}
+
+/**
  * Deteksi ucapan salam/greeting dan return query GIF yang cocok.
  * Return null kalau bukan greeting.
  */
 function detectGreetingGifQuery(content) {
   if (!content || typeof content !== 'string') return null;
   const t = content.toLowerCase().trim();
-  if (/\b(selamat pagi|good morning|gm[!\s]|pagi[!\s]|morning[!\s!]|ohayo|おはよう)\b/i.test(t)) return 'good morning cute anime';
+  if (/\b(selamat pagi|good morning|gm[!\s]|pagi[!\s]|morning[!\s!]|ohayo|ãŠã¯ã‚ˆã†)\b/i.test(t)) return 'good morning cute anime';
   if (/\b(selamat siang|good afternoon|siang[!\s]|afternoon)\b/i.test(t)) return 'good afternoon cute';
   if (/\b(selamat sore|good evening|sore[!\s]|evening greeting)\b/i.test(t)) return 'good evening wave';
-  if (/\b(selamat malam|good night|malem|malam[!\s]|goodnight|おやすみ)\b/i.test(t)) return 'good night kawaii';
+  if (/\b(selamat malam|good night|malem|malam[!\s]|goodnight|ãŠã‚„ã™ã¿)\b/i.test(t)) return 'good night kawaii';
   if (/\b(hai|halo|hello|hey|hei|haii|heyy|howdy)\b/i.test(t)) return 'hello wave cute';
   return null;
 }
@@ -343,7 +379,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
   }
 
   if (!guild) {
-    await reply('ini DM, ga bisa kontrol musik disini 😭');
+    await reply('ini DM, ga bisa kontrol musik disini ðŸ˜­');
     return;
   }
 
@@ -354,7 +390,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         await safeDeleteCommandMessage();
         return;
       }
-      await react('⏭️');
+      await react('â­ï¸');
       return;
     }
     case 'stop': {
@@ -364,7 +400,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         await safeDeleteCommandMessage();
         return;
       }
-      await react('⏹️');
+      await react('â¹ï¸');
       const msg = pick(STOP_SUCCESS);
       return reply(msg);
     }
@@ -374,7 +410,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         await safeDeleteCommandMessage();
         return;
       }
-      await react('⏸️');
+      await react('â¸ï¸');
       return;
     }
     case 'resume': {
@@ -383,7 +419,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         await safeDeleteCommandMessage();
         return;
       }
-      await react('▶️');
+      await react('â–¶ï¸');
       return;
     }
     case 'shuffle': {
@@ -395,14 +431,14 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         await safeDeleteCommandMessage();
         return;
       }
-      await react('🔀');
+      await react('ðŸ”€');
       return reply(pick(SHUFFLE_SUCCESS));
     }
     case 'queue': {
       // Edit embed player in-place (toggle queue view) alih-alih kirim chat baru.
       const toggled = await musicPlayer.toggleQueueView(guild.id, 0);
       if (!toggled) {
-        // Tidak ada embed aktif → fallback teks
+        // Tidak ada embed aktif â†’ fallback teks
         return reply(formatQueueText(musicPlayer.getQueueList(guild.id)) || pick(QUEUE_EMPTY));
       }
       if (source === 'prefix') {
@@ -410,37 +446,37 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         return;
       }
       // Berhasil edit embed, kasih konfirmasi kecil
-      await react('📋');
+      await react('ðŸ“‹');
       return;
     }
     case 'np': {
       const q = musicPlayer.getQueueList(guild.id);
       const current = q?.songs?.find(s => s.isCurrent);
       if (!current) return reply(pick(NP_FAIL));
-      return reply(`🎵 **${current.name}** (${current.duration})${q.isPaused ? ' ⏸️' : ''}`);
+      return reply(`ðŸŽµ **${current.name}** (${current.duration})${q.isPaused ? ' â¸ï¸' : ''}`);
     }
     case 'sfx': {
       if (!sfxStore.hasSfx()) {
         const embed = new EmbedBuilder()
           .setColor(0xF1C40F)
-          .setTitle('🔊 SFX Belum Dimuat')
-          .setDescription('Belum ada file audio SFX yang dimuat nih mas joy 😭\n\nSilakan upload lagu / audio lokal lewat Web Dashboard di menu **Music Player** ➔ **Load SFX**.')
-          .setFooter({ text: 'Callista Music • SFX Player' });
+          .setTitle('ðŸ”Š SFX Belum Dimuat')
+          .setDescription('Belum ada file audio SFX yang dimuat nih mas joy ðŸ˜­\n\nSilakan upload lagu / audio lokal lewat Web Dashboard di menu **Music Player** âž” **Load SFX**.')
+          .setFooter({ text: 'Callista Music â€¢ SFX Player' });
         return reply({ embeds: [embed] });
       }
 
       const res = await musicPlayer.playSfx(member, message.channel);
       if (!res.success) {
         if (res.code === 'NO_VOICE') return reply(pick(PLAY_FAIL_NO_VC));
-        return reply(`gagal muter SFX: ${res.error || 'error tidak diketahui'} 😭`);
+        return reply(`gagal muter SFX: ${res.error || 'error tidak diketahui'} ðŸ˜­`);
       }
-      return react('🔊');
+      return react('ðŸ”Š');
     }
     case 'lyrics': {
       const q = musicPlayer.getQueueList(guild.id);
       const current = q?.songs?.find(s => s.isCurrent);
       const query = args || current?.name;
-      if (!query) return reply('lagu apa yang mau dicari liriknya mas joy? 😭');
+      if (!query) return reply('lagu apa yang mau dicari liriknya mas joy? ðŸ˜­');
 
       // Ambil lirik dari cache aktif player guild jika tanpa query manual
       let lyrics = !args ? musicPlayer.getGuildLyrics(guild.id) : null;
@@ -448,7 +484,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         const artist = args ? '' : (current?.uploader?.name || '');
         lyrics = await lyricsStore.getLyrics(query, artist, current?.duration || 0);
       }
-      if (!lyrics) return reply(`lirik untuk **${query}** tidak ditemukan di LRCLIB mas joy 😭`);
+      if (!lyrics) return reply(`lirik untuk **${query}** tidak ditemukan di LRCLIB mas joy ðŸ˜­`);
 
       let textContent = '';
       if (lyrics.lines && lyrics.lines.length > 0) {
@@ -457,7 +493,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         textContent = lyrics.plainLyrics;
       }
 
-      if (!textContent) return reply(`lirik untuk **${query}** kosong mas joy 😭`);
+      if (!textContent) return reply(`lirik untuk **${query}** kosong mas joy ðŸ˜­`);
 
       if (textContent.length > 3900) {
         textContent = textContent.slice(0, 3900) + '\n... (dipotong karena terlalu panjang)';
@@ -465,11 +501,11 @@ async function handleDirectMusicCommand({ client, message, command, args, source
 
       const embed = new EmbedBuilder()
         .setColor(0x9B59B6)
-        .setTitle(`🎤 Lirik: ${lyrics.trackName || query}`)
+        .setTitle(`ðŸŽ¤ Lirik: ${lyrics.trackName || query}`)
         .setDescription(textContent)
-        .setFooter({ text: lyrics.artistName ? `Artis: ${lyrics.artistName} • LRCLIB` : 'LRCLIB' });
+        .setFooter({ text: lyrics.artistName ? `Artis: ${lyrics.artistName} â€¢ LRCLIB` : 'LRCLIB' });
 
-      await react('📜');
+      await react('ðŸ“œ');
       return reply({ embeds: [embed] });
     }
     case 'join': {
@@ -493,11 +529,11 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         voiceUtils.joinVoice(channel);
         return reply(voiceUtils.generateJoinSuccessMessage(channel, config.timezone));
       } catch (e) {
-        return reply(`gagal join VC: ${e.message} 😭`);
+        return reply(`gagal join VC: ${e.message} ðŸ˜­`);
       }
     }
     case 'move': {
-      if (!args) return reply('pindah ke VC mana, Mas Joy? 😭');
+      if (!args) return reply('pindah ke VC mana, Mas Joy? ðŸ˜­');
       const targetName = args.replace(/^(?:vc|voice|channel)\s+/i, '').trim();
       const targetChannel = voiceUtils.findVoiceChannel(guild, targetName);
       if (!targetChannel) return reply(MOVE_FAIL_NOT_FOUND(targetName));
@@ -505,9 +541,9 @@ async function handleDirectMusicCommand({ client, message, command, args, source
       await waitForVoiceLeave(client, guild.id);
       try {
         voiceUtils.joinVoice(targetChannel);
-        return reply(`oke, aku pindah ke **${targetChannel.name}** ya Mas Joy 🎵`);
+        return reply(`oke, aku pindah ke **${targetChannel.name}** ya Mas Joy ðŸŽµ`);
       } catch (e) {
-        return reply(`gagal pindah VC: ${e.message} 😭`);
+        return reply(`gagal pindah VC: ${e.message} ðŸ˜­`);
       }
     }
     case 'leave': {
@@ -533,13 +569,13 @@ async function handleDirectMusicCommand({ client, message, command, args, source
             return reply(pick(PLAYLIST_FAIL_NO_VC));
           }
 
-          await react('🎵');
+          await react('ðŸŽµ');
           if (shouldShuffle) {
             await sleep(800);
             await musicPlayer.toggleShuffle(guild.id);
-            return reply(`oke, muter riwayat putar (${historySongs.length} lagu, di-shuffle 🎲) ya Mas Joy 🎵`);
+            return reply(`oke, muter riwayat putar (${historySongs.length} lagu, di-shuffle ðŸŽ²) ya Mas Joy ðŸŽµ`);
           }
-          return reply(`oke, muter riwayat putar (${historySongs.length} lagu) ya Mas Joy 🎵`);
+          return reply(`oke, muter riwayat putar (${historySongs.length} lagu) ya Mas Joy ðŸŽµ`);
         }
 
         // 2. Fallback jika riwayat masih kosong: putar playlist tersimpan
@@ -556,7 +592,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         }
 
         if (!chosen) {
-          return reply('belum ada playlist tersimpan mas joy 😭 simpan dulu di dashboard atau bikin playlist lokal: `>create <nama>`');
+          return reply('belum ada playlist tersimpan mas joy ðŸ˜­ simpan dulu di dashboard atau bikin playlist lokal: `>create <nama>`');
         }
 
         const res = await musicPlayer.playPlaylist(member, message.channel, chosen);
@@ -565,13 +601,13 @@ async function handleDirectMusicCommand({ client, message, command, args, source
           return reply(pick(PLAYLIST_FAIL_NO_VC));
         }
 
-        await react('🎵');
+        await react('ðŸŽµ');
         if (shouldShuffle) {
           await sleep(800);
           await musicPlayer.toggleShuffle(guild.id);
-          return reply(`oke, muter playlist **${chosen.name}** (di-shuffle 🎲) ya Mas Joy 🎵`);
+          return reply(`oke, muter playlist **${chosen.name}** (di-shuffle ðŸŽ²) ya Mas Joy ðŸŽµ`);
         }
-        return reply(`oke, muter playlist **${chosen.name}** ya Mas Joy 🎵`);
+        return reply(`oke, muter playlist **${chosen.name}** ya Mas Joy ðŸŽµ`);
       }
 
       const { title, withLoop } = musicCommands.parsePlayLoopSuffix(args);
@@ -589,10 +625,10 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         await safeDeleteCommandMessage();
         return;
       }
-      return react('▶️');
+      return react('â–¶ï¸');
     }
     case 'playlist': {
-      if (!args) return reply('playlist-nya apa mas joy? 😭');
+      if (!args) return reply('playlist-nya apa mas joy? ðŸ˜­');
 
       // Cek apakah args memuat URL (mis. Spotify / YouTube playlist link)
       const urlMatch = args.match(/(?:https?:\/\/|spotify:)[^\s<>]+/i);
@@ -600,11 +636,11 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         const cleanUrl = urlMatch[0];
         const res = await musicPlayer.playPlaylist(member, message.channel, cleanUrl);
         if (!res.success) {
-          if (res.code === 'EMPTY_PLAYLIST') return reply('playlist kosong atau tidak bisa dimuat mas joy 😭');
+          if (res.code === 'EMPTY_PLAYLIST') return reply('playlist kosong atau tidak bisa dimuat mas joy ðŸ˜­');
           return reply(pick(PLAYLIST_FAIL_NO_VC));
         }
-        await react('🎵');
-        return reply(`oke, muter playlist dari link tersebut ya Mas Joy 🎵`);
+        await react('ðŸŽµ');
+        return reply(`oke, muter playlist dari link tersebut ya Mas Joy ðŸŽµ`);
       }
 
       let pl = musicStore.findPlaylistByName(args);
@@ -617,15 +653,15 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         if (res.code === 'EMPTY_PLAYLIST') return reply(PLAYLIST_EMPTY(pl.name));
         return reply(pick(PLAYLIST_FAIL_NO_VC));
       }
-      await react('🎵');
+      await react('ðŸŽµ');
 
       if (isCurrentlyPlaying) {
         musicPlayer.setPendingPlaylistSwitch(guild.id, pl);
         await musicPlayer.renderPlayerView(guild.id);
-        return reply(`oke, playlist **${pl.name}** dimasukkan ke antrian. Atau klik tombol **[Play "${pl.name}" Now]** di player untuk langsung ganti sekarang! 🎵`);
+        return reply(`oke, playlist **${pl.name}** dimasukkan ke antrian. Atau klik tombol **[Play "${pl.name}" Now]** di player untuk langsung ganti sekarang! ðŸŽµ`);
       }
 
-      return reply(`oke, muter playlist **${pl.name}** ya Mas Joy 🎵`);
+      return reply(`oke, muter playlist **${pl.name}** ya Mas Joy ðŸŽµ`);
     }
     case 'back': {
       // Kembali ke VC Mas Joy saat ini (atau VC tempat bot sudah berada).
@@ -637,9 +673,9 @@ async function handleDirectMusicCommand({ client, message, command, args, source
       await waitForVoiceLeave(client, guild.id);
       try {
         voiceUtils.joinVoice(channel);
-        return reply(`oke, aku balik ke **${channel.name}** ya Mas Joy 🎵`);
+        return reply(`oke, aku balik ke **${channel.name}** ya Mas Joy ðŸŽµ`);
       } catch (e) {
-        return reply(`gagal balik ke VC: ${e.message} 😭`);
+        return reply(`gagal balik ke VC: ${e.message} ðŸ˜­`);
       }
     }
     case 'loop': {
@@ -650,7 +686,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         await safeDeleteCommandMessage();
         return;
       }
-      await react('🔂');
+      await react('ðŸ”‚');
       return reply(pick(LOOP_SUCCESS));
     }
     case 'unloop': {
@@ -661,7 +697,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         await safeDeleteCommandMessage();
         return;
       }
-      await react('▶️');
+      await react('â–¶ï¸');
       return reply(pick(UNLOOP_SUCCESS));
     }
     case 'help':
@@ -669,14 +705,14 @@ async function handleDirectMusicCommand({ client, message, command, args, source
     case 'player': {
       const result = await musicPlayer.refreshPlayer(guild.id, message.channel);
       if (!result.success) {
-        if (result.code === 'NO_QUEUE') return reply('ga ada musik yang lagi diputar mas joy 😭');
-        return reply('gagal refresh player nih, coba lagi ya 😭');
+        if (result.code === 'NO_QUEUE') return reply('ga ada musik yang lagi diputar mas joy ðŸ˜­');
+        return reply('gagal refresh player nih, coba lagi ya ðŸ˜­');
       }
       if (source === 'prefix') {
         await safeDeleteCommandMessage();
         return;
       }
-      await react('🎵');
+      await react('ðŸŽµ');
       return;
     }
     default:
@@ -701,7 +737,7 @@ async function handleLibraryCommand({ client, message, member, isJoy, allowed, c
   }
 
   if (!guild) {
-    await reply('ini DM, ga bisa ngatur playlist disini 😭');
+    await reply('ini DM, ga bisa ngatur playlist disini ðŸ˜­');
     return false;
   }
 
@@ -732,7 +768,7 @@ async function handleLibraryCommand({ client, message, member, isJoy, allowed, c
     if (!targetName || isFavoritesName(targetName)) targetName = 'Favorit';
     const target = musicStore.findLocalPlaylistByName(targetName) || musicStore.ensureFavoritesPlaylist();
     if (!target) {
-      await reply(`ga nemu playlist \"${targetName}\" buat dihapus 😭`);
+      await reply(`ga nemu playlist \"${targetName}\" buat dihapus ðŸ˜­`);
       return false;
     }
     const current = musicPlayer.getQueueList(guild.id)?.songs?.find(s => s.isCurrent);
@@ -752,7 +788,7 @@ async function handleLibraryCommand({ client, message, member, isJoy, allowed, c
       String(s.title || s.url).toLowerCase().includes(titleQuery)
     );
     if (!removed.length) {
-      await reply(`lagu \"${lib.name}\" gak ada di **${target.name}** 😭`);
+      await reply(`lagu \"${lib.name}\" gak ada di **${target.name}** ðŸ˜­`);
       return false;
     }
     musicStore.savePlaylists();
@@ -902,7 +938,7 @@ async function handleSearchCommand({ client, message, isJoy, allowed, config, qu
   try {
     const found = await tinyfishSearch.searchYouTube(query, { limit: 10 });
     if (!found.results.length) {
-      await reply(`ga nemu hasil buat "${query}" di YouTube 😭 coba kata kunci lain.`);
+      await reply(`ga nemu hasil buat "${query}" di YouTube ðŸ˜­ coba kata kunci lain.`);
       return;
     }
 
@@ -933,7 +969,7 @@ async function handleSearchCommand({ client, message, isJoy, allowed, config, qu
     storage.setFocus(message.channelId, message.author.id, config.conversationFocus);
   } catch (e) {
     console.error('[SEARCH ERROR]', e.message);
-    await reply(`uhh gagal nyari di YouTube: ${e.message} 😭`);
+    await reply(`uhh gagal nyari di YouTube: ${e.message} ðŸ˜­`);
   }
 }
 
@@ -961,18 +997,18 @@ async function handleSearchPick({ client, message, member, isJoy, allowed, confi
     try {
       const res = await musicPlayer.playSong(member, message.channel, item.url);
       if (!res.success) {
-        await reply('mas joy masuk VC dulu, atau suruh gue join dulu 😭');
+        await reply('mas joy masuk VC dulu, atau suruh gue join dulu ðŸ˜­');
         return true;
       }
-      await message.react('▶️').catch(() => {});
+      await message.react('â–¶ï¸').catch(() => {});
       if (pick.withLoop) {
         await new Promise(r => setTimeout(r, 500));
         await musicPlayer.setRepeatMode(message.guild.id, 1);
       }
-      await reply(`oke, muter **${item.title}**${pick.withLoop ? ' (di-loop 🔂)' : ''} 🎵`);
+      await reply(`oke, muter **${item.title}**${pick.withLoop ? ' (di-loop ðŸ”‚)' : ''} ðŸŽµ`);
     } catch (e) {
       console.error('[SEARCH PLAY ERROR]', e.message);
-      await reply(`uhh gagal muter: ${e.message} 😭`);
+      await reply(`uhh gagal muter: ${e.message} ðŸ˜­`);
     }
     return true;
   }
@@ -995,7 +1031,7 @@ async function handleSearchPick({ client, message, member, isJoy, allowed, confi
 
 /**
  * `>permit @user` / `>unpermit @user` / `>permit` (daftar).
- * Hanya Mas Joy yang boleh mengubah daftar izin — pemegang izin pun tidak bisa
+ * Hanya Mas Joy yang boleh mengubah daftar izin â€” pemegang izin pun tidak bisa
  * menambahkan orang lain.
  */
 async function handlePermitCommand({ client, message, config, isJoy, permitCmd }) {
@@ -1046,7 +1082,7 @@ async function handlePermitCommand({ client, message, config, isJoy, permitCmd }
 }
 
 /**
- * `>pl-rm <link playlist youtube> >>Nama` — simpan playlist YouTube remote
+ * `>pl-rm <link playlist youtube> >>Nama` â€” simpan playlist YouTube remote
  * dengan nama custom. Playlist remote cuma bisa diputar, nggak bisa ditambahin lagu.
  */
 async function handleRemotePlaylistCommand({ client, message, isJoy, allowed, config, remote }) {
@@ -1091,7 +1127,7 @@ function formatPlayTime(seconds) {
 }
 
 /**
- * `>jump <menit>` — lompat ke menit tertentu di lagu yang sedang diputar.
+ * `>jump <menit>` â€” lompat ke menit tertentu di lagu yang sedang diputar.
  * Contoh: `>jump 5` = 5:00, `>jump 1.5` = 1:30.
  */
 async function handleJumpCommand({ client, message, isJoy, allowed, config, jump }) {
@@ -1167,7 +1203,7 @@ async function processBurst(channelId, client) {
 
     const rawUnmute = moodScore < 45
       ? 'huhu makasih Mas Joy, kirain kamu marah beneran sama aku T_T kangen nimbrung'
-      : 'yesss akhirnya boleh ngomong lagi Mas Joy wkwk, kangen nimbrung 😭';
+      : 'yesss akhirnya boleh ngomong lagi Mas Joy wkwk, kangen nimbrung ðŸ˜­';
     const unmuteReply = naturalTyping.humanizeTyping(rawUnmute);
 
     if (lastDiscordMessage.channel.sendTyping) await lastDiscordMessage.channel.sendTyping();
@@ -1194,7 +1230,7 @@ async function processBurst(channelId, client) {
 
     const silenceReply = moodScore < 45
       ? 'MAS JOY JUJUR AKU SALAH APA YA T_T'
-      : 'iya Mas Joy, aku diem dulu ya 😭';
+      : 'iya Mas Joy, aku diem dulu ya ðŸ˜­';
 
     if (lastDiscordMessage.channel.sendTyping) await lastDiscordMessage.channel.sendTyping();
     await sleep(600);
@@ -1334,10 +1370,18 @@ async function processBurst(channelId, client) {
     return;
   }
 
+  // Roll dadu VN SEBELUM AI — keputusan final, dikirim ke prompt supaya AI selaras.
+  const lastMsgContent = messages[messages.length - 1]?.content || '';
+  const vnDecision = resolveVnDecision(channelId, lastMsgContent);
+  if (vnDecision.isVnRequest) {
+    console.log(`[VN] VN request detected. canVn=${vnDecision.canVn} willSendVn=${vnDecision.willSendVn}`);
+  }
+
   console.log(`[AI] Evaluating conversation context & generating response...`);
   const result = await ai.evaluateAndGenerate(history, messages, userProfile, {
     guild: lastDiscordMessage.guild,
-    client
+    client,
+    vnDecision
   });
 
   if (!result) {
@@ -1436,7 +1480,7 @@ async function processBurst(channelId, client) {
       if (!channel) {
         console.log(`[OUTPUT] [${channelLabel}] CHANNEL_INFO: Channel "${result.channelQuery}" tidak ditemukan.`);
         const notFoundMsg = await lastDiscordMessage.reply({
-          content: `🔍 Channel "${result.channelQuery}" gak ketemu di server ini.`,
+          content: `ðŸ” Channel "${result.channelQuery}" gak ketemu di server ini.`,
           allowedMentions: { repliedUser: false }
         });
         storage.addHistory(channelId, {
@@ -1525,7 +1569,7 @@ async function processBurst(channelId, client) {
         const masJoyMember = await resolveMember(guild, userId);
         voiceChannel = masJoyMember?.voice?.channel || null;
         if (!voiceChannel) {
-          const notInVC = naturalTyping.humanizeTyping('mas joy lu sendiri aja belum masuk VC wkwk, masuk dulu dong 😭');
+          const notInVC = naturalTyping.humanizeTyping('mas joy lu sendiri aja belum masuk VC wkwk, masuk dulu dong ðŸ˜­');
           if (lastDiscordMessage.channel.sendTyping) await lastDiscordMessage.channel.sendTyping();
           await sleep(500);
           const sentMsg = await lastDiscordMessage.reply({ content: notInVC, allowedMentions: { repliedUser: false } });
@@ -1544,7 +1588,7 @@ async function processBurst(channelId, client) {
       } else {
         voiceChannel = voiceUtils.findVoiceChannel(guild, query);
         if (!voiceChannel) {
-          const notFound = naturalTyping.humanizeTyping(`vc "${query}" gak ketemu mas joy wkwk, nama vc nya apa bener? 😭`);
+          const notFound = naturalTyping.humanizeTyping(`vc "${query}" gak ketemu mas joy wkwk, nama vc nya apa bener? ðŸ˜­`);
           if (lastDiscordMessage.channel.sendTyping) await lastDiscordMessage.channel.sendTyping();
           await sleep(500);
           const sentMsg = await lastDiscordMessage.reply({ content: notFound, allowedMentions: { repliedUser: false } });
@@ -1608,7 +1652,7 @@ async function processBurst(channelId, client) {
         storage.setFocus(channelId, userId, config.conversationFocus);
       } catch (err) {
         console.error(`[VOICE JOIN ERROR] ${err.message}`);
-        const errMsg = naturalTyping.humanizeTyping('uhh gabisa join vc nih mas joy, ada error gtu 😭');
+        const errMsg = naturalTyping.humanizeTyping('uhh gabisa join vc nih mas joy, ada error gtu ðŸ˜­');
         if (lastDiscordMessage.channel.sendTyping) await lastDiscordMessage.channel.sendTyping();
         await sleep(500);
         const sentMsg = await lastDiscordMessage.reply({ content: errMsg, allowedMentions: { repliedUser: false } });
@@ -1662,7 +1706,7 @@ async function processBurst(channelId, client) {
 
       const left = voiceUtils.leaveVoice(guild.id, client.user.id);
       if (stopped || left) await waitForVoiceLeave(client, guild.id);
-      const variants = ['udah ya gue cabut wkwk', 'oke gue leave dulu', 'gas cabut, sambutan ya 😭'];
+      const variants = ['udah ya gue cabut wkwk', 'oke gue leave dulu', 'gas cabut, sambutan ya ðŸ˜­'];
       const msg = (stopped || left)
         ? naturalTyping.humanizeTyping(variants[Math.floor(Math.random() * variants.length)])
         : naturalTyping.humanizeTyping('bjir gue belum masuk VC, cabut apaan wkwk');
@@ -1686,7 +1730,7 @@ async function processBurst(channelId, client) {
       return;
     }
 
-    // ===== MUSIC PLAYER (DisTube) — MAS JOY + USER YANG DI-`>permit` =====
+    // ===== MUSIC PLAYER (DisTube) â€” MAS JOY + USER YANG DI-`>permit` =====
     const MUSIC_FORMATS = ['PLAY_PLAYLIST', 'PLAY_SONG', 'SKIP_SONG', 'STOP_MUSIC', 'SHUFFLE_MUSIC', 'QUEUE_LIST', 'PAUSE_MUSIC', 'RESUME_MUSIC', 'LOOP_SONG', 'UNLOOP_SONG', 'PLAY_SONG_AND_LOOP', 'SAVE_CURRENT_SONG', 'SEARCH_AND_PLAY'];
     if (MUSIC_FORMATS.includes(result.format)) {
       const guild = lastDiscordMessage.guild;
@@ -1715,7 +1759,7 @@ async function processBurst(channelId, client) {
       }
 
       if (!guild) {
-        await reply('bjir ini DM, gak bisa muter musik disini 😭');
+        await reply('bjir ini DM, gak bisa muter musik disini ðŸ˜­');
         return;
       }
 
@@ -1739,13 +1783,13 @@ async function processBurst(channelId, client) {
           try {
             const playResult = await musicPlayer.playSong(member, lastDiscordMessage.channel, query);
             if (!playResult.success) {
-              await reply('mas joy masuk VC dulu, atau suruh gue join dulu 😭');
+              await reply('mas joy masuk VC dulu, atau suruh gue join dulu ðŸ˜­');
               return;
             }
             console.log(`[MUSIC] Fallback PLAY_SONG "${query}" by Mas Joy.`);
           } catch (err) {
             console.error('[MUSIC PLAY ERROR]', err.message);
-            await reply(`uhh gabisa muter musik nih mas joy: ${err.message} 😭`);
+            await reply(`uhh gabisa muter musik nih mas joy: ${err.message} ðŸ˜­`);
           }
           return;
         }
@@ -1757,7 +1801,7 @@ async function processBurst(channelId, client) {
               await reply(`playlist lokal **${playlist.name}** masih kosong. Tambahin dulu: \`>add <link> >>${playlist.name}\``);
               return;
             }
-            await reply('mas joy masuk VC dulu, atau suruh gue join dulu 😭');
+            await reply('mas joy masuk VC dulu, atau suruh gue join dulu ðŸ˜­');
             return;
           }
           console.log(`[MUSIC] PLAY_PLAYLIST "${playlist.name}" by Mas Joy in #${lastDiscordMessage.channel.name}.`);
@@ -1769,7 +1813,7 @@ async function processBurst(channelId, client) {
           // DisTube.events akan ngirim pesan/addList/playSong sendiri
         } catch (err) {
           console.error('[MUSIC PLAY ERROR]', err.message);
-          await reply(`uhh gabisa muter playlist nih mas joy, error: ${err.message} 😭`);
+          await reply(`uhh gabisa muter playlist nih mas joy, error: ${err.message} ðŸ˜­`);
         }
         return;
       }
@@ -1778,20 +1822,20 @@ async function processBurst(channelId, client) {
       if (result.format === 'PLAY_SONG') {
         const query = result.musicQuery || '';
         if (!query.trim()) {
-          await reply('judul lagunya apa mas joy? 😭');
+          await reply('judul lagunya apa mas joy? ðŸ˜­');
           return;
         }
         const member = await resolveMember(guild, userId);
         try {
           const playResult = await musicPlayer.playSong(member, lastDiscordMessage.channel, query);
           if (!playResult.success) {
-            await reply('mas joy masuk VC dulu, atau suruh gue join dulu 😭');
+            await reply('mas joy masuk VC dulu, atau suruh gue join dulu ðŸ˜­');
             return;
           }
           console.log(`[MUSIC] PLAY_SONG "${query}" by Mas Joy.`);
         } catch (err) {
           console.error('[MUSIC PLAY ERROR]', err.message);
-          await reply(`gabisa muter lagunya nih mas joy: ${err.message} 😭`);
+          await reply(`gabisa muter lagunya nih mas joy: ${err.message} ðŸ˜­`);
         }
         return;
       }
@@ -1800,7 +1844,7 @@ async function processBurst(channelId, client) {
       if (result.format === 'SKIP_SONG') {
         const ok = await musicPlayer.skipSong(guild.id);
         if (!ok) {
-          await reply('ga ada lagu yang lagi diputer bjir 😭');
+          await reply('ga ada lagu yang lagi diputer bjir ðŸ˜­');
         } else {
           console.log('[MUSIC] Skip requested by Mas Joy');
         }
@@ -1815,7 +1859,7 @@ async function processBurst(channelId, client) {
           await waitForVoiceLeave(client, guild.id);
           await reply('oke stop, gue cabut dulu ya wkwk');
         } else {
-          await reply('ga lagi muter musik kok 😭');
+          await reply('ga lagi muter musik kok ðŸ˜­');
         }
         return;
       }
@@ -1824,30 +1868,30 @@ async function processBurst(channelId, client) {
       if (result.format === 'SHUFFLE_MUSIC') {
         const resultShuffle = await musicPlayer.toggleShuffle(guild.id);
         if (resultShuffle === null) {
-          await reply('ga ada queue buat di-shuffle mas joy 😭');
+          await reply('ga ada queue buat di-shuffle mas joy ðŸ˜­');
         } else if (resultShuffle === false) {
-          await reply('lagu di queue kurang dari 2, ga bisa di-shuffle bjir 😭');
+          await reply('lagu di queue kurang dari 2, ga bisa di-shuffle bjir ðŸ˜­');
         } else {
-          await reply('oke di-shuffle wkwk 🎲');
+          await reply('oke di-shuffle wkwk ðŸŽ²');
         }
         return;
       }
 
       // QUEUE_LIST
       if (result.format === 'QUEUE_LIST') {
-        await reply(formatQueueText(musicPlayer.getQueueList(guild.id)) || 'queue kosong mas joy 😭');
+        await reply(formatQueueText(musicPlayer.getQueueList(guild.id)) || 'queue kosong mas joy ðŸ˜­');
         return;
       }
 
       // PAUSE_MUSIC / RESUME_MUSIC
       if (result.format === 'PAUSE_MUSIC') {
         const ok = await musicPlayer.pauseMusic(guild.id);
-        if (!ok) await reply('ga lagi muter bos 😭');
+        if (!ok) await reply('ga lagi muter bos ðŸ˜­');
         return;
       }
       if (result.format === 'RESUME_MUSIC') {
         const ok = await musicPlayer.resumeMusic(guild.id);
-        if (!ok) await reply('ga ada yang di-pause bjir 😭');
+        if (!ok) await reply('ga ada yang di-pause bjir ðŸ˜­');
         return;
       }
 
@@ -1855,7 +1899,7 @@ async function processBurst(channelId, client) {
       if (result.format === 'LOOP_SONG') {
         const ok = await musicPlayer.setRepeatMode(guild.id, 1);
         if (!ok) {
-          await reply('ga ada lagu yang lagi diputer buat di-loop 😭');
+          await reply('ga ada lagu yang lagi diputer buat di-loop ðŸ˜­');
         } else {
           console.log('[MUSIC] Loop activated by Mas Joy');
         }
@@ -1866,7 +1910,7 @@ async function processBurst(channelId, client) {
       if (result.format === 'UNLOOP_SONG') {
         const ok = await musicPlayer.setRepeatMode(guild.id, 0);
         if (!ok) {
-          await reply('ga ada lagu yang lagi diputer 😭');
+          await reply('ga ada lagu yang lagi diputer ðŸ˜­');
         } else {
           console.log('[MUSIC] Loop deactivated by Mas Joy');
         }
@@ -1877,7 +1921,7 @@ async function processBurst(channelId, client) {
       if (result.format === 'PLAY_SONG_AND_LOOP') {
         const query = result.musicQuery || '';
         if (!query.trim()) {
-          await reply('judul lagunya apa mas joy? 😭');
+          await reply('judul lagunya apa mas joy? ðŸ˜­');
           return;
         }
 
@@ -1908,7 +1952,7 @@ async function processBurst(channelId, client) {
         try {
           const playResult = await musicPlayer.playSong(member, lastDiscordMessage.channel, playQuery);
           if (!playResult.success) {
-            await reply('mas joy masuk VC dulu, atau suruh gue join dulu 😭');
+            await reply('mas joy masuk VC dulu, atau suruh gue join dulu ðŸ˜­');
             return;
           }
           await new Promise(r => setTimeout(r, 500));
@@ -1916,7 +1960,7 @@ async function processBurst(channelId, client) {
           console.log(`[MUSIC] PLAY_SONG_AND_LOOP "${query}" by Mas Joy.`);
         } catch (err) {
           console.error('[MUSIC PLAY ERROR]', err.message);
-          await reply(`gabisa muter lagunya nih mas joy: ${err.message} 😭`);
+          await reply(`gabisa muter lagunya nih mas joy: ${err.message} ðŸ˜­`);
         }
         return;
       }
@@ -1931,7 +1975,7 @@ async function processBurst(channelId, client) {
         const q = musicPlayer.getQueueList(guild.id);
         const current = q?.songs?.find(s => s.isCurrent);
         if (!current?.url) {
-          await reply('ga ada lagu yang lagi diputer buat disimpen 😭');
+          await reply('ga ada lagu yang lagi diputer buat disimpen ðŸ˜­');
           return;
         }
 
@@ -1953,7 +1997,7 @@ async function processBurst(channelId, client) {
       if (result.format === 'SEARCH_AND_PLAY') {
         const query = result.musicQuery || '';
         if (!query.trim()) {
-          await reply('cariin lagu apa mas joy? 😭');
+          await reply('cariin lagu apa mas joy? ðŸ˜­');
           return;
         }
 
@@ -1977,13 +2021,13 @@ async function processBurst(channelId, client) {
             }
           } catch (err) {
             console.error('[SEARCH_AND_PLAY ERROR]', err.message);
-            await reply(`uhh gagal nyari "${query}" di YouTube: ${err.message} 😭`);
+            await reply(`uhh gagal nyari "${query}" di YouTube: ${err.message} ðŸ˜­`);
             return;
           }
         }
 
         if (!songUrl) {
-          await reply(`ga nemu "${query}" mas joy 😭 coba kata kunci lain`);
+          await reply(`ga nemu "${query}" mas joy ðŸ˜­ coba kata kunci lain`);
           return;
         }
 
@@ -1991,13 +2035,13 @@ async function processBurst(channelId, client) {
         try {
           const playResult = await musicPlayer.playSong(member, lastDiscordMessage.channel, songUrl);
           if (!playResult.success) {
-            await reply('mas joy masuk VC dulu, atau suruh gue join dulu 😭');
+            await reply('mas joy masuk VC dulu, atau suruh gue join dulu ðŸ˜­');
             return;
           }
           console.log(`[MUSIC] SEARCH_AND_PLAY "${query}" by Mas Joy.`);
         } catch (err) {
           console.error('[MUSIC PLAY ERROR]', err.message);
-          await reply(`gabisa muter lagunya nih mas joy: ${err.message} 😭`);
+          await reply(`gabisa muter lagunya nih mas joy: ${err.message} ðŸ˜­`);
         }
         return;
       }
@@ -2076,6 +2120,44 @@ async function processBurst(channelId, client) {
       return;
     }
     const replyTexts = rawReplies.map(m => naturalTyping.humanizeTyping(m));
+
+    // ElevenLabs Voice Note: pakai keputusan dadu yang sudah diroll SEBELUM AI.
+    // Ini mencegah kontradiksi: AI tolak VN tapi dadu masih kirim VN.
+    if (vnDecision?.willSendVn) {
+      const fullText = rawReplies.join(' ');
+      if (lastDiscordMessage.channel.sendTyping) {
+        await lastDiscordMessage.channel.sendTyping().catch(() => {});
+      }
+      const elResult = await elevenLabs
+        .synthesize(fullText, { emotion: result.emotion, mood: storage.getMood() })
+        .catch(() => null);
+      if (elResult?.buffer) {
+        const voicePayload = elevenLabs.buildVoicePayload(elResult);
+        console.log(`[EL] Sending ${voicePayload ? 'voice message' : 'audio file'} (${elResult.charCount} chars) to [${channelLabel}]`);
+        const payload = voicePayload
+          ? { ...voicePayload, allowedMentions: { repliedUser: false } }
+          : {
+              files: [{ attachment: elResult.buffer, name: 'callista_vn.mp3' }],
+              allowedMentions: { repliedUser: false },
+            };
+        const voiceMsg = await lastDiscordMessage.reply(payload)
+          .catch(e => { console.warn('[EL] Send voice failed:', e.message); return null; });
+        if (voiceMsg) {
+          storage.addHistory(channelId, {
+            id: voiceMsg.id, channelId,
+            userId: client.user.id,
+            authorName: config.name || 'Callista',
+            content: `[voice_note] ${elResult.text}`,
+            timestamp: voiceMsg.createdTimestamp,
+            isBot: true
+          });
+          todayMemory.addTodayEntry(`[VN]: Callista kirim voice note ke ${channelLabel}`);
+          storage.setFocus(channelId, userId, config.conversationFocus);
+          return; // skip text reply
+        }
+        // Fallback ke teks kalau kirim voice gagal
+      }
+    }
 
     if (lastDiscordMessage.channel.sendTyping) {
       await lastDiscordMessage.channel.sendTyping();
@@ -2210,7 +2292,7 @@ function startBot(token) {
         const tz = cfg.timezone || 'Asia/Jakarta';
         const { dateStr } = dailyStore.getTimeInTimezone(new Date(), tz);
         moodSystem.calculateMood(dateStr, { syncBotState: true });
-        console.log('[MOOD] Recalculated for', dateStr, '→', storage.getMood());
+        console.log('[MOOD] Recalculated for', dateStr, 'â†’', storage.getMood());
       } catch (e) {
         console.error('[MOOD] Recalculation error:', e.message);
       }
@@ -2251,7 +2333,7 @@ function startBot(token) {
         || tinyfishSearch.getSearch(interaction.channelId, targetUserId);
 
       if (!search || !search.results || !search.results.length) {
-        await interaction.reply({ content: 'pencarian tidak ditemukan mas joy 😭 coba `>sc` lagi ya', ephemeral: true }).catch(() => {});
+        await interaction.reply({ content: 'pencarian tidak ditemukan mas joy ðŸ˜­ coba `>sc` lagi ya', ephemeral: true }).catch(() => {});
         return;
       }
 
@@ -2279,7 +2361,7 @@ function startBot(token) {
       let pl = musicStore.findPlaylistByName(plName);
       if (!pl && isFavoritesName(plName)) pl = musicStore.ensureFavoritesPlaylist();
       if (!pl) {
-        await interaction.reply({ content: `playlist "${plName}" ga ketemu mas joy 😭`, ephemeral: true }).catch(() => {});
+        await interaction.reply({ content: `playlist "${plName}" ga ketemu mas joy ðŸ˜­`, ephemeral: true }).catch(() => {});
         return;
       }
       const member = await resolveMember(interaction.guild, interaction.user.id);
@@ -2318,14 +2400,14 @@ function startBot(token) {
           break;
         }
         case 'player_prev': {
-          await interaction.reply({ content: '⏮️ Lagu sebelumnya belum tersedia', ephemeral: true });
+          await interaction.reply({ content: 'â®ï¸ Lagu sebelumnya belum tersedia', ephemeral: true });
           break;
         }
         case 'player_loop': {
           const dt = musicPlayer.getDisTube();
           const q = dt?.getQueue(guildId);
           if (!q) {
-            await interaction.reply({ content: 'ga ada musik yang lagi diputar mas joy 😭', ephemeral: true });
+            await interaction.reply({ content: 'ga ada musik yang lagi diputar mas joy ðŸ˜­', ephemeral: true });
             break;
           }
           const nextMode = (q.repeatMode + 1) % 3;
@@ -2338,11 +2420,11 @@ function startBot(token) {
           const dt = musicPlayer.getDisTube();
           const q = dt?.getQueue(guildId);
           if (!q) {
-            await interaction.reply({ content: 'ga ada musik yang lagi diputar mas joy 😭', ephemeral: true });
+            await interaction.reply({ content: 'ga ada musik yang lagi diputar mas joy ðŸ˜­', ephemeral: true });
             break;
           }
           if (!q.songs || q.songs.length < 2) {
-            await interaction.reply({ content: 'antrian kurang dari 2 lagu buat di-shuffle mas joy 😭', ephemeral: true });
+            await interaction.reply({ content: 'antrian kurang dari 2 lagu buat di-shuffle mas joy ðŸ˜­', ephemeral: true });
             break;
           }
           await musicPlayer.toggleShuffle(guildId);
@@ -2351,22 +2433,22 @@ function startBot(token) {
           break;
         }
         case 'player_queue': {
-          // Toggle antara player view ↔ queue view, edit embed in-place
+          // Toggle antara player view â†” queue view, edit embed in-place
           const toggled = await musicPlayer.toggleQueueView(guildId, 0);
           if (toggled) {
             await interaction.deferUpdate().catch(() => {});
           } else {
-            await interaction.reply({ content: 'ga ada antrian mas joy 😭', ephemeral: true });
+            await interaction.reply({ content: 'ga ada antrian mas joy ðŸ˜­', ephemeral: true });
           }
           break;
         }
         case 'player_lyrics': {
-          // Toggle antara player view ↔ full lyrics view, edit embed in-place
+          // Toggle antara player view â†” full lyrics view, edit embed in-place
           const toggled = await musicPlayer.toggleLyricsView(guildId);
           if (toggled) {
             await interaction.deferUpdate().catch(() => {});
           } else {
-            await interaction.reply({ content: 'ga ada musik yang lagi diputar mas joy 😭', ephemeral: true });
+            await interaction.reply({ content: 'ga ada musik yang lagi diputar mas joy ðŸ˜­', ephemeral: true });
           }
           break;
         }
@@ -2591,7 +2673,7 @@ function startBot(token) {
       }
     }
 
-    // Perintah library lagu (add/simpan/buat playlist) — bypass AI.
+    // Perintah library lagu (add/simpan/buat playlist) â€” bypass AI.
     const lib = musicCommands.parseLibraryCommand(content, { isMentioned, isReplyToCallista });
     if (lib) {
       processedMessageIds.add(message.id);
@@ -2607,13 +2689,13 @@ function startBot(token) {
       } catch (e) {
         console.error('[LIB ERROR]', e.message);
         try {
-          await message.reply({ content: `uhh gagal proses playlist: ${e.message} 😭`, allowedMentions: { repliedUser: false } });
+          await message.reply({ content: `uhh gagal proses playlist: ${e.message} ðŸ˜­`, allowedMentions: { repliedUser: false } });
         } catch (_) {}
       }
       return;
     }
 
-    // Perintah musik deterministik (prefix ">" / natural control) — bypass AI sepenuhnya.
+    // Perintah musik deterministik (prefix ">" / natural control) â€” bypass AI sepenuhnya.
     let direct = musicCommands.parseDirectCommand(content, {
       isMentioned,
       isReplyToCallista
@@ -2634,14 +2716,14 @@ function startBot(token) {
       } catch (e) {
         console.error('[CMD ERROR]', e.message);
         try {
-          await message.reply({ content: `uhh command-nya error: ${e.message} 😭`, allowedMentions: { repliedUser: false } });
+          await message.reply({ content: `uhh command-nya error: ${e.message} ðŸ˜­`, allowedMentions: { repliedUser: false } });
         } catch (_) {}
       }
       return;
     }
 
     // Greeting GIF: 30% chance kirim GIF vibe pagi/sore/malam kalau ada ucapan salam.
-    // Fire-and-forget — tidak blok pipeline, tidak butuh mention/gate.
+    // Fire-and-forget â€” tidak blok pipeline, tidak butuh mention/gate.
     // Skip kalau bot sedang di-silence total.
     if (botState.isResponding !== false) {
       const greetingQuery = detectGreetingGifQuery(content);

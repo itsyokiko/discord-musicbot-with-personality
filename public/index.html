@@ -535,6 +535,10 @@
         <span class="nav-icon"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></span>
         <span>GIF Reaksi</span>
       </button>
+      <button class="nav-item" data-page="page-elevenlabs" type="button">
+        <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg></span>
+        <span>ElevenLabs</span>
+      </button>
       <button class="nav-item" data-page="page-music" type="button">
         <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
         <span>Music Player</span>
@@ -1153,6 +1157,101 @@
             <div style="margin-top: 3px;"><strong>Dimuat Pada:</strong> <span id="sfxDetailLoadedAt">-</span></div>
           </div>
           <span id="sfxUploadStatus" class="status-msg" style="font-size: 11.5px; display: block; margin-top: 4px;"></span>
+        </div>
+      </section>
+
+      <!-- PAGE: ELEVENLABS -->
+      <section class="view-page" data-subtitle="Konfigurasi suara & voice note Callista via ElevenLabs TTS" data-title="ElevenLabs VN" id="page-elevenlabs">
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:14px;">
+            <h3 style="margin-bottom:0;border:none;padding:0;">🎙️ ElevenLabs — Voice Note</h3>
+            <span class="badge" id="elStatusBadge">Memuat...</span>
+          </div>
+          <p class="desc" style="margin-bottom:14px;">Callista bisa mengirim pesan sebagai voice note (file audio MP3). Kredit dihitung per karakter yang di-synthesize.</p>
+
+          <!-- API Key -->
+          <div class="panel" style="margin-bottom:12px;">
+            <h4 style="font-size:13px;margin-bottom:8px;color:var(--accent);">🔑 API Key</h4>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <input id="elApiKeyInput" type="password" placeholder="Masukkan ElevenLabs API Key..." style="flex:1;min-width:280px;font-family:monospace;font-size:12px;" />
+              <button class="btn btn-sm" id="elSaveApiKeyBtn" type="button">💾 Simpan & Muat</button>
+              <span class="status-msg" id="elApiKeyStatus" style="font-size:11.5px;"></span>
+            </div>
+            <p style="font-size:11px;color:var(--muted);margin-top:4px;">API key disimpan lokal, tidak dikirim ke tempat lain.</p>
+          </div>
+
+          <!-- Enable toggle + Chance -->
+          <div class="grid-compact" style="grid-template-columns:1fr 1fr;margin-bottom:12px;">
+            <div class="panel">
+              <h4 style="font-size:13px;margin-bottom:8px;color:var(--accent);">⚡ Status</h4>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                  <input type="radio" name="elEnabled" value="1" /> <strong>Aktif</strong>
+                </label>
+                <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
+                  <input type="radio" name="elEnabled" value="0" checked /> <strong>Nonaktif</strong>
+                </label>
+              </div>
+            </div>
+            <div class="panel">
+              <h4 style="font-size:13px;margin-bottom:8px;color:var(--accent);">🎲 Peluang Voice Note</h4>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <input id="elChanceSlider" type="range" min="0" max="100" value="30" style="flex:1;" />
+                <span id="elChanceVal" style="font-weight:800;font-size:14px;min-width:40px;">30%</span>
+              </div>
+              <p style="font-size:11px;color:var(--muted);margin-top:3px;">Default 30%. Set 100% untuk testing penuh.</p>
+            </div>
+          </div>
+
+          <!-- Voice & Model selectors -->
+          <div class="grid-compact" style="grid-template-columns:1fr 1fr;margin-bottom:12px;">
+            <div class="panel">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <h4 style="font-size:13px;margin:0;color:var(--accent);">🎤 Suara</h4>
+                <button class="btn btn-sm btn-secondary" id="elFetchVoicesBtn" type="button" style="font-size:11px;">🔄 Muat Suara</button>
+              </div>
+              <select id="elVoiceSelect" style="width:100%;font-size:12px;">
+                <option value="">— Pilih suara —</option>
+              </select>
+              <span class="status-msg" id="elVoiceStatus" style="font-size:11px;display:block;margin-top:4px;"></span>
+            </div>
+            <div class="panel">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                <h4 style="font-size:13px;margin:0;color:var(--accent);">🤖 Model</h4>
+                <button class="btn btn-sm btn-secondary" id="elFetchModelsBtn" type="button" style="font-size:11px;">🔄 Muat Model</button>
+              </div>
+              <select id="elModelSelect" style="width:100%;font-size:12px;">
+                <option value="eleven_multilingual_v2">eleven_multilingual_v2 (Recommended)</option>
+                <option value="eleven_turbo_v2_5">eleven_turbo_v2_5 (Hemat)</option>
+                <option value="eleven_monolingual_v1">eleven_monolingual_v1</option>
+              </select>
+              <span class="status-msg" id="elModelStatus" style="font-size:11px;display:block;margin-top:4px;"></span>
+            </div>
+          </div>
+
+          <!-- Credits -->
+          <div class="card" style="background:var(--bg);border:1px solid var(--border);margin-bottom:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <h4 style="font-size:13px;margin:0;color:var(--accent);">💳 Proyeksi Kredit</h4>
+              <span id="elCreditsBadge" style="font-size:16px;font-weight:900;">10,000</span>
+            </div>
+            <div style="background:var(--border);border-radius:4px;height:8px;overflow:hidden;margin-bottom:8px;">
+              <div id="elCreditsBar" style="height:100%;background:var(--success);width:100%;transition:width 0.3s;"></div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <span style="font-size:11.5px;color:var(--muted);">Sesuaikan kredit:</span>
+              <input id="elCreditsInput" type="number" min="0" max="1000000" value="10000" style="width:120px;font-size:12px;" />
+              <button class="btn btn-sm btn-secondary" id="elSetCreditsBtn" type="button">Set Kredit</button>
+              <span class="status-msg" id="elCreditsStatus" style="font-size:11.5px;"></span>
+            </div>
+            <p style="font-size:11px;color:var(--muted);margin-top:6px;">1 karakter = 1 kredit ElevenLabs. Kredit dikurangi otomatis setiap voice note terkirim.</p>
+          </div>
+
+          <!-- Save button -->
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <button class="btn" id="elSaveSettingsBtn" type="button">💾 Simpan Pengaturan</button>
+            <span class="status-msg" id="elSaveStatus" style="font-size:11.5px;"></span>
+          </div>
         </div>
       </section>
 
@@ -2603,6 +2702,163 @@
     loadAcademicRoadmap();
 
     loadSfxState();
+    // ===== ELEVENLABS MANAGER =====
+    let elCreditsMax = 10000;
+
+    async function loadElSettings() {
+      try {
+        const res = await fetch('/api/elevenlabs/settings');
+        const s = await res.json();
+        document.querySelector('input[name="elEnabled"][value="' + (s.enabled ? '1' : '0') + '"]').checked = true;
+        document.getElementById('elChanceSlider').value = Math.round((s.chance || 0.30) * 100);
+        document.getElementById('elChanceVal').textContent = Math.round((s.chance || 0.30) * 100) + '%';
+        if (s.voiceId) document.getElementById('elVoiceSelect').value = s.voiceId;
+        if (s.modelId) document.getElementById('elModelSelect').value = s.modelId;
+        document.getElementById('elApiKeyInput').placeholder = s.apiKey ? 'API Key tersimpan (' + s.apiKey + ')' : 'Masukkan ElevenLabs API Key...';
+        const cr = s.creditsRemaining ?? 10000;
+        elCreditsMax = Math.max(elCreditsMax, cr);
+        updateCreditsDisplay(cr);
+        const enabled = s.enabled;
+        const badge = document.getElementById('elStatusBadge');
+        if (badge) {
+          badge.textContent = enabled ? '🟢 Aktif' : '🔴 Nonaktif';
+          badge.style.color = enabled ? 'var(--success)' : 'var(--danger)';
+          badge.style.borderColor = enabled ? 'var(--success)' : 'var(--danger)';
+          badge.style.background = enabled ? 'var(--success-soft)' : 'var(--danger-soft)';
+        }
+      } catch(e) {
+        const b = document.getElementById('elStatusBadge');
+        if (b) { b.textContent = 'Gagal memuat'; b.style.color = 'var(--danger)'; }
+      }
+    }
+
+    function updateCreditsDisplay(cr) {
+      const badge = document.getElementById('elCreditsBadge');
+      const bar = document.getElementById('elCreditsBar');
+      const input = document.getElementById('elCreditsInput');
+      if (badge) badge.textContent = cr.toLocaleString('id-ID');
+      if (input) input.value = cr;
+      if (bar) {
+        const pct = elCreditsMax > 0 ? Math.min(100, (cr / elCreditsMax) * 100) : 0;
+        bar.style.width = pct + '%';
+        bar.style.background = pct > 50 ? 'var(--success)' : pct > 20 ? 'var(--warn)' : 'var(--danger)';
+      }
+    }
+
+    document.getElementById('elChanceSlider')?.addEventListener('input', (e) => {
+      document.getElementById('elChanceVal').textContent = e.target.value + '%';
+    });
+
+    document.getElementById('elSaveApiKeyBtn')?.addEventListener('click', async () => {
+      const key = document.getElementById('elApiKeyInput').value.trim();
+      const st = document.getElementById('elApiKeyStatus');
+      if (!key) { if (st) { st.textContent = 'API Key kosong'; st.style.color = 'var(--danger)'; } return; }
+      try {
+        await fetch('/api/elevenlabs/apikey', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ apiKey: key }) });
+        if (st) { st.textContent = '✓ Tersimpan! Memuat suara & model...'; st.style.color = 'var(--success)'; }
+        document.getElementById('elApiKeyInput').value = '';
+        document.getElementById('elApiKeyInput').placeholder = 'API Key tersimpan (' + key.slice(0, 8) + '…)';
+        await loadElVoices(key);
+        await loadElModels(key);
+        setTimeout(() => { if (st) st.textContent = ''; }, 4000);
+      } catch(e) {
+        if (st) { st.textContent = 'Gagal simpan'; st.style.color = 'var(--danger)'; }
+      }
+    });
+
+    async function loadElVoices(apiKey) {
+      const sel = document.getElementById('elVoiceSelect');
+      const st = document.getElementById('elVoiceStatus');
+      if (!sel) return;
+      if (st) { st.textContent = 'Memuat suara...'; st.style.color = 'var(--muted)'; }
+      try {
+        const url = '/api/elevenlabs/voices' + (apiKey ? '?apiKey=' + encodeURIComponent(apiKey) : '');
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!res.ok || !data.voices) throw new Error(data.error || 'Gagal');
+        const current = sel.value;
+        sel.innerHTML = '<option value="">— Pilih suara —</option>' +
+          data.voices.map(v => '<option value="' + v.voice_id + '">' + v.name + ' (' + (v.category || 'premade') + ')</option>').join('');
+        if (current) sel.value = current;
+        if (st) { st.textContent = data.voices.length + ' suara dimuat'; st.style.color = 'var(--success)'; }
+      } catch(e) {
+        if (st) { st.textContent = 'Gagal: ' + e.message; st.style.color = 'var(--danger)'; }
+      }
+    }
+
+    async function loadElModels(apiKey) {
+      const sel = document.getElementById('elModelSelect');
+      const st = document.getElementById('elModelStatus');
+      if (!sel) return;
+      if (st) { st.textContent = 'Memuat model...'; st.style.color = 'var(--muted)'; }
+      try {
+        const url = '/api/elevenlabs/models' + (apiKey ? '?apiKey=' + encodeURIComponent(apiKey) : '');
+        const res = await fetch(url);
+        const data = await res.json();
+        if (!res.ok || !data.models) throw new Error(data.error || 'Gagal');
+        const current = sel.value;
+        sel.innerHTML = data.models.map(m => '<option value="' + m.model_id + '">' + m.name + '</option>').join('');
+        if (current) sel.value = current;
+        if (st) { st.textContent = data.models.length + ' model dimuat'; st.style.color = 'var(--success)'; }
+      } catch(e) {
+        if (st) { st.textContent = 'Gagal: ' + e.message; st.style.color = 'var(--danger)'; }
+      }
+    }
+
+    document.getElementById('elFetchVoicesBtn')?.addEventListener('click', () => loadElVoices());
+    document.getElementById('elFetchModelsBtn')?.addEventListener('click', () => loadElModels());
+
+    document.getElementById('elSaveSettingsBtn')?.addEventListener('click', async () => {
+      const st = document.getElementById('elSaveStatus');
+      const enabled = document.querySelector('input[name="elEnabled"]:checked')?.value === '1';
+      const chance = parseInt(document.getElementById('elChanceSlider').value, 10) / 100;
+      const voiceId = document.getElementById('elVoiceSelect').value;
+      const modelId = document.getElementById('elModelSelect').value;
+      try {
+        const res = await fetch('/api/elevenlabs/settings', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ enabled, chance, voiceId, modelId })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal');
+        if (st) { st.textContent = '✓ Pengaturan tersimpan & langsung aktif!'; st.style.color = 'var(--success)'; }
+        loadElSettings();
+        setTimeout(() => { if (st) st.textContent = ''; }, 3500);
+      } catch(e) {
+        if (st) { st.textContent = 'Error: ' + e.message; st.style.color = 'var(--danger)'; }
+      }
+    });
+
+    document.getElementById('elSetCreditsBtn')?.addEventListener('click', async () => {
+      const cr = parseInt(document.getElementById('elCreditsInput').value, 10);
+      const st = document.getElementById('elCreditsStatus');
+      if (isNaN(cr) || cr < 0) { if (st) { st.textContent = 'Nilai tidak valid'; st.style.color = 'var(--danger)'; } return; }
+      try {
+        const res = await fetch('/api/elevenlabs/credits', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({ creditsRemaining: cr })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal');
+        elCreditsMax = Math.max(elCreditsMax, cr);
+        updateCreditsDisplay(cr);
+        if (st) { st.textContent = '✓ Kredit diperbarui'; st.style.color = 'var(--success)'; setTimeout(() => { st.textContent = ''; }, 2500); }
+      } catch(e) {
+        if (st) { st.textContent = 'Gagal: ' + e.message; st.style.color = 'var(--danger)'; }
+      }
+    });
+
+    document.querySelector('[data-page="page-elevenlabs"]')?.addEventListener('click', () => {
+      loadElSettings();
+      loadElVoices();
+      loadElModels();
+    });
+
+    loadElSettings();
+    // ===== END ELEVENLABS MANAGER =====
+
     // ===== END INJECTED =====
   </script>
 </body>

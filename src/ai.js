@@ -21,6 +21,36 @@ function isSpecialUser(userProfile) {
   return name === 'rieka' || name.includes('rieka') || name.includes('mas joy');
 }
 
+/**
+ * Bangun snippet VN untuk system prompt berdasarkan keputusan dadu sebelum AI.
+ */
+function buildVnPromptSnippet(vnDecision) {
+  if (!vnDecision || !vnDecision.canVn) return '';
+  const { isVnRequest, willSendVn, hasVnHistory } = vnDecision;
+
+  const awareness = hasVnHistory
+    ? '[VN AWARENESS]: Callista SADAR bahwa dia bisa mengirim voice note (VN) — dan dia sudah pernah kirim VN sebelumnya di percakapan ini.'
+    : '[VN AWARENESS]: Callista SADAR bahwa dia bisa mengirim voice note (VN), meski jarang dia lakukan.';
+
+  if (!isVnRequest) {
+    // VN spontan — tidak ada request eksplisit, AI cukup aware
+    return awareness + (willSendVn
+      ? '\n[VN SPONTAN]: Sistem memutuskan Callista AKAN kirim VN spontan kali ini. Respon teks tetap wajar, VN dikirim sistem setelah teks.'
+      : '');
+  }
+
+  // Ada permintaan VN eksplisit — keputusan harus selaras dengan dadu
+  if (willSendVn) {
+    return awareness + '\n[VN DECISION - REQUEST DITERIMA]: Ada yang minta VN. Sistem SUDAH MEMUTUSKAN Callista MENERIMA dan akan kirim VN. ' +
+      'Respon teks kamu harus MENCERMINKAN penerimaan — alasan natural: lagi mager ngetik, mood sedang baik, dll. ' +
+      'Jangan tolak VN dalam teks. VN dikirim otomatis setelah teks.';
+  } else {
+    return awareness + '\n[VN DECISION - REQUEST DITOLAK]: Ada yang minta VN. Sistem SUDAH MEMUTUSKAN Callista MENOLAK kirim VN. ' +
+      'Respon teks kamu harus MENOLAK VN dengan alasan natural: malas, nggak mood, suara serak, nanti aja, dll. ' +
+      'JANGAN kirim VN sama sekali.';
+  }
+}
+
 function buildSystemPrompt(config, userProfile, dailyBrief = '', hasImmersionBreach = false, stickerEmojiHint = '', options = {}) {
   const c = config;
   const style = userProfile.style || 'neutral';
@@ -113,6 +143,7 @@ TOLAK secara santai atau alihkan topik (contoh: "ogah wkwk", "kagak mau, ngapain
   const tz = c.timezone || 'Asia/Jakarta';
   const { dateStr } = dailyStore.getTimeInTimezone(new Date(), tz);
   const moodPromptSnippet = moodSystem.getMoodPromptSection(dateStr);
+  const vnPromptSnippet = buildVnPromptSnippet(options.vnDecision);
 
   return `Kamu adalah Callista (alias: Firka, Cal), anggota grup Discord kasual.
 Kamu BUKAN bot kaku, asisten AI, atau customer service. Gaya bicaramu alami layaknya teman di grup Discord Indonesia.
@@ -133,6 +164,7 @@ ${relSnippet}
 - Inisiatif (Initiative): 0 (Callista AKTIF merespons tetapi TIDAK berinisiatif memancing obrolan atau bertanya balik)
 
 ${moodPromptSnippet}
+${vnPromptSnippet ? '\n' + vnPromptSnippet : ''}
 ${storage.getSilencedContextForPrompt(c.timezone || 'Asia/Jakarta')}
 
 ${dailyBrief ? `${dailyBrief}\nAturan Kehidupan Harian: Ceritakan aktivitas di atas secara alami jika ditanya. Jangan berikan format JSON mentah kepada pengguna.` : ''}
