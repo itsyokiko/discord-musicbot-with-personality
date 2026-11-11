@@ -840,7 +840,7 @@ function startServer(port) {
     if (req.method === 'GET' && url.pathname === '/api/elevenlabs/settings') {
       const s = elevenLabs.getSettings();
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ ...s, apiKey: s.apiKey ? s.apiKey.slice(0, 8) + '\u2026' : '' }));
+      res.end(JSON.stringify({ ...s, apiKey: s.apiKey || '' }));
       return;
     }
 
@@ -853,7 +853,7 @@ function startServer(port) {
           res.writeHead(200, { 'Content-Type': 'application/json' });
           res.end(JSON.stringify({
             success: true,
-            settings: { ...updated, apiKey: updated.apiKey ? updated.apiKey.slice(0, 8) + '\u2026' : '' },
+            settings: { ...updated, apiKey: updated.apiKey || '' },
           }));
         } catch (e) {
           res.writeHead(400, { 'Content-Type': 'application/json' });

@@ -436,7 +436,11 @@ async function fetchVoices(apiKey) {
       headers: { 'xi-api-key': key },
       signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const errText = await res.text().catch(() => '');
+      console.warn('[EL] fetchVoices HTTP', res.status, errText);
+      return null;
+    }
     const data = await res.json();
     return (data.voices || []).map(v => ({
       voice_id: v.voice_id,

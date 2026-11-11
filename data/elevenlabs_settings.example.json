@@ -1,0 +1,14 @@
+{
+  "enabled": false,
+  "apiKey": "",
+  "voiceId": "",
+  "modelId": "eleven_multilingual_v2",
+  "chance": 0.30,
+  "creditsRemaining": 10000,
+  "voiceSettings": {
+    "stability": 0.55,
+    "similarity_boost": 0.8,
+    "style": 0.15,
+    "use_speaker_boost": true
+  }
+}

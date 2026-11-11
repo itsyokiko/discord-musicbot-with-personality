@@ -1173,7 +1173,10 @@
           <div class="panel" style="margin-bottom:12px;">
             <h4 style="font-size:13px;margin-bottom:8px;color:var(--accent);">🔑 API Key</h4>
             <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
-              <input id="elApiKeyInput" type="password" placeholder="Masukkan ElevenLabs API Key..." style="flex:1;min-width:280px;font-family:monospace;font-size:12px;" />
+              <div style="position:relative;flex:1;min-width:280px;display:flex;">
+                <input id="elApiKeyInput" type="text" placeholder="Masukkan ElevenLabs API Key..." style="width:100%;font-family:monospace;font-size:12px;padding-right:75px;" />
+                <button id="elToggleApiKeyVisibility" type="button" class="btn btn-sm" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);padding:2px 8px;font-size:10.5px;background:var(--card);border:1px solid var(--border);">Sembunyikan</button>
+              </div>
               <button class="btn btn-sm" id="elSaveApiKeyBtn" type="button">💾 Simpan & Muat</button>
               <span class="status-msg" id="elApiKeyStatus" style="font-size:11.5px;"></span>
             </div>
@@ -2719,7 +2722,10 @@
         if (s.voiceId) elSavedVoiceId = s.voiceId;
         if (s.voiceId) document.getElementById('elVoiceSelect').value = s.voiceId;
         if (s.modelId) { elSavedModelId = s.modelId; document.getElementById('elModelSelect').value = s.modelId; }
-        document.getElementById('elApiKeyInput').placeholder = s.apiKey ? 'API Key tersimpan (' + s.apiKey + ')' : 'Masukkan ElevenLabs API Key...';
+        if (s.apiKey) {
+          document.getElementById('elApiKeyInput').value = s.apiKey;
+          document.getElementById('elApiKeyInput').placeholder = 'API Key aktif';
+        }
         const cr = s.creditsRemaining ?? 10000;
         elCreditsMax = Math.max(elCreditsMax, cr);
         updateCreditsDisplay(cr);
@@ -2761,8 +2767,8 @@
       try {
         await fetch('/api/elevenlabs/apikey', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ apiKey: key }) });
         if (st) { st.textContent = '✓ Tersimpan! Memuat suara & model...'; st.style.color = 'var(--success)'; }
-        document.getElementById('elApiKeyInput').value = '';
-        document.getElementById('elApiKeyInput').placeholder = 'API Key tersimpan (' + key.slice(0, 8) + '…)';
+        document.getElementById('elApiKeyInput').value = key;
+        document.getElementById('elApiKeyInput').placeholder = 'API Key aktif';
         await loadElVoices(key);
         await loadElModels(key);
         setTimeout(() => { if (st) st.textContent = ''; }, 4000);
@@ -2812,8 +2818,26 @@
       }
     }
 
-    document.getElementById('elFetchVoicesBtn')?.addEventListener('click', () => loadElVoices());
-    document.getElementById('elFetchModelsBtn')?.addEventListener('click', () => loadElModels());
+    document.getElementById('elToggleApiKeyVisibility')?.addEventListener('click', () => {
+      const input = document.getElementById('elApiKeyInput');
+      const btn = document.getElementById('elToggleApiKeyVisibility');
+      if (input.type === 'text') {
+        input.type = 'password';
+        btn.textContent = 'Tampilkan';
+      } else {
+        input.type = 'text';
+        btn.textContent = 'Sembunyikan';
+      }
+    });
+
+    document.getElementById('elFetchVoicesBtn')?.addEventListener('click', () => {
+      const key = document.getElementById('elApiKeyInput')?.value?.trim();
+      loadElVoices(key);
+    });
+    document.getElementById('elFetchModelsBtn')?.addEventListener('click', () => {
+      const key = document.getElementById('elApiKeyInput')?.value?.trim();
+      loadElModels(key);
+    });
 
     document.getElementById('elSaveSettingsBtn')?.addEventListener('click', async () => {
       const st = document.getElementById('elSaveStatus');
@@ -2821,11 +2845,14 @@
       const chance = parseInt(document.getElementById('elChanceSlider').value, 10) / 100;
       const voiceId = document.getElementById('elVoiceSelect').value || elSavedVoiceId;
       const modelId = document.getElementById('elModelSelect').value;
+      const apiKey = document.getElementById('elApiKeyInput')?.value?.trim();
+      const payload = { enabled, chance, voiceId, modelId };
+      if (apiKey) payload.apiKey = apiKey;
       try {
         const res = await fetch('/api/elevenlabs/settings', {
           method: 'POST',
           headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({ enabled, chance, voiceId, modelId })
+          body: JSON.stringify(payload)
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Gagal');
