@@ -163,8 +163,29 @@ function injectKeyboardTypo(text, chance = 0.22) {
  * 1. Menyingkat kata-kata umum (tidak 100% utuh di tiap kalimat)
  * 2. Sesekali ada typo QWERTY tetangga tombol alami
  */
+
+/**
+ * Bersihkan tag teknis/ekspresi internal agar tidak bocor ke output chat Discord:
+ * - [voice_note], [vn], [audio]
+ * - Tag ekspresi Jepang TTS seperti [疲れた・小声], [普段の声], [笑], dll
+ */
+function stripInternalTags(text) {
+  if (!text || typeof text !== 'string') return '';
+  return text
+    .replace(/^\[(?:voice_note|vn|audio)\]\s*/gi, '')
+    .replace(/\[(?:voice_note|vn|audio)\]\s*/gi, '')
+    .replace(/\[[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf\w\s・,\-?!]+\]\s*/gu, (match) => {
+      if (/[\u3040-\u309f\u30a0-\u30ff\u4e00-\u9faf]|voice_note|・|普段の声|小声/i.test(match)) {
+        return '';
+      }
+      return match;
+    })
+    .trim();
+}
+
 function humanizeTyping(text, options = {}) {
   if (!text || typeof text !== 'string') return text;
+  text = stripInternalTags(text);
 
   const abbrevChance = options.abbrevChance ?? 0.60;
   const typoChance = options.typoChance ?? 0.20;
@@ -186,6 +207,7 @@ function humanizeTyping(text, options = {}) {
 module.exports = {
   QWERTY_NEIGHBORS,
   COMMON_ABBREVIATIONS,
+  stripInternalTags,
   abbreviateWords,
   injectKeyboardTypo,
   humanizeTyping

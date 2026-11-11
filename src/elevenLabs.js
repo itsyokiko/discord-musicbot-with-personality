@@ -411,7 +411,7 @@ async function synthesize(rawText, { emotion = '', mood = 80 } = {}) {
     `[EL] ${charCount} chars via ${usedModel} -> ${voice ? 'voice message' : 'MP3'} | credits left: ${creditsRemaining}`
   );
 
-  return { buffer: mp3, text: billedText, charCount, creditsRemaining, voice };
+  return { buffer: mp3, text: billedText, cleanText: String(rawText || '').trim(), charCount, creditsRemaining, voice };
 }
 
 /** Payload siap kirim untuk voice message Discord. */

@@ -2156,7 +2156,7 @@ async function processBurst(channelId, client) {
             id: voiceMsg.id, channelId,
             userId: client.user.id,
             authorName: config.name || 'Callista',
-            content: `[voice_note] ${elResult.text}`,
+            content: `[voice_note] ${elResult.cleanText || fullText}`,
             timestamp: voiceMsg.createdTimestamp,
             isBot: true
           });

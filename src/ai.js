@@ -12,6 +12,7 @@ const permissionStore = require('./permissionStore');
 const voiceTracker = require('./voiceTracker');
 const todayMemory = require('./todayMemory');
 const moodSystem = require('./moodSystem');
+const naturalTyping = require('./naturalTyping');
 
 function isSpecialUser(userProfile) {
   if (!userProfile) return false;
@@ -52,8 +53,8 @@ function buildVnPromptSnippet(vnDecision) {
   // Kredit habis — canVn false tapi perlu info ke AI supaya bisa menolak request VN secara natural
   if (!vnDecision.canVn && vnDecision.reason === 'credits' && vnDecision.isVnRequest) {
     return '[VN DISABLED - KREDIT HABIS]: Ada yang minta VN, tapi kredit ElevenLabs sudah hampir habis / tidak cukup. ' +
-      'Callista HARUS menolak request VN dengan alasan natural (malas, nggak mood, nanti aja, dll) — ' +
-      'JANGAN sebut soal kredit atau teknis. Tolak santai seperti biasa.';
+      'Callista HARUS menolak request VN dengan alasan natural (malas, nggak mood, nanti aja, dll) lewat pesan teks santai biasa — ' +
+      'JANGAN sebut soal kredit atau teknis. DILARANG KERAS menyertakan tag [voice_note] atau tag ekspresi apapun.';
   }
 
   if (!vnDecision.canVn) return '';
@@ -63,22 +64,30 @@ function buildVnPromptSnippet(vnDecision) {
     ? '[VN AWARENESS]: Callista SADAR bahwa dia bisa mengirim voice note (VN) — dan dia sudah pernah kirim VN sebelumnya di percakapan ini.'
     : '[VN AWARENESS]: Callista SADAR bahwa dia bisa mengirim voice note (VN), meski jarang dia lakukan.';
 
+  const noTagRule = '\n[ATURAN TEKNIS MUTLAK]: DILARANG KERAS menyertakan tag [voice_note], [VN], atau tag ekspresi Jepang [...] di dalam output teks pesanmu! Tulis murni ucapan/ketikanmu.';
+
   if (!isVnRequest) {
-    // VN spontan — tidak ada request eksplisit, AI cukup aware
-    return awareness + (willSendVn
-      ? '\n[VN SPONTAN]: Sistem memutuskan Callista AKAN kirim VN spontan kali ini. Respon teks tetap wajar, VN dikirim sistem setelah teks.'
-      : '');
+    // VN spontan
+    if (willSendVn) {
+      return awareness + noTagRule +
+        '\n[VN SPONTAN AKTIF]: Sistem memutuskan Callista AKAN kirim VN kali ini. ' +
+        'Karena pesan ini akan diucapkan lewat suara (Voice Note), gunakan kalimat utuh dan intonasi lisan yang wajar (hindari singkatan chat atau wkwk). ' +
+        'Sistem akan otomatis mengubah pesanmu menjadi audio voice note.';
+    }
+    return awareness;
   }
 
   // Ada permintaan VN eksplisit — keputusan harus selaras dengan dadu
   if (willSendVn) {
-    return awareness + '\n[VN DECISION - REQUEST DITERIMA]: Ada yang minta VN. Sistem SUDAH MEMUTUSKAN Callista MENERIMA dan akan kirim VN. ' +
-      'Respon teks kamu harus MENCERMINKAN penerimaan — alasan natural: lagi mager ngetik, mood sedang baik, dll. ' +
-      'Jangan tolak VN dalam teks. VN dikirim otomatis setelah teks.';
+    return awareness + noTagRule +
+      '\n[VN DECISION - REQUEST DITERIMA]: Ada yang minta VN dan sistem SUDAH MEMUTUSKAN Callista MENERIMA (kirim VN). ' +
+      'Karena pesan ini akan diucapkan lewat suara (Voice Note), gunakan kalimat utuh dan intonasi lisan yang alami (jangan gunakan singkatan chat atau wkwk). ' +
+      'Sistem otomatis mengubahnya menjadi voice note.';
   } else {
-    return awareness + '\n[VN DECISION - REQUEST DITOLAK]: Ada yang minta VN. Sistem SUDAH MEMUTUSKAN Callista MENOLAK kirim VN. ' +
-      'Respon teks kamu harus MENOLAK VN dengan alasan natural: malas, nggak mood, suara serak, nanti aja, dll. ' +
-      'JANGAN kirim VN sama sekali.';
+    return awareness + noTagRule +
+      '\n[VN DECISION - REQUEST DITOLAK]: Ada yang minta VN dan sistem SUDAH MEMUTUSKAN Callista MENOLAK. ' +
+      'Balas lewat PESAN TEKS BIASA dan tolak dengan alasan natural (malas, mager, tenggorokan sakit, nanti aja, dll). ' +
+      'Gunakan gaya ketik kasual Discord santai khas Callista (singkat, kasual). JANGAN kirim VN.';
   }
 }
 
@@ -374,7 +383,7 @@ function parseAIResponse(raw) {
         intent: parsed.intent || 'DIRECT_ADDRESS',
         shouldReply: Boolean(parsed.shouldReply && format !== 'SILENCE'),
         format,
-        messages: Array.isArray(parsed.messages) ? parsed.messages.filter(m => typeof m === 'string' && m.trim()) : [],
+        messages: Array.isArray(parsed.messages) ? parsed.messages.map(m => naturalTyping.stripInternalTags(typeof m === 'string' ? m : '')).filter(m => m.trim().length > 0) : [],
         reactionEmoji: typeof parsed.reactionEmoji === 'string' ? parsed.reactionEmoji.trim() : '',
         stickerExpression: typeof parsed.stickerExpression === 'string' ? parsed.stickerExpression.trim() : '',
         emojiExpression: typeof parsed.emojiExpression === 'string' ? parsed.emojiExpression.trim() : '',
@@ -445,8 +454,8 @@ async function classifyConversationIntent(recentHistory, burstMessages, config =
 
   // If directly replied to Callista or explicitly @mentioned Callista, they are definitely talking to Callista
   // (unless it's an explicit attack/bot claim, which still targets Callista)
-  const contextSnippet = recentHistory.slice(-4).map(m => `[${m.authorName || 'User'}]: ${m.content}`).join('\n');
-  const incomingSnippet = burstMessages.map(m => `[${m.authorName}]: ${m.content}`).join('\n');
+  const contextSnippet = recentHistory.slice(-4).map(m => `[${m.authorName || 'User'}]: ${naturalTyping.stripInternalTags(m.content)}`).join('\n');
+  const incomingSnippet = burstMessages.map(m => `[${m.authorName}]: ${naturalTyping.stripInternalTags(m.content)}`).join('\n');
 
   const systemPrompt = `Kamu adalah analis percakapan Discord yang sangat objektif dan presisi.
 Tugas: Tentukan apakah pesan pengguna ditujukan KEPADA Callista, membicarakan Callista sebagai ORANG KETIGA, atau berbicara KEPADA ORANG LAIN.
@@ -575,21 +584,25 @@ async function evaluateAndGenerate(channelHistory, burstMessages, userProfile, o
   for (const m of channelHistory) {
     const isBot = m.isBot;
     const authorName = m.authorName || 'User';
-    let line = `[${authorName}]: ${m.content}`;
+    const cleanContent = naturalTyping.stripInternalTags(m.content);
+    let line = `[${authorName}]: ${cleanContent}`;
     if (m.replyToContent) {
-      line = `[${authorName}] (membalas [${m.replyToAuthorName || 'User'}]: "${m.replyToContent}"): ${m.content}`;
+      const cleanReply = naturalTyping.stripInternalTags(m.replyToContent);
+      line = `[${authorName}] (membalas [${m.replyToAuthorName || 'User'}]: "${cleanReply}"): ${cleanContent}`;
     }
     messages.push({
       role: isBot ? 'assistant' : 'user',
-      content: isBot ? m.content : line
+      content: isBot ? cleanContent : line
     });
   }
 
   const burstText = burstMessages.map(m => {
+    const cleanContent = naturalTyping.stripInternalTags(m.content);
     if (m.replyToContent) {
-      return `[${m.authorName}] (membalas [${m.replyToAuthorName || 'User'}]: "${m.replyToContent}"): ${m.content}`;
+      const cleanReply = naturalTyping.stripInternalTags(m.replyToContent);
+      return `[${m.authorName}] (membalas [${m.replyToAuthorName || 'User'}]: "${cleanReply}"): ${cleanContent}`;
     }
-    return `[${m.authorName}]: ${m.content}`;
+    return `[${m.authorName}]: ${cleanContent}`;
   }).join('\n');
 
   let roleLabel = '';
