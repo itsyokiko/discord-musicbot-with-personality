@@ -23,6 +23,7 @@ const collegeRoadmap = require('./collegeRoadmap');
 const classSessionManager = require('./classSessionManager');
 const moodSystem = require('./moodSystem');
 const elevenLabs = require('./elevenLabs');
+const voiceOrderWaiter = require('./voiceOrderWaiter');
 
 const processedMessageIds = new Set();
 const activeBursts = new Map();
@@ -534,7 +535,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
     case 'join': {
       let channel = member?.voice?.channel || null;
       if (args) {
-        const q = args.replace(/^(?:vc|voice|channel)\s+/i, '').trim();
+        const q = args.replace(/^(?:vc|voice|channel|ke|room)\s+/i, '').trim();
         if (q && !/^(?:current|vc|voice|channel)$/i.test(q)) {
           channel = voiceUtils.findVoiceChannel(guild, q) || channel;
         }
@@ -550,6 +551,20 @@ async function handleDirectMusicCommand({ client, message, command, args, source
       }
       try {
         voiceUtils.joinVoice(channel);
+        const callerPresent = channel.members?.has(message.author.id);
+        if (!callerPresent) {
+          // Pemanggil belum ada di channel -> aktifkan 15 template alami & timer tunggu 5 menit
+          const joinMsg = voiceOrderWaiter.registerOrder({
+            client,
+            guildId: guild.id,
+            voiceChannel: channel,
+            textChannel: message.channel,
+            callerId: message.author.id,
+            callerName,
+            isJoy
+          });
+          return reply(joinMsg);
+        }
         return reply(voiceUtils.generateJoinSuccessMessage(channel, config.timezone));
       } catch (e) {
         return reply(`gagal join VC: ${e.message} 😭`);
@@ -1661,8 +1676,23 @@ async function processBurst(channelId, client) {
           console.log(`[OUTPUT] [${channelLabel}] JOIN_VOICE: Stopped music to avoid voice conflict.`);
         }
         voiceUtils.joinVoice(voiceChannel, { selfDeaf: true, selfMute: false });
-        const successMsg = naturalTyping.humanizeTyping(voiceUtils.generateJoinSuccessMessage(voiceChannel, timezone));
-        console.log(`[OUTPUT] [${channelLabel}] JOIN_VOICE: Joined "${voiceChannel.name}" (${voiceChannel.id}), ordered by Mas Joy.`);
+        const callerPresent = voiceChannel.members?.has(userId);
+        let successMsg;
+        if (!callerPresent) {
+          successMsg = voiceOrderWaiter.registerOrder({
+            client,
+            guildId: guild.id,
+            voiceChannel,
+            textChannel: lastDiscordMessage.channel,
+            callerId: userId,
+            callerName: authorName,
+            isJoy
+          });
+        } else {
+          successMsg = voiceUtils.generateJoinSuccessMessage(voiceChannel, timezone);
+        }
+        successMsg = naturalTyping.humanizeTyping(successMsg);
+        console.log(`[OUTPUT] [${channelLabel}] JOIN_VOICE: Joined "${voiceChannel.name}" (${voiceChannel.id}), ordered by ${isJoy ? 'Mas Joy' : authorName}.`);
         if (lastDiscordMessage.channel.sendTyping) await lastDiscordMessage.channel.sendTyping();
         await sleep(600);
         const sentMsg = await lastDiscordMessage.reply({ content: successMsg, allowedMentions: { repliedUser: false } });

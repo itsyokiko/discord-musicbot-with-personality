@@ -15,6 +15,7 @@ const voiceUtils = require('./voiceUtils');
 const storage = require('./storage');
 const llm = require('./llm');
 const todayMemory = require('./todayMemory');
+const voiceOrderWaiter = require('./voiceOrderWaiter');
 
 const filePath = path.resolve(__dirname, '../data/vc_tracker.json');
 const MAS_JOY_ID = '833196669940138004';
@@ -713,6 +714,10 @@ function checkAloneStatus(client, guildId) {
   const humans = [...currentVc.members.values()].filter(m => !m.user?.bot);
 
   if (humans.length === 0) {
+    // Jika Callista sedang dalam masa tunggu 5 menit karena disuruh masuk VC oleh user, jangan auto-leave
+    if (voiceOrderWaiter.hasPendingOrder(guildId)) {
+      return;
+    }
     if (!aloneTimers.has(guildId)) {
       console.log(`[VC_TRACKER] Callista sendirian di #${currentVc.name}, timer ${Math.round(ALONE_TIMEOUT_MS / 1000)}s dimulai...`);
       const timer = setTimeout(async () => {
@@ -740,6 +745,7 @@ async function handleVoiceStateUpdate(oldState, newState, client) {
 
   // 1. Cek jika Callista di-disconnect (keluar dari VC)
   if (oldState.member?.id === client.user.id && oldState.channelId && !newState.channelId) {
+    if (guildId) voiceOrderWaiter.cancelOrder(guildId);
     if (guildId && aloneTimers.has(guildId)) {
       clearTimeout(aloneTimers.get(guildId));
       aloneTimers.delete(guildId);
@@ -757,6 +763,9 @@ async function handleVoiceStateUpdate(oldState, newState, client) {
   if (newState.channel) {
     await handleVoiceChannelCheck(client, newState.channel);
   }
+
+  // Cek apakah ada interaksi dengan voiceOrderWaiter (penyuruh masuk atau orang lain yang nimbrung)
+  await voiceOrderWaiter.handleVoiceStateUpdate(oldState, newState, client);
 
   // 3. Cek apakah target atau bot keluar dari oldChannel
   if (oldState.channel && oldState.channelId !== newState.channelId) {

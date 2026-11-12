@@ -218,6 +218,9 @@ function parseDirectCommand(content, {
   if (command === 'playlist') {
     return { command: 'playlist', args: rawArgs, source: 'prefix' };
   }
+  if (command === 'join' || command === 'move') {
+    return { command, args: rawArgs, source: 'prefix' };
+  }
   return { command, args: '', source: 'prefix' };
 }
 
