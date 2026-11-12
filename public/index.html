@@ -1910,7 +1910,7 @@
           <span class="badge" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px;">
             <input type="text" id="cer_label_${e.value}" value="${(e.label || '').replace(/"/g, '&quot;')}" style="width: 160px; font-size: 12px; padding: 3px 6px;">
             <code style="font-size: 11px; color: var(--muted);">${e.value}</code>
-            <button onclick="saveCustomExpr('${e.value}')" title="Simpan label" style="background: none; border: none; color: var(--success); cursor: pointer; font-size: 13px; font-weight: 600;">ðŸ’¾</button>
+            <button onclick="saveCustomExpr('${e.value}')" title="Simpan label" style="background: none; border: none; color: var(--success); cursor: pointer; font-size: 13px; font-weight: 600;">💾</button>
             <button onclick="deleteCustomExpr('${e.value}')" title="Hapus" style="background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px;">Ã—</button>
           </span>`;
       });
@@ -2125,16 +2125,16 @@
         const statusBadge = document.getElementById('gifStatusBadge');
         const toggleBtn = document.getElementById('gifToggleBtn');
         if (gifEnabled) {
-          badge.textContent = 'ðŸŸ¢ AKTIF';
+          badge.textContent = '🟢 AKTIF';
           badge.style.color = 'var(--success)';
-          toggleBtn.textContent = 'â¸ï¸ Matikan GIF';
+          toggleBtn.textContent = '⏸️ Matikan GIF';
           toggleBtn.style.background = 'var(--danger)';
           statusBadge.textContent = 'Aktif';
           statusBadge.style.color = 'var(--success)';
         } else {
-          badge.textContent = 'ðŸ”´ NONAKTIF';
+          badge.textContent = '🔍 ´ NONAKTIF';
           badge.style.color = 'var(--danger)';
-          toggleBtn.textContent = 'â–¶ï¸ Aktifkan GIF';
+          toggleBtn.textContent = '▶️  Aktifkan GIF';
           toggleBtn.style.background = 'var(--success)';
           statusBadge.textContent = 'Nonaktif';
           statusBadge.style.color = 'var(--muted)';
@@ -2276,7 +2276,7 @@
         // SEKSI 1: Playlist Remote YouTube
         html += '<div style="margin-bottom: 24px;">';
         html += '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">';
-        html += '<h4 style="font-size: 13px; color: var(--accent); margin: 0;">ðŸŒ Playlist Remote YouTube (Link Langsung)</h4>';
+        html += '<h4 style="font-size: 13px; color: var(--accent); margin: 0;">🌐 Playlist Remote YouTube (Link Langsung)</h4>';
         html += `<span style="font-size: 11px; color: var(--muted);">${remotes.length} playlist</span>`;
         html += '</div>';
 
@@ -2301,7 +2301,7 @@
         // SEKSI 2: Playlist Lokal & Favorit
         html += '<div>';
         html += '<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">';
-        html += '<h4 style="font-size: 13px; color: var(--accent); margin: 0;">ðŸ“ Playlist Lokal & Favorit (Disimpan di Bot)</h4>';
+        html += '<h4 style="font-size: 13px; color: var(--accent); margin: 0;">📁  Playlist Lokal & Favorit (Disimpan di Bot)</h4>';
         html += `<span style="font-size: 11px; color: var(--muted);">${locals.length} playlist</span>`;
         html += '</div>';
 
@@ -2313,7 +2313,7 @@
             const songs = p.songs || [];
             html += `<div class="panel" style="margin-bottom: 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border);">`;
             html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">`;
-            html += `<div><strong>${isFav ? 'â­ ' : 'ðŸŽµ '}${escapeHtml(p.name)}</strong> <span style="font-size: 12px; color: var(--muted); margin-left: 6px;">(${songs.length} lagu)</span></div>`;
+            html += `<div><strong>${isFav ? '⭐ ' : '🎵 '}${escapeHtml(p.name)}</strong> <span style="font-size: 12px; color: var(--muted); margin-left: 6px;">(${songs.length} lagu)</span></div>`;
             if (!isFav) {
               html += `<button class="btn btn-sm btn-danger" onclick="deletePlaylist('${p.id}')">Hapus Playlist</button>`;
             }
@@ -2331,7 +2331,7 @@
                     <td style="color: var(--muted);">${idx + 1}</td>
                     <td><a href="${escapeHtml(s.url)}" target="_blank" rel="noopener" style="color: var(--text); text-decoration: none;">${escapeHtml(title)}</a></td>
                     <td style="color: var(--muted); font-family: monospace;">${durStr}</td>
-                    <td><button class="btn btn-sm btn-danger" style="padding: 2px 6px; font-size: 11px;" title="Hapus lagu ini" onclick="deleteSong('${p.id}', '${s.id || s.url}')">ðŸ—‘ï¸</button></td>
+                    <td><button class="btn btn-sm btn-danger" style="padding: 2px 6px; font-size: 11px;" title="Hapus lagu ini" onclick="deleteSong('${p.id}', '${s.id || s.url}')">🗑️ </button></td>
                   </tr>`;
               });
               html += `</tbody></table>`;
@@ -2532,11 +2532,11 @@
         if (document.getElementById('acadProfilePeriod')) document.getElementById('acadProfilePeriod').textContent = (profile.semester_start || '-') + ' s/d ' + (profile.semester_end || '-');
 
         const statusLabels = {
-          'on_break': 'ðŸ–ï¸ Libur Antar Semester (Break)',
-          'preparing_next_semester': 'ðŸ“ Periode Pengisian KRS',
-          'exam_period': 'ðŸ“ Masa Ujian (UTS / UAS)',
-          'holiday': 'ðŸŒ´ Libur Kalender / Nasional',
-          'ongoing': 'ðŸ“š Perkuliahan Normal'
+          'on_break': '🏖️ Libur Antar Semester (Break)',
+          'preparing_next_semester': '📁  Periode Pengisian KRS',
+          'exam_period': '📁  Masa Ujian (UTS / UAS)',
+          'holiday': '🌴 Libur Kalender / Nasional',
+          'ongoing': '📁 š Perkuliahan Normal'
         };
         if (document.getElementById('acadCurrentStatus')) document.getElementById('acadCurrentStatus').textContent = statusLabels[st.status] || st.status || 'Berjalan';
         if (document.getElementById('acadStatusDetail')) document.getElementById('acadStatusDetail').textContent = st.detail || ('Semester ' + (profile.semester || '-'));
@@ -2550,7 +2550,7 @@
           const cLoc = activeClass.location || activeClass.room || 'Studio';
           const cRem = activeClass.remainingMinutes ? ' (' + activeClass.remainingMinutes + ' menit lagi)' : '';
           if (sessionElem) {
-            sessionElem.textContent = 'ðŸ”´ Kelas: ' + cName;
+            sessionElem.textContent = '🔍 ´ Kelas: ' + cName;
             sessionElem.style.color = '#e74c3c';
           }
           if (sessionDetail) {
@@ -2558,7 +2558,7 @@
           }
         } else {
           if (sessionElem) {
-            sessionElem.textContent = 'ðŸŸ¢ Tidak Ada Kelas';
+            sessionElem.textContent = '🟢 Tidak Ada Kelas';
             sessionElem.style.color = '#2ecc71';
           }
           if (sessionDetail) sessionDetail.textContent = 'Bebas / Chat langsung diproses';
