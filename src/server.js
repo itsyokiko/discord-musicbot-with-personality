@@ -8,6 +8,8 @@ const gifSearch = require('./gifSearch');
 const musicStore = require('./musicStore');
 const sfxStore = require('./sfxStore');
 const elevenLabs = require('./elevenLabs');
+const logStream = require('./logStream');
+logStream.initLogCapture();
 
 function startServer(port) {
   sfxStore.setServerPort(port);
@@ -25,6 +27,31 @@ function startServer(port) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(data);
       });
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/logs/stream') {
+      logStream.handleSse(req, res);
+      return;
+    }
+
+    if (req.method === 'GET' && url.pathname === '/api/logs') {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(logStream.getSnapshot()));
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/logs/clear') {
+      logStream.clearLogs();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true }));
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/chats/clear') {
+      logStream.clearChats();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true }));
       return;
     }
 

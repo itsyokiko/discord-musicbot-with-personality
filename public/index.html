@@ -485,6 +485,497 @@
       .content-area { padding: 16px 12px 90px; }
       .floating-save-container { bottom: 16px; right: 16px; left: 16px; justify-content: space-between; border-radius: var(--radius-md); }
     }
+
+    /* ===== REALTIME LOGS & CHAT STYLES ===== */
+    .logs-page-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: calc(100vh - 120px);
+    }
+    .logs-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      box-shadow: var(--shadow-sm);
+    }
+    .logs-status-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .sse-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+    .sse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: all 0.2s;
+    }
+    .sse-dot.connected {
+      background: #10B981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+      animation: ssePulse 1.8s infinite;
+    }
+    .sse-dot.connecting {
+      background: #F59E0B;
+      box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+    }
+    .sse-dot.disconnected {
+      background: #EF4444;
+    }
+    @keyframes ssePulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.7; }
+    }
+    .stat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: var(--accent-soft);
+      color: var(--c-6367FF);
+    }
+    .logs-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .view-switcher-group {
+      display: inline-flex;
+      background: var(--bg);
+      padding: 3px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+    }
+    .view-switcher-btn {
+      border: none;
+      background: transparent;
+      padding: 5px 10px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      border-radius: 5px;
+      transition: all 0.15s;
+    }
+    .view-switcher-btn.active {
+      background: var(--card);
+      color: var(--c-6367FF);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    }
+    .btn-action-sm {
+      border: 1px solid var(--border);
+      background: var(--card);
+      padding: 6px 10px;
+      border-radius: var(--radius-sm);
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s;
+    }
+    .btn-action-sm:hover {
+      background: var(--accent-soft);
+      color: var(--accent);
+      border-color: var(--c-C9BEFF);
+    }
+    .toggle-autoscroll {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--muted);
+      cursor: pointer;
+      user-select: none;
+    }
+    .toggle-autoscroll input { cursor: pointer; }
+
+    /* Split Grid */
+    .logs-split-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      height: calc(100vh - 170px);
+      min-height: 580px;
+    }
+    .logs-split-grid.view-terminal-only {
+      grid-template-columns: 1fr;
+    }
+    .logs-split-grid.view-terminal-only .discord-box {
+      display: none;
+    }
+    .logs-split-grid.view-chat-only {
+      grid-template-columns: 1fr;
+    }
+    .logs-split-grid.view-chat-only .terminal-box {
+      display: none;
+    }
+
+    /* Terminal Box */
+    .terminal-box {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
+    .terminal-header {
+      background: #161b22;
+      border-bottom: 1px solid #30363d;
+      padding: 8px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .terminal-title-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .mac-dots {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .mac-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+    .mac-dot.red { background: #ff5f56; }
+    .mac-dot.yellow { background: #ffbd2e; }
+    .mac-dot.green { background: #27c93f; }
+    .terminal-title {
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #8b949e;
+      letter-spacing: 0.5px;
+    }
+    .terminal-filters {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      flex-wrap: wrap;
+    }
+    .term-filter-btn {
+      background: #21262d;
+      border: 1px solid #30363d;
+      color: #8b949e;
+      font-size: 10.5px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.1s;
+    }
+    .term-filter-btn:hover { background: #30363d; color: #c9d1d9; }
+    .term-filter-btn.active { background: #388bfd; color: #ffffff; border-color: #388bfd; }
+    .term-search-input {
+      background: #0d1117;
+      border: 1px solid #30363d;
+      border-radius: 4px;
+      color: #c9d1d9;
+      font-size: 11px;
+      padding: 3px 8px;
+      outline: none;
+      width: 130px;
+      transition: width 0.2s;
+    }
+    .term-search-input:focus { border-color: #58a6ff; width: 170px; }
+    .terminal-body {
+      flex: 1;
+      padding: 10px 12px;
+      overflow-y: auto;
+      font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+      font-size: 11.5px;
+      line-height: 1.55;
+      color: #c9d1d9;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .terminal-body::-webkit-scrollbar { width: 6px; }
+    .terminal-body::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+    .term-line {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      word-break: break-word;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .term-line:hover { background: rgba(255, 255, 255, 0.04); }
+    .term-time { color: #6e7681; font-size: 10.5px; white-space: nowrap; user-select: none; }
+    .term-tag {
+      font-weight: 700;
+      font-size: 10px;
+      padding: 1px 5px;
+      border-radius: 3px;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .term-tag.tag-input { background: rgba(88, 166, 255, 0.15); color: #58a6ff; }
+    .term-tag.tag-output { background: rgba(126, 231, 135, 0.15); color: #7ee787; }
+    .term-tag.tag-cmd { background: rgba(210, 153, 34, 0.2); color: #d29922; }
+    .term-tag.tag-ai { background: rgba(188, 140, 255, 0.18); color: #bc8cff; }
+    .term-tag.tag-voice { background: rgba(240, 136, 62, 0.18); color: #f0883e; }
+    .term-tag.tag-music { background: rgba(57, 197, 187, 0.18); color: #39c5bb; }
+    .term-tag.tag-error { background: rgba(248, 81, 73, 0.2); color: #f85149; }
+    .term-tag.tag-default { background: rgba(139, 148, 158, 0.15); color: #8b949e; }
+    .term-msg { flex: 1; white-space: pre-wrap; }
+    .term-msg.level-warn { color: #d29922; }
+    .term-msg.level-error { color: #f85149; font-weight: 600; }
+
+    /* Discord Chat Box */
+    .discord-box {
+      background: #313338;
+      border: 1px solid #232428;
+      border-radius: var(--radius-md);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    }
+    .discord-header {
+      background: #2b2d31;
+      border-bottom: 1px solid #1f2023;
+      padding: 8px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .discord-header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #f2f3f5;
+      font-weight: 700;
+      font-size: 12.5px;
+    }
+    .discord-header-left svg {
+      width: 16px;
+      height: 16px;
+      color: #80848e;
+    }
+    .discord-chan-select {
+      background: #1e1f22;
+      border: 1px solid #3f4147;
+      color: #dbdee1;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      outline: none;
+      cursor: pointer;
+    }
+    .discord-body {
+      flex: 1;
+      padding: 14px 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #313338;
+    }
+    .discord-body::-webkit-scrollbar { width: 6px; }
+    .discord-body::-webkit-scrollbar-thumb { background: #1a1b1e; border-radius: 3px; }
+    .discord-msg-card {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      position: relative;
+      padding: 2px 4px;
+      border-radius: 6px;
+      transition: background 0.1s;
+    }
+    .discord-msg-card:hover { background: rgba(0, 0, 0, 0.08); }
+    .discord-avatar {
+      width: 36px;
+      height: 36px;
+      min-width: 36px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 13px;
+      color: #ffffff;
+      user-select: none;
+    }
+    .discord-avatar.bot-avatar {
+      background: linear-gradient(135deg, #6367FF, #9b59b6);
+      box-shadow: 0 2px 8px rgba(99, 103, 255, 0.35);
+    }
+    .discord-avatar.joy-avatar {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+    }
+    .discord-avatar.user-avatar {
+      background: linear-gradient(135deg, #4f545c, #36393f);
+    }
+    .discord-msg-content {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .discord-msg-head {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .discord-author {
+      font-weight: 700;
+      font-size: 13px;
+      color: #f2f3f5;
+    }
+    .discord-author.joy-author {
+      color: #f59e0b;
+    }
+    .badge-discord-bot {
+      background: #5865F2;
+      color: #ffffff;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 1px 4px;
+      border-radius: 3px;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .badge-discord-joy {
+      background: rgba(245, 158, 11, 0.2);
+      border: 1px solid #f59e0b;
+      color: #fbbf24;
+      font-size: 9px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 3px;
+    }
+    .discord-chan-tag {
+      background: #2b2d31;
+      color: #949ba4;
+      font-size: 10.5px;
+      padding: 1px 6px;
+      border-radius: 3px;
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+    .discord-time {
+      font-size: 10.5px;
+      color: #949ba4;
+      margin-left: auto;
+    }
+    .discord-reply-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      color: #b5bac1;
+      margin-bottom: 2px;
+      padding-left: 2px;
+    }
+    .discord-reply-box svg {
+      width: 12px;
+      height: 12px;
+      color: #4e5058;
+    }
+    .discord-text {
+      color: #dbdee1;
+      font-size: 13px;
+      line-height: 1.45;
+      word-break: break-word;
+      white-space: pre-wrap;
+    }
+    .vn-badge-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(88, 101, 242, 0.15);
+      border: 1px solid rgba(88, 101, 242, 0.3);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #8ea1e1;
+      margin-top: 4px;
+    }
+    .discord-empty-state {
+      margin: auto;
+      text-align: center;
+      color: #80848e;
+      padding: 40px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .discord-empty-state svg {
+      width: 42px;
+      height: 42px;
+      stroke-width: 1.5;
+      color: #4e5058;
+    }
+    .jump-bottom-btn {
+      position: absolute;
+      bottom: 16px;
+      right: 20px;
+      background: #5865F2;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      display: none;
+      z-index: 10;
+      transition: all 0.15s;
+    }
+    .jump-bottom-btn:hover { background: #4752c4; }
+
+    @media (max-width: 1000px) {
+      .logs-split-grid {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      .terminal-box, .discord-box {
+        min-height: 420px;
+        height: 500px;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -2894,6 +3385,434 @@
     // ===== END ELEVENLABS MANAGER =====
 
     // ===== END INJECTED =====
+
+    // ===== REALTIME LOGS & CHAT SSE CLIENT =====
+    (() => {
+      let eventSource = null;
+      let isPaused = false;
+      let autoScroll = true;
+      let activeFilter = 'all';
+      let termSearch = '';
+      let activeChanFilter = 'all';
+      
+      const allLogs = [];
+      const allChats = [];
+      const knownChannels = new Set(['all']);
+
+      const sseDot = document.getElementById('sseDot');
+      const sseStatusText = document.getElementById('sseStatusText');
+      const logsStatBadge = document.getElementById('logsStatBadge');
+      const chatsStatBadge = document.getElementById('chatsStatBadge');
+      const terminalBody = document.getElementById('terminalBody');
+      const discordBody = document.getElementById('discordBody');
+      const discordEmpty = document.getElementById('discordEmpty');
+      const discordChanSelect = document.getElementById('discordChanSelect');
+      const autoScrollToggle = document.getElementById('autoScrollToggle');
+      const streamPauseBtn = document.getElementById('streamPauseBtn');
+      const streamPauseLabel = document.getElementById('streamPauseLabel');
+      const logsSplitGrid = document.getElementById('logsSplitGrid');
+      const jumpBottomBtn = document.getElementById('jumpBottomBtn');
+      const termSearchInput = document.getElementById('termSearchInput');
+
+      // Tag styling helper
+      function getTagClass(tag) {
+        if (!tag) return 'tag-default';
+        const t = tag.replace(/[\[\]]/g, '').toUpperCase();
+        if (t === 'INPUT') return 'tag-input';
+        if (t === 'OUTPUT') return 'tag-output';
+        if (t === 'CMD' || t === 'LIB' || t === 'SEARCH') return 'tag-cmd';
+        if (t.includes('AI') || t.includes('LLM') || t.includes('BURST')) return 'tag-ai';
+        if (t.includes('VOICE') || t.includes('VC')) return 'tag-voice';
+        if (t.includes('MUSIC') || t.includes('SFX') || t.includes('SPOTIFY')) return 'tag-music';
+        if (t.includes('ERROR') || t.includes('CRITICAL')) return 'tag-error';
+        return 'tag-default';
+      }
+
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // Render single log line to terminal
+      function renderLogLine(item) {
+        const div = document.createElement('div');
+        div.className = 'term-line';
+        div.dataset.category = item.category || 'system';
+        div.dataset.text = (item.message || '').toLowerCase();
+        div.dataset.tag = (item.tag || '').toLowerCase();
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'term-time';
+        timeSpan.textContent = item.timeStr || '';
+
+        const tagSpan = document.createElement('span');
+        tagSpan.className = 'term-tag ' + getTagClass(item.tag);
+        tagSpan.textContent = item.tag || '[LOG]';
+
+        const msgSpan = document.createElement('span');
+        msgSpan.className = 'term-msg' + (item.level === 'warn' ? ' level-warn' : item.level === 'error' ? ' level-error' : '');
+        msgSpan.textContent = item.message || '';
+
+        div.appendChild(timeSpan);
+        div.appendChild(tagSpan);
+        div.appendChild(msgSpan);
+
+        applyLogVisibility(div);
+        return div;
+      }
+
+      function applyLogVisibility(el) {
+        const cat = el.dataset.category;
+        const text = el.dataset.text;
+        const tag = el.dataset.tag;
+
+        let passFilter = false;
+        if (activeFilter === 'all') passFilter = true;
+        else if (activeFilter === 'chat' && cat === 'chat') passFilter = true;
+        else if (activeFilter === 'ai' && cat === 'ai') passFilter = true;
+        else if (activeFilter === 'voice' && cat === 'voice') passFilter = true;
+        else if (activeFilter === 'error' && (cat === 'error' || el.querySelector('.level-error'))) passFilter = true;
+
+        let passSearch = true;
+        if (termSearch) {
+          passSearch = text.includes(termSearch) || tag.includes(termSearch);
+        }
+
+        el.style.display = (passFilter && passSearch) ? 'flex' : 'none';
+      }
+
+      function filterAllLogs() {
+        if (!terminalBody) return;
+        terminalBody.querySelectorAll('.term-line').forEach(applyLogVisibility);
+        if (autoScroll) scrollTerminalToBottom();
+      }
+
+      // Render single Discord chat card
+      function renderChatCard(item) {
+        if (discordEmpty) discordEmpty.style.display = 'none';
+
+        const card = document.createElement('div');
+        card.className = 'discord-msg-card';
+        card.dataset.channel = item.channelId || 'all';
+
+        // Avatar
+        const avatar = document.createElement('div');
+        avatar.className = 'discord-avatar ' + (item.isBot ? 'bot-avatar' : item.isJoy ? 'joy-avatar' : 'user-avatar');
+        avatar.textContent = item.isBot ? 'C' : item.isJoy ? 'J' : (item.authorName ? item.authorName.charAt(0).toUpperCase() : 'U');
+
+        // Content Wrapper
+        const contentWrap = document.createElement('div');
+        contentWrap.className = 'discord-msg-content';
+
+        // Reply context (if any)
+        if (item.replyToAuthorName || item.replyToContent) {
+          const replyBox = document.createElement('div');
+          replyBox.className = 'discord-reply-box';
+          replyBox.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 10 4 15 9 20"/><path d="M20 4v7a4 4 0 0 1-4 4H4"/></svg> <span>Membalas <strong>@${escapeHtml(item.replyToAuthorName || 'User')}</strong>: "${escapeHtml((item.replyToContent || '').slice(0, 40))}${(item.replyToContent || '').length > 40 ? '...' : ''}"</span>`;
+          contentWrap.appendChild(replyBox);
+        }
+
+        // Header Meta
+        const head = document.createElement('div');
+        head.className = 'discord-msg-head';
+
+        const author = document.createElement('span');
+        author.className = 'discord-author' + (item.isJoy ? ' joy-author' : '');
+        author.textContent = item.authorName || (item.isBot ? 'Callista' : 'User');
+        head.appendChild(author);
+
+        if (item.isBot) {
+          const botBadge = document.createElement('span');
+          botBadge.className = 'badge-discord-bot';
+          botBadge.textContent = 'BOT';
+          head.appendChild(botBadge);
+        }
+
+        if (item.isJoy) {
+          const joyBadge = document.createElement('span');
+          joyBadge.className = 'badge-discord-joy';
+          joyBadge.textContent = '👑 MAS JOY';
+          head.appendChild(joyBadge);
+        }
+
+        const chanTag = document.createElement('span');
+        chanTag.className = 'discord-chan-tag';
+        chanTag.textContent = item.channelLabel || `#${item.channelId}`;
+        head.appendChild(chanTag);
+
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'discord-time';
+        timeSpan.textContent = item.timeStr || '';
+        head.appendChild(timeSpan);
+
+        contentWrap.appendChild(head);
+
+        // Text Body
+        let cleanText = item.content || '';
+        const isVn = cleanText.startsWith('[voice_note]');
+        if (isVn) {
+          cleanText = cleanText.replace(/^\[voice_note\]\s*/i, '');
+        }
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'discord-text';
+        textDiv.textContent = cleanText;
+        contentWrap.appendChild(textDiv);
+
+        if (isVn) {
+          const vnBox = document.createElement('div');
+          vnBox.className = 'vn-badge-box';
+          vnBox.innerHTML = '🎙️ <span>Voice Note (ElevenLabs TTS)</span>';
+          contentWrap.appendChild(vnBox);
+        }
+
+        card.appendChild(avatar);
+        card.appendChild(contentWrap);
+
+        // Track channel in filter dropdown
+        if (item.channelId && item.channelLabel && !knownChannels.has(item.channelId)) {
+          knownChannels.add(item.channelId);
+          if (discordChanSelect) {
+            const opt = document.createElement('option');
+            opt.value = item.channelId;
+            opt.textContent = item.channelLabel;
+            discordChanSelect.appendChild(opt);
+          }
+        }
+
+        applyChatVisibility(card);
+        return card;
+      }
+
+      function applyChatVisibility(card) {
+        if (activeChanFilter === 'all') {
+          card.style.display = 'flex';
+        } else {
+          card.style.display = card.dataset.channel === activeChanFilter ? 'flex' : 'none';
+        }
+      }
+
+      function filterAllChats() {
+        if (!discordBody) return;
+        discordBody.querySelectorAll('.discord-msg-card').forEach(applyChatVisibility);
+        if (autoScroll) scrollDiscordToBottom();
+      }
+
+      function scrollTerminalToBottom() {
+        if (terminalBody) {
+          terminalBody.scrollTop = terminalBody.scrollHeight;
+        }
+      }
+
+      function scrollDiscordToBottom() {
+        if (discordBody) {
+          discordBody.scrollTop = discordBody.scrollHeight;
+        }
+        if (jumpBottomBtn) jumpBottomBtn.style.display = 'none';
+      }
+
+      // Initialize SSE Connection
+      function startSSE() {
+        if (eventSource) {
+          eventSource.close();
+        }
+
+        if (sseDot) {
+          sseDot.className = 'sse-dot connecting';
+        }
+        if (sseStatusText) {
+          sseStatusText.textContent = 'Menyambung ke SSE...';
+        }
+
+        try {
+          eventSource = new EventSource('/api/logs/stream');
+
+          eventSource.onopen = () => {
+            if (sseDot) sseDot.className = 'sse-dot connected';
+            if (sseStatusText) sseStatusText.textContent = 'SSE Terhubung';
+          };
+
+          eventSource.onmessage = (event) => {
+            if (isPaused) return;
+            try {
+              const msg = JSON.parse(event.data);
+              if (msg.type === 'init' && msg.data) {
+                // Populate initial logs
+                if (Array.isArray(msg.data.logs)) {
+                  allLogs.length = 0;
+                  if (terminalBody) terminalBody.innerHTML = '';
+                  msg.data.logs.forEach(l => {
+                    allLogs.push(l);
+                    if (terminalBody) terminalBody.appendChild(renderLogLine(l));
+                  });
+                  if (logsStatBadge) logsStatBadge.textContent = `📋 ${allLogs.length} Log`;
+                }
+
+                // Populate initial chats
+                if (Array.isArray(msg.data.chats)) {
+                  allChats.length = 0;
+                  if (discordBody) {
+                    discordBody.querySelectorAll('.discord-msg-card').forEach(c => c.remove());
+                  }
+                  msg.data.chats.forEach(c => {
+                    allChats.push(c);
+                    if (discordBody) discordBody.appendChild(renderChatCard(c));
+                  });
+                  if (chatsStatBadge) chatsStatBadge.textContent = `💬 ${allChats.length} Chat`;
+                }
+
+                if (autoScroll) {
+                  scrollTerminalToBottom();
+                  scrollDiscordToBottom();
+                }
+              } else if (msg.type === 'log' && msg.data) {
+                allLogs.push(msg.data);
+                if (allLogs.length > 500) allLogs.shift();
+                if (logsStatBadge) logsStatBadge.textContent = `📋 ${allLogs.length} Log`;
+
+                if (terminalBody) {
+                  terminalBody.appendChild(renderLogLine(msg.data));
+                  if (autoScroll) scrollTerminalToBottom();
+                }
+              } else if (msg.type === 'chat' && msg.data) {
+                allChats.push(msg.data);
+                if (allChats.length > 200) allChats.shift();
+                if (chatsStatBadge) chatsStatBadge.textContent = `💬 ${allChats.length} Chat`;
+
+                if (discordBody) {
+                  discordBody.appendChild(renderChatCard(msg.data));
+                  if (autoScroll) scrollDiscordToBottom();
+                }
+              } else if (msg.type === 'clear_logs') {
+                allLogs.length = 0;
+                if (terminalBody) terminalBody.innerHTML = '';
+                if (logsStatBadge) logsStatBadge.textContent = '📋 0 Log';
+              } else if (msg.type === 'clear_chats') {
+                allChats.length = 0;
+                if (discordBody) {
+                  discordBody.querySelectorAll('.discord-msg-card').forEach(c => c.remove());
+                  if (discordEmpty) discordEmpty.style.display = 'flex';
+                }
+                if (chatsStatBadge) chatsStatBadge.textContent = '💬 0 Chat';
+              }
+            } catch (_) {}
+          };
+
+          eventSource.onerror = () => {
+            if (sseDot) sseDot.className = 'sse-dot disconnected';
+            if (sseStatusText) sseStatusText.textContent = 'Terputus (Reconnecting...)';
+          };
+        } catch (e) {
+          if (sseDot) sseDot.className = 'sse-dot disconnected';
+          if (sseStatusText) sseStatusText.textContent = 'SSE Tidak Didukung';
+        }
+      }
+
+      // Event listeners & controls
+      autoScrollToggle?.addEventListener('change', (e) => {
+        autoScroll = Boolean(e.target.checked);
+        if (autoScroll) {
+          scrollTerminalToBottom();
+          scrollDiscordToBottom();
+        }
+      });
+
+      streamPauseBtn?.addEventListener('click', () => {
+        isPaused = !isPaused;
+        if (streamPauseLabel) streamPauseLabel.textContent = isPaused ? 'Lanjut' : 'Jeda';
+        if (streamPauseBtn) {
+          streamPauseBtn.style.background = isPaused ? 'var(--danger-soft)' : '';
+          streamPauseBtn.style.color = isPaused ? 'var(--danger)' : '';
+        }
+      });
+
+      // View Switcher (Dua Kolom / Terminal Saja / Chat Saja)
+      document.querySelectorAll('.view-switcher-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.view-switcher-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const v = btn.dataset.view;
+          if (logsSplitGrid) {
+            logsSplitGrid.className = 'logs-split-grid ' + (v === 'terminal' ? 'view-terminal-only' : v === 'chat' ? 'view-chat-only' : 'view-split');
+          }
+        });
+      });
+
+      // Terminal Category Filters
+      document.querySelectorAll('.term-filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.term-filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeFilter = btn.dataset.filter;
+          filterAllLogs();
+        });
+      });
+
+      // Terminal Search Input
+      termSearchInput?.addEventListener('input', (e) => {
+        termSearch = (e.target.value || '').toLowerCase().trim();
+        filterAllLogs();
+      });
+
+      // Discord Channel Select Filter
+      discordChanSelect?.addEventListener('change', (e) => {
+        activeChanFilter = e.target.value || 'all';
+        filterAllChats();
+      });
+
+      // Clear button
+      document.getElementById('clearAllLogsBtn')?.addEventListener('click', async () => {
+        if (!confirm('Bersihkan buffer terminal logs dan chat realtime?')) return;
+        try {
+          await fetch('/api/logs/clear', { method: 'POST' });
+          await fetch('/api/chats/clear', { method: 'POST' });
+        } catch (_) {}
+        allLogs.length = 0;
+        allChats.length = 0;
+        if (terminalBody) terminalBody.innerHTML = '';
+        if (discordBody) {
+          discordBody.querySelectorAll('.discord-msg-card').forEach(c => c.remove());
+          if (discordEmpty) discordEmpty.style.display = 'flex';
+        }
+        if (logsStatBadge) logsStatBadge.textContent = '📋 0 Log';
+        if (chatsStatBadge) chatsStatBadge.textContent = '💬 0 Chat';
+      });
+
+      // Jump to bottom button in Discord panel
+      discordBody?.addEventListener('scroll', () => {
+        if (!discordBody) return;
+        const distFromBottom = discordBody.scrollHeight - discordBody.scrollTop - discordBody.clientHeight;
+        if (distFromBottom > 150) {
+          if (jumpBottomBtn) jumpBottomBtn.style.display = 'block';
+        } else {
+          if (jumpBottomBtn) jumpBottomBtn.style.display = 'none';
+        }
+      });
+
+      jumpBottomBtn?.addEventListener('click', () => {
+        scrollDiscordToBottom();
+      });
+
+      // Trigger SSE on clicking the page navigation item
+      document.querySelector('[data-page="page-logs"]')?.addEventListener('click', () => {
+        if (!eventSource || eventSource.readyState === EventSource.CLOSED) {
+          startSSE();
+        }
+        setTimeout(() => {
+          scrollTerminalToBottom();
+          scrollDiscordToBottom();
+        }, 100);
+      });
+
+      // Start SSE immediately in background so logs accumulate from start
+      startSSE();
+    })();
+    // ===== END REALTIME LOGS & CHAT SSE CLIENT =====
+
   </script>
 </body>
 </html>

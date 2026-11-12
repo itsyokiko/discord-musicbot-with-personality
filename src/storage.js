@@ -216,6 +216,10 @@ function addHistory(channelId, messageRecord) {
     history[channelId] = history[channelId].slice(-max);
   }
   saveJSON(historyPath, history);
+  try {
+    const logStream = require('./logStream');
+    logStream.recordChat({ channelId, ...messageRecord });
+  } catch (_) {}
 }
 
 function removeHistoryMessage(channelId, messageId) {

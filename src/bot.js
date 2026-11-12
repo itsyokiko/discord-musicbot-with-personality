@@ -292,6 +292,7 @@ function makeCommandReply(client, message, config, isJoy = false, callerName = '
       storage.addHistory(channelId, {
         id: sent.id,
         channelId,
+        channelLabel: getChannelLabel(message.channel),
         userId: client.user.id,
         authorName: config.name || 'Callista',
         content: historyContent,
@@ -2203,6 +2204,7 @@ async function processBurst(channelId, client) {
         if (voiceMsg) {
           storage.addHistory(channelId, {
             id: voiceMsg.id, channelId,
+            channelLabel,
             userId: client.user.id,
             authorName: config.name || 'Callista',
             content: `[voice_note] ${elResult.cleanText || fullText}`,
@@ -2230,6 +2232,7 @@ async function processBurst(channelId, client) {
     storage.addHistory(channelId, {
       id: firstMsg.id,
       channelId,
+      channelLabel,
       userId: client.user.id,
       authorName: config.name || 'Callista',
       content: replyTexts[0],
@@ -2250,6 +2253,7 @@ async function processBurst(channelId, client) {
         storage.addHistory(channelId, {
           id: nextMsg.id,
           channelId,
+          channelLabel,
           userId: client.user.id,
           authorName: config.name || 'Callista',
           content: replyTexts[i],
@@ -2592,7 +2596,7 @@ function startBot(token) {
 
     console.log(`[INPUT] [${channelLabel}] [${authorName}]: "${content}"${replyTag}${mentionTag}`);
 
-    storage.addHistory(channelId, { ...msgData, isBot: false });
+    storage.addHistory(channelId, { ...msgData, channelLabel, isBot: false });
 
     const config = storage.getConfig();
     const botState = storage.getBotState();
