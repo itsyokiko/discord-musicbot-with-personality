@@ -170,9 +170,37 @@ function isExpectedLeave(guildId) {
  * @returns {Object} connection
  */
 function joinVoice(voiceChannel, options = {}) {
-  // DisTube v5 memakai group = bot user ID. Berikan group yang sama
-  // supaya tidak bentrok "This guild already has a voice connection which is not managed by DisTube".
+  const musicPlayer = require('./musicPlayer');
+  const distube = musicPlayer.getDisTube();
+  const guildId = voiceChannel.guild?.id || voiceChannel.guildId;
   const botId = voiceChannel.client?.user?.id;
+
+  // Jika DisTube sudah aktif, gabung lewat DisTube agar koneksi terkelola resmi
+  // dan tidak bentrok "VOICE_ALREADY_CREATED" saat memutar musik
+  if (distube?.voices && typeof distube.voices.create === 'function') {
+    try {
+      const existing = distube.voices.get(guildId);
+      if (existing) {
+        existing.channel = voiceChannel;
+        return existing.connection || existing;
+      }
+      const { getGroups } = require('@discordjs/voice');
+      if (typeof getGroups === 'function') {
+        for (const [, groupMap] of getGroups()) {
+          const c = groupMap.get(guildId);
+          if (c) {
+            markExpectedLeave(guildId);
+            try { c.destroy(); } catch (_) {}
+          }
+        }
+      }
+      const dtVoice = distube.voices.create(voiceChannel);
+      dtVoice.join().catch(() => {});
+      return dtVoice.connection || dtVoice;
+    } catch (_) {}
+  }
+
+  // Fallback ke @discordjs/voice jika DisTube belum terinisialisasi
   const connection = joinVoiceChannel({
     channelId: voiceChannel.id,
     guildId: voiceChannel.guild.id,
@@ -189,14 +217,28 @@ function joinVoice(voiceChannel, options = {}) {
  */
 function leaveVoice(guildId, group) {
   markExpectedLeave(guildId);
-  // DisTube bikin koneksi dengan group = user ID bot, sedangkan JOIN_VOICE manual
-  // pakai group default. Cek dua-duanya supaya leave selalu nemu koneksinya.
+  try {
+    const musicPlayer = require('./musicPlayer');
+    const distube = musicPlayer.getDisTube();
+    if (distube?.voices?.get(guildId)) {
+      distube.voices.leave(guildId);
+    }
+  } catch (_) {}
+  const { getVoiceConnection, getGroups } = require('@discordjs/voice');
+  if (typeof getGroups === 'function') {
+    for (const [, groupMap] of getGroups()) {
+      const c = groupMap.get(guildId);
+      if (c) {
+        try { c.destroy(); } catch (_) {}
+      }
+    }
+  }
   const connection = getVoiceConnection(guildId) || (group ? getVoiceConnection(guildId, group) : undefined);
   if (connection) {
-    connection.destroy();
+    try { connection.destroy(); } catch (_) {}
     return true;
   }
-  return false;
+  return true;
 }
 
 /**

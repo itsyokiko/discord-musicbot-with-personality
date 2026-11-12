@@ -1060,28 +1060,24 @@ function getDisTube() {
 async function clearForeignVoiceConnection(guildId) {
   if (!distubeInstance || !guildId) return;
   try {
-    const { getVoiceConnection } = require('@discordjs/voice');
-    const botId = distubeInstance.client?.user?.id;
-    // Koneksi dengan group 'default' (tanpa group botId) adalah koneksi asing yang memicu crash DisTube
-    const connDefault = getVoiceConnection(guildId);
+    // Jika DisTube sudah punya koneksi voice sah di guild ini, jangan ganggu
+    if (distubeInstance.voices.get(guildId)) return;
+
+    const { getGroups } = require('@discordjs/voice');
     let destroyed = false;
-    if (connDefault) {
-      voiceUtils.markExpectedLeave(guildId);
-      try { connDefault.destroy(); } catch (_) {}
-      destroyed = true;
-    }
-    // Jika DisTube belum punya instance voice sah tapi ada koneksi group botId nyangkut
-    if (!distubeInstance.voices.get(guildId) && botId) {
-      const connBot = getVoiceConnection(guildId, botId);
-      if (connBot && connBot !== connDefault) {
-        voiceUtils.markExpectedLeave(guildId);
-        try { connBot.destroy(); } catch (_) {}
-        destroyed = true;
+    if (typeof getGroups === 'function') {
+      for (const [, groupMap] of getGroups()) {
+        const c = groupMap.get(guildId);
+        if (c) {
+          voiceUtils.markExpectedLeave(guildId);
+          try { c.destroy(); } catch (_) {}
+          destroyed = true;
+        }
       }
     }
     if (destroyed) {
       console.log(`[MUSIC] Destroyed unmanaged voice connection in guild ${guildId} before play`);
-      await new Promise(r => setTimeout(r, 300));
+      await new Promise(r => setTimeout(r, 350));
     }
   } catch (e) {
     // diamkan saja
@@ -1103,16 +1099,18 @@ async function safeDistubePlay(voiceChannel, target, playOptions) {
       console.warn(`[MUSIC] Caught VOICE_ALREADY_CREATED in guild ${guildId}, forcing voice cleanup & retrying...`);
       try { distubeInstance.voices.leave(guildId); } catch (_) {}
       try {
-        const { getVoiceConnection } = require('@discordjs/voice');
-        const botId = distubeInstance.client?.user?.id;
-        const c1 = getVoiceConnection(guildId);
-        if (c1) { voiceUtils.markExpectedLeave(guildId); c1.destroy(); }
-        if (botId) {
-          const c2 = getVoiceConnection(guildId, botId);
-          if (c2 && c2 !== c1) { voiceUtils.markExpectedLeave(guildId); c2.destroy(); }
+        const { getGroups } = require('@discordjs/voice');
+        if (typeof getGroups === 'function') {
+          for (const [, groupMap] of getGroups()) {
+            const c = groupMap.get(guildId);
+            if (c) {
+              voiceUtils.markExpectedLeave(guildId);
+              try { c.destroy(); } catch (_) {}
+            }
+          }
         }
       } catch (_) {}
-      await new Promise(r => setTimeout(r, 350));
+      await new Promise(r => setTimeout(r, 400));
       return await distubeInstance.play(voiceChannel, target, playOptions);
     }
     throw err;
