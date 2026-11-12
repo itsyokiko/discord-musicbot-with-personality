@@ -235,13 +235,25 @@ function formatHelpText() {
   ].join('\n');
 }
 
-function formatReply(text, isJoy) {
-  if (!isJoy) return text;
-  return text
-    .replace(/\blu\b/gi, 'Mas Joy')
-    .replace(/\bkamu\b/gi, 'Mas Joy')
-    .replace(/\bgue\b/gi, 'aku')
-    .replace(/\bgw\b/gi, 'aku');
+function formatReply(text, isJoy, callerName = '') {
+  if (!text || typeof text !== 'string') return text;
+  if (isJoy) {
+    return text
+      .replace(/\blu\b/gi, 'Mas Joy')
+      .replace(/\bkamu\b/gi, 'Mas Joy')
+      .replace(/\bgue\b/gi, 'aku')
+      .replace(/\bgw\b/gi, 'aku');
+  }
+  // Caller bukan Mas Joy (misal user dengan izin permit):
+  // Ganti sapaan 'mas joy' menjadi nama caller, agar respon bot tidak kaku selalu memanggil Mas Joy.
+  const name = String(callerName || '').trim();
+  let res = text;
+  if (name) {
+    res = res.replace(/\bmas\s+joy\b/gi, name);
+  } else {
+    res = res.replace(/\bmas\s+joy\b/gi, 'kamu');
+  }
+  return res;
 }
 
 const STOP_VARIANTS = [
@@ -259,14 +271,16 @@ const LEAVE_VARIANTS = [
   'sudah, aku pergi dulu',
 ];
 
-function makeCommandReply(client, message, config) {
+function makeCommandReply(client, message, config, isJoy = false, callerName = '') {
   const channelId = message.channelId;
+  const resolvedCaller = callerName || message.member?.displayName || message.author?.globalName || message.author?.username || '';
   return async (payload) => {
     try {
       let options;
       let historyContent;
       if (typeof payload === 'string') {
-        const safeText = payload.length > 1950 ? `${payload.slice(0, 1950)}...` : payload;
+        const formatted = formatReply(payload, isJoy, resolvedCaller);
+        const safeText = formatted.length > 1950 ? `${formatted.slice(0, 1950)}...` : formatted;
         options = { content: safeText, allowedMentions: { repliedUser: false } };
         historyContent = safeText;
       } else {
@@ -359,8 +373,8 @@ function detectGreetingGifQuery(content) {
  */
 async function handleDirectMusicCommand({ client, message, command, args, source, member, isJoy, allowed, config, bare, shuffle }) {
   const guild = message.guild;
-
-  const rawReply = makeCommandReply(client, message, config);
+  const callerName = message.member?.displayName || message.author?.globalName || message.author?.username || '';
+  const rawReply = makeCommandReply(client, message, config, isJoy, callerName);
   const reply = async (payload) => {
     if (typeof payload === 'string') {
       return rawReply(isJoy ? formatReply(payload, true) : formatReply(payload, false));
@@ -734,7 +748,8 @@ async function handleDirectMusicCommand({ client, message, command, args, source
  * Tidak memutar apa pun.
  */
 async function handleLibraryCommand({ client, message, member, isJoy, allowed, config, lib }) {
-  const rawReply = makeCommandReply(client, message, config);
+  const callerName = message.member?.displayName || message.author?.globalName || message.author?.username || '';
+  const rawReply = makeCommandReply(client, message, config, isJoy, callerName);
   const reply = async (text) => rawReply(isJoy ? formatReply(text, true) : formatReply(text, false));
   const guild = message.guild;
 
@@ -930,7 +945,8 @@ async function handleLibraryCommand({ client, message, member, isJoy, allowed, c
  * Hasil disimpan per channel+user supaya bisa dipilih "nomor 1".
  */
 async function handleSearchCommand({ client, message, isJoy, allowed, config, query, source }) {
-  const reply = makeCommandReply(client, message, config);
+  const callerName = message.member?.displayName || message.author?.globalName || message.author?.username || '';
+  const reply = makeCommandReply(client, message, config, isJoy, callerName);
 
   if (!allowed) {
     // Prefix dari user lain dianggap quote/chat biasa: jangan berisik.
@@ -987,7 +1003,8 @@ async function handleSearchCommand({ client, message, isJoy, allowed, config, qu
  * Cuma jalan kalau user itu punya hasil pencarian aktif.
  */
 async function handleSearchPick({ client, message, member, isJoy, allowed, config, pick, search: providedSearch }) {
-  const reply = makeCommandReply(client, message, config);
+  const callerName = message.member?.displayName || message.author?.globalName || message.author?.username || '';
+  const reply = makeCommandReply(client, message, config, isJoy, callerName);
 
   if (!allowed) return false;
 
@@ -1529,7 +1546,8 @@ async function processBurst(channelId, client) {
 
       // SAFETY CHECK: Hanya Mas Joy (atau user yang di-`>permit`) yang bisa menyuruh join VC
       const isJoy = voiceUtils.isMasJoy(userProfile, userId, authorName);
-      if (!isJoy && guild && voiceTracker.isBusyWithMasJoy(client, guild.id)) {
+      const isAllowed = isJoy || permissionStore.isPermitted(userId);
+      if (!isAllowed && guild && voiceTracker.isBusyWithMasJoy(client, guild.id)) {
         const busyReply = voiceTracker.getBusyWithMasJoyReply();
         if (lastDiscordMessage.channel.sendTyping) await lastDiscordMessage.channel.sendTyping();
         await sleep(400);
@@ -1750,7 +1768,8 @@ async function processBurst(channelId, client) {
       const reply = async (text) => {
         if (lastDiscordMessage.channel.sendTyping) await lastDiscordMessage.channel.sendTyping();
         await sleep(500);
-        const m = await lastDiscordMessage.reply({ content: text, allowedMentions: { repliedUser: false } });
+        const formattedText = formatReply(text, isJoy, authorName);
+        const m = await lastDiscordMessage.reply({ content: formattedText, allowedMentions: { repliedUser: false } });
         storage.addHistory(channelId, {
           id: m.id, channelId, userId: client.user.id,
           authorName: config.name || 'Callista',
@@ -2579,7 +2598,8 @@ function startBot(token) {
     }
 
     async function rejectIfBusyWithMasJoy() {
-      if (isJoy || !message.guild) return false;
+      // Mas Joy dan user dengan izin (allowed) tidak boleh ditolak saat mengakses musik/search/antrean
+      if (allowed || isJoy || !message.guild) return false;
       if (voiceTracker.isBusyWithMasJoy(client, message.guild.id)) {
         const reply = voiceTracker.getBusyWithMasJoyReply();
         const sent = await message.reply({ content: reply, allowedMentions: { repliedUser: false } });

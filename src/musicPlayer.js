@@ -1057,23 +1057,65 @@ function getDisTube() {
  * di guild (error VOICE_ALREADY_CREATED) — misalnya dari JOIN_VOICE manual.
  * Hapus koneksi "asing" itu, tapi JANGAN hapus koneksi milik DisTube sendiri.
  */
-function clearForeignVoiceConnection(guildId) {
-  if (!distubeInstance) return;
-  try {
-    if (distubeInstance.voices.get(guildId)) return; // DisTube sudah punya voice
-  } catch (e) {
-    return;
-  }
+async function clearForeignVoiceConnection(guildId) {
+  if (!distubeInstance || !guildId) return;
   try {
     const { getVoiceConnection } = require('@discordjs/voice');
-    const conn = getVoiceConnection(guildId);
-    if (conn) {
+    const botId = distubeInstance.client?.user?.id;
+    // Koneksi dengan group 'default' (tanpa group botId) adalah koneksi asing yang memicu crash DisTube
+    const connDefault = getVoiceConnection(guildId);
+    let destroyed = false;
+    if (connDefault) {
       voiceUtils.markExpectedLeave(guildId);
-      conn.destroy();
-      console.log('[MUSIC] Destroyed foreign voice connection before play');
+      try { connDefault.destroy(); } catch (_) {}
+      destroyed = true;
+    }
+    // Jika DisTube belum punya instance voice sah tapi ada koneksi group botId nyangkut
+    if (!distubeInstance.voices.get(guildId) && botId) {
+      const connBot = getVoiceConnection(guildId, botId);
+      if (connBot && connBot !== connDefault) {
+        voiceUtils.markExpectedLeave(guildId);
+        try { connBot.destroy(); } catch (_) {}
+        destroyed = true;
+      }
+    }
+    if (destroyed) {
+      console.log(`[MUSIC] Destroyed unmanaged voice connection in guild ${guildId} before play`);
+      await new Promise(r => setTimeout(r, 300));
     }
   } catch (e) {
     // diamkan saja
+  }
+}
+
+/**
+ * Bungkus pemanggilan distubeInstance.play dengan auto-recovery jika terjadi VOICE_ALREADY_CREATED
+ */
+async function safeDistubePlay(voiceChannel, target, playOptions) {
+  const guildId = voiceChannel.guildId || voiceChannel.guild?.id;
+  await clearForeignVoiceConnection(guildId);
+  try {
+    return await distubeInstance.play(voiceChannel, target, playOptions);
+  } catch (err) {
+    const isVoiceConflict = err.errorCode === 'VOICE_ALREADY_CREATED' ||
+      /already has a voice connection/i.test(err.message || '');
+    if (isVoiceConflict) {
+      console.warn(`[MUSIC] Caught VOICE_ALREADY_CREATED in guild ${guildId}, forcing voice cleanup & retrying...`);
+      try { distubeInstance.voices.leave(guildId); } catch (_) {}
+      try {
+        const { getVoiceConnection } = require('@discordjs/voice');
+        const botId = distubeInstance.client?.user?.id;
+        const c1 = getVoiceConnection(guildId);
+        if (c1) { voiceUtils.markExpectedLeave(guildId); c1.destroy(); }
+        if (botId) {
+          const c2 = getVoiceConnection(guildId, botId);
+          if (c2 && c2 !== c1) { voiceUtils.markExpectedLeave(guildId); c2.destroy(); }
+        }
+      } catch (_) {}
+      await new Promise(r => setTimeout(r, 350));
+      return await distubeInstance.play(voiceChannel, target, playOptions);
+    }
+    throw err;
   }
 }
 
@@ -1235,8 +1277,7 @@ async function playPlaylist(member, textChannel, playlistOrUrl, options = {}) {
       })),
     });
 
-    clearForeignVoiceConnection(voiceChannel.guildId);
-    await distubeInstance.play(voiceChannel, playlist, {
+    await safeDistubePlay(voiceChannel, playlist, {
       member,
       textChannel,
       skip: Boolean(options.skip),
@@ -1264,9 +1305,7 @@ async function playPlaylist(member, textChannel, playlistOrUrl, options = {}) {
   });
   const playlist = buildPlaylist(member, info);
 
-  clearForeignVoiceConnection(voiceChannel.guildId);
-
-  await distubeInstance.play(voiceChannel, playlist, {
+  await safeDistubePlay(voiceChannel, playlist, {
     member,
     textChannel,
     skip: Boolean(options.skip),
@@ -1315,9 +1354,7 @@ async function playSong(member, textChannel, query, options = {}) {
     return { success: false, code: 'NO_VOICE', error: 'Tidak ada VC tujuan' };
   }
 
-  clearForeignVoiceConnection(voiceChannel.guildId);
-
-  await distubeInstance.play(voiceChannel, query, {
+  await safeDistubePlay(voiceChannel, query, {
     member,
     textChannel,
     metadata: { source: 'song', ...options.metadata },
@@ -1357,7 +1394,7 @@ async function playSfx(member, textChannel, options = {}) {
   );
   sfxSong.stream.url = streamUrl;
 
-  await distubeInstance.play(voiceChannel, sfxSong, {
+  await safeDistubePlay(voiceChannel, sfxSong, {
     member,
     textChannel,
     skip: Boolean(options.skip),

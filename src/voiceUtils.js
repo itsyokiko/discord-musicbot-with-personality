@@ -170,12 +170,16 @@ function isExpectedLeave(guildId) {
  * @returns {Object} connection
  */
 function joinVoice(voiceChannel, options = {}) {
+  // DisTube v5 memakai group = bot user ID. Berikan group yang sama
+  // supaya tidak bentrok "This guild already has a voice connection which is not managed by DisTube".
+  const botId = voiceChannel.client?.user?.id;
   const connection = joinVoiceChannel({
     channelId: voiceChannel.id,
     guildId: voiceChannel.guild.id,
     adapterCreator: voiceChannel.guild.voiceAdapterCreator,
     selfDeaf: options.selfDeaf !== false,
     selfMute: options.selfMute !== false,
+    group: options.group || botId || undefined,
   });
   return connection;
 }
