@@ -37,12 +37,13 @@ function getTimeInTimezone(date = new Date(), timezone = 'Asia/Jakarta') {
       minutes: parseInt(min, 10)
     };
   } catch (e) {
+    // Fallback: use system local time if Intl fails (rare)
     const iso = date.toISOString();
     return {
       dateStr: iso.slice(0, 10),
       timeStr: iso.slice(11, 16),
-      hours: date.getUTCHours(),
-      minutes: date.getUTCMinutes()
+      hours: date.getHours(),
+      minutes: date.getMinutes()
     };
   }
 }

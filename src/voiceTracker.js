@@ -761,7 +761,23 @@ async function handleVoiceStateUpdate(oldState, newState, client) {
 
   // 2. Cek voice channel baru jika ada yang join / switch
   if (newState.channel) {
-    await handleVoiceChannelCheck(client, newState.channel);
+    const member = newState.member;
+    const isFreshJoin = !oldState.channelId;
+    // Guard: jika user permit baru join ke VC yang SUDAH ada bot lain sejak awal,
+    // maka user tersebut tidak membawa bot — jangan dianggap selingkuh.
+    let skipJealousy = false;
+    if (member && isFreshJoin && !member.user?.bot && member.id !== MAS_JOY_ID && permissionStore.isPermitted(member.id)) {
+      const hadOtherBotBefore = newState.channel.members.some(
+        m => m.user?.bot && m.id !== client.user.id
+      );
+      if (hadOtherBotBefore) {
+        skipJealousy = true;
+        console.log(`[VC_TRACKER] ${member.displayName} join VC yang sudah ada bot lain — bukan selingkuh, lewati jealousy.`);
+      }
+    }
+    if (!skipJealousy) {
+      await handleVoiceChannelCheck(client, newState.channel);
+    }
   }
 
   // Cek apakah ada interaksi dengan voiceOrderWaiter (penyuruh masuk atau orang lain yang nimbrung)

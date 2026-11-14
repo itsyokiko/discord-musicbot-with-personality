@@ -377,12 +377,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
   const guild = message.guild;
   const callerName = message.member?.displayName || message.author?.globalName || message.author?.username || '';
   const rawReply = makeCommandReply(client, message, config, isJoy, callerName);
-  const reply = async (payload) => {
-    if (typeof payload === 'string') {
-      return rawReply(isJoy ? formatReply(payload, true) : formatReply(payload, false));
-    }
-    return rawReply(payload);
-  };
+  const reply = async (payload) => rawReply(payload);
 
   const react = async (emoji) => {
     try { await message.react(emoji); } catch (e) {}
@@ -766,7 +761,7 @@ async function handleDirectMusicCommand({ client, message, command, args, source
 async function handleLibraryCommand({ client, message, member, isJoy, allowed, config, lib }) {
   const callerName = message.member?.displayName || message.author?.globalName || message.author?.username || '';
   const rawReply = makeCommandReply(client, message, config, isJoy, callerName);
-  const reply = async (text) => rawReply(isJoy ? formatReply(text, true) : formatReply(text, false));
+  const reply = async (text) => rawReply(text);
   const guild = message.guild;
 
   if (!allowed) {
