@@ -25,12 +25,62 @@ const activitiesBuffer = [];
 let activityCounter = 0;
 let newActivitiesSinceSynthesis = 0;
 let periodicTimer = null;
+let debounceTimer = null;
+let isSynthesizing = false;
+let autoTriggerEnabled = true;
+let debounceDelayMs = 2500;
 
 // Format waktu jam:menit
 function formatTime(date = new Date()) {
   const h = String(date.getHours()).padStart(2, '0');
   const m = String(date.getMinutes()).padStart(2, '0');
   return `${h}:${m}`;
+}
+
+/**
+ * Sanitasi teks aktivitas: normalisasi mention, link, dan strip tag internal.
+ */
+function cleanActivityText(text) {
+  if (!text || typeof text !== 'string') return '';
+  return text
+    .replace(/^\[(?:voice_note|vn|audio)\]\s*/i, '')
+    .replace(/<@[!&]?\d+>/g, '@user')
+    .replace(/<#\d+>/g, '#channel')
+    .replace(/https?:\/\/[^\s]+/gi, '[link]')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Cek apakah sebuah aktivitas memiliki nilai konteks yang bermakna (bukan bot command spam / junk / noise).
+ */
+function isMeaningfulActivity(item) {
+  if (!item || !item.text) return false;
+  // Event musik & voice incident bot selalu bermakna karena membawa info status/kejadian
+  if (item.type === 'music' || item.type === 'voice') return true;
+
+  const t = item.text.trim();
+
+  // Filter command bot prefix: >p, >skip, !play, /help, .menu, ~status, dll.
+  if (/^[>!/$~.]\w+/i.test(t)) return false;
+
+  // Filter teks super pendek non-informasi
+  if (t.length < 3) return false;
+
+  // Filter kata ping / tes / sapaan hampa
+  if (/^(p|tes|test|ping|pong|halo|hai|oy|woi|oi|\?|\!|\.{1,5})$/i.test(t)) return false;
+
+  // Filter tawa doang: wkwk, haha, xixi, lol, lmao, hehe
+  if (/^(w+k+|h+a+|h+e+|x+i+|l+o+l|l+m+a+o)+$/i.test(t)) return false;
+
+  return true;
+}
+
+function setAutoTrigger(enabled, delayMs = 2500) {
+  autoTriggerEnabled = Boolean(enabled);
+  if (typeof delayMs === 'number' && delayMs >= 0) {
+    debounceDelayMs = delayMs;
+  }
 }
 
 function loadState() {
@@ -70,18 +120,41 @@ function saveState(state) {
   }
 }
 
+function scheduleBackgroundSynthesis(delay = debounceDelayMs, options = {}) {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+  }
+  debounceTimer = setTimeout(async () => {
+    debounceTimer = null;
+    if (isSynthesizing) return;
+    try {
+      isSynthesizing = true;
+      await synthesizeContext(options);
+    } catch (e) {
+      console.warn('[ACTIVITY_CONTEXT] Background synthesis error:', e.message);
+    } finally {
+      isSynthesizing = false;
+    }
+  }, delay);
+
+  if (debounceTimer && debounceTimer.unref) {
+    debounceTimer.unref();
+  }
+}
+
 /**
  * Catat aktivitas baru (chat, pemutaran musik, kejadian voice).
  */
 function recordActivity({ type = 'chat', channelId = '', channelLabel = '', authorName = '', text = '', isBot = false, isJoy = false, timestamp = Date.now() }) {
-  if (!text || typeof text !== 'string') return;
+  if (!text || typeof text !== 'string') return null;
   const rawDate = new Date(timestamp);
 
   // Bersihkan teks & batasi panjang per item agar buffer tetap ringan
-  let cleanText = text.replace(/\s+/g, ' ').trim();
+  let cleanText = cleanActivityText(text);
   if (cleanText.length > 150) {
     cleanText = `${cleanText.slice(0, 147)}...`;
   }
+  if (!cleanText) return null;
 
   const chan = channelLabel || (channelId ? `#${channelId}` : '#channel');
   const author = authorName || (isBot ? 'Callista' : 'User');
@@ -98,12 +171,23 @@ function recordActivity({ type = 'chat', channelId = '', channelLabel = '', auth
     text: cleanText,
   };
 
+  const meaningful = isMeaningfulActivity(item);
+  item.isMeaningful = meaningful;
+
   activitiesBuffer.push(item);
   if (activitiesBuffer.length > MAX_ACTIVITIES) {
     activitiesBuffer.shift();
   }
 
-  newActivitiesSinceSynthesis++;
+  // Hanya aktivitas bermakna yang menambah delta counter & trigger sintesis
+  if (meaningful) {
+    newActivitiesSinceSynthesis++;
+    if (autoTriggerEnabled && shouldSynthesize(DEFAULT_DELTA_THRESHOLD)) {
+      scheduleBackgroundSynthesis(debounceDelayMs);
+    }
+  }
+
+  return item;
 }
 
 /**
@@ -135,9 +219,15 @@ async function synthesizeContext(options = {}) {
     return currentState.summary;
   }
 
+  // Filter hanya aktivitas bermakna (membuang command spam / tawa kosong)
+  const meaningfulItems = activitiesBuffer.filter(item => item.isMeaningful !== false);
+  if (meaningfulItems.length === 0) {
+    return currentState.summary;
+  }
+
   const deltaCount = newActivitiesSinceSynthesis;
   const itemsCount = (currentState.summary && !options.fromScratch) ? deltaCount : Math.max(deltaCount, 25);
-  const recentItems = activitiesBuffer.slice(-Math.max(itemsCount, 1));
+  const recentItems = meaningfulItems.slice(-Math.max(itemsCount, 1));
 
   // Format daftar aktivitas untuk input LLM (hanya fakta: [jam] [channel] [author]: text)
   const lines = recentItems.map(item => {
@@ -242,6 +332,9 @@ function getState() {
     ...currentState,
     newActivitiesSinceSynthesis,
     bufferedActivitiesCount: activitiesBuffer.length,
+    meaningfulActivitiesCount: activitiesBuffer.filter(i => i.isMeaningful !== false).length,
+    isSynthesizing,
+    autoTriggerEnabled,
   };
 }
 
@@ -250,6 +343,11 @@ function getActivityHistory() {
 }
 
 function clearState() {
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+  }
+  isSynthesizing = false;
   activitiesBuffer.length = 0;
   activityCounter = 0;
   newActivitiesSinceSynthesis = 0;
@@ -288,17 +386,25 @@ function stopPeriodicSynthesizer() {
     clearInterval(periodicTimer);
     periodicTimer = null;
   }
+  if (debounceTimer) {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+  }
 }
 
 module.exports = {
   recordActivity,
   shouldSynthesize,
   synthesizeContext,
+  scheduleBackgroundSynthesis,
   buildPromptSnippet,
   getState,
   getActivityHistory,
   clearState,
   startPeriodicSynthesizer,
   stopPeriodicSynthesizer,
+  cleanActivityText,
+  isMeaningfulActivity,
+  setAutoTrigger,
   DEFAULT_DELTA_THRESHOLD,
 };

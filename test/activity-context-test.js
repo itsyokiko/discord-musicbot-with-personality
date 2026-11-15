@@ -4,7 +4,40 @@ const activityContext = require('../src/activityContext');
 
 console.log('--- Testing Activity Context & Rolling Synthesizer ---');
 
-// 0. Reset state for clean test
+// 0. Reset state for clean test & disable auto-trigger during unit checks
+activityContext.clearState();
+activityContext.setAutoTrigger(false);
+
+// Test A: cleanActivityText sanitization
+console.log('Checking cleanActivityText...');
+assert.strictEqual(
+  activityContext.cleanActivityText('[voice_note] Halo <@833196669940138004> cek <#12345678> di https://example.com/file.zip?id=1'),
+  'Halo @user cek #channel di [link]',
+  'Should sanitize voice_note tag, user mention, channel mention, and URL'
+);
+
+// Test B: isMeaningfulActivity filtering
+console.log('Checking isMeaningfulActivity...');
+assert.strictEqual(activityContext.isMeaningfulActivity({ type: 'chat', text: '>p radwimps sparkle' }), false, 'Prefix > should be filtered');
+assert.strictEqual(activityContext.isMeaningfulActivity({ type: 'chat', text: '!play song' }), false, 'Prefix ! should be filtered');
+assert.strictEqual(activityContext.isMeaningfulActivity({ type: 'chat', text: '/skip' }), false, 'Prefix / should be filtered');
+assert.strictEqual(activityContext.isMeaningfulActivity({ type: 'chat', text: 'wkwkwkwk' }), false, 'Laugh spam should be filtered');
+assert.strictEqual(activityContext.isMeaningfulActivity({ type: 'chat', text: 'hahaha' }), false, 'Laugh spam should be filtered');
+assert.strictEqual(activityContext.isMeaningfulActivity({ type: 'chat', text: 'p' }), false, 'Single letter ping should be filtered');
+assert.strictEqual(activityContext.isMeaningfulActivity({ type: 'chat', text: 'tes' }), false, 'Test ping should be filtered');
+assert.strictEqual(activityContext.isMeaningfulActivity({ type: 'chat', text: 'ok' }), false, 'Under 3 chars should be filtered');
+assert.strictEqual(activityContext.isMeaningfulActivity({ type: 'music', text: 'Memutar lagu' }), true, 'Music events must be kept');
+assert.strictEqual(activityContext.isMeaningfulActivity({ type: 'voice', text: 'User DC' }), true, 'Voice events must be kept');
+assert.strictEqual(activityContext.isMeaningfulActivity({ type: 'chat', text: 'Tugas praktikum DKV dikumpulkan besok jam 12' }), true, 'Meaningful chat must pass');
+
+// Test C: Command and noise do NOT increment synthesis counter
+console.log('Checking noise rejection on counter...');
+activityContext.clearState();
+activityContext.recordActivity({ type: 'chat', text: '>p naruto silhouette' });
+activityContext.recordActivity({ type: 'chat', text: 'wkwkwk' });
+activityContext.recordActivity({ type: 'chat', text: 'tes' });
+activityContext.recordActivity({ type: 'chat', text: '?' });
+assert.strictEqual(activityContext.getState().newActivitiesSinceSynthesis, 0, 'Spam & noise must NOT increment new activities counter');
 activityContext.clearState();
 
 // 1. Initial empty checks
@@ -125,7 +158,34 @@ const mockLlm = async ({ systemPrompt, userPrompt }) => {
   }
   assert.strictEqual(activityContext.getActivityHistory().length, 100, 'Buffer must be capped at 100 activities');
 
+  // 9. Test Event-Driven Auto-Trigger with Debounce
+  console.log('Checking event-driven auto-trigger with debounce...');
+  activityContext.clearState();
+  let autoTriggerCalled = false;
+  activityContext.setAutoTrigger(true, 50); // 50ms debounce
+  // Record 8 items to reach initial threshold
+  for (let i = 1; i <= 8; i++) {
+    activityContext.recordActivity({
+      type: 'chat',
+      channelLabel: '#auto',
+      authorName: `User_${i}`,
+      text: `Topik perkuliahan materi bab ${i}`
+    });
+  }
+  // Schedule synthesis using mock
+  activityContext.scheduleBackgroundSynthesis(30, {
+    llmClient: async () => {
+      autoTriggerCalled = true;
+      return '- Percakapan otomatis tentang materi kuliah bab 1-8.';
+    }
+  });
+
+  await new Promise(r => setTimeout(r, 80));
+  assert.strictEqual(autoTriggerCalled, true, 'Debounced auto-trigger should execute in background');
+  assert.ok(activityContext.getState().summary.includes('materi kuliah bab 1-8'), 'Summary should be saved from background auto-trigger');
+
   // Cleanup
   activityContext.clearState();
+  activityContext.stopPeriodicSynthesizer();
   console.log('All Activity Context & Rolling Synthesizer tests passed successfully!');
 })();
