@@ -2342,6 +2342,12 @@ function startBot(token) {
       classSessionManager.checkAndFlushSessions(client, cfg.timezone || 'Asia/Jakarta').catch(() => {});
     }, 30000);
 
+    // Background Context Synthesizer (Episodic Context Distillation):
+    // Cek berkala di latar belakang apakah ada akumulasi obrolan baru (threshold >= 15).
+    // Jika obrolan sepi atau data masih sama, proses di-skip (0 token).
+    const activityContext = require('./activityContext');
+    activityContext.startPeriodicSynthesizer(client, 5 * 60 * 1000);
+
     // Recalculate mood harian di startup + setiap 60 menit
     function recalculateDailyMood() {
       try {

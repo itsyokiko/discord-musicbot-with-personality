@@ -55,6 +55,13 @@ function startServer(port) {
       return;
     }
 
+    if (req.method === 'GET' && url.pathname === '/api/activity-context') {
+      const activityContext = require('./activityContext');
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify(activityContext.getState()));
+      return;
+    }
+
     if (req.method === 'GET' && url.pathname === '/api/config') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(storage.getConfig()));

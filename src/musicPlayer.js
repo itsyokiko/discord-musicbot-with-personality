@@ -265,6 +265,16 @@ function initDisTube(client) {
   distubeInstance.on('playSong', async (queue, song) => {
     console.log(`[MUSIC] Playing in #${queue.voiceChannel?.name || '?'}: ${song.name} (${song.formattedDuration})`);
     playbackHistoryStore.addSongToHistory(song);
+    try {
+      const activityContext = require('./activityContext');
+      activityContext.recordActivity({
+        type: 'music',
+        channelLabel: `#${queue.voiceChannel?.name || 'VC'}`,
+        authorName: song.user?.displayName || song.user?.globalName || song.user?.username || 'User',
+        text: `Memutar lagu "${song.name}" (${song.formattedDuration}) di voice channel #${queue.voiceChannel?.name || 'VC'}`,
+        timestamp: Date.now()
+      });
+    } catch (_) {}
 
     const guildId = queue.voiceChannel?.guild?.id || queue.id;
     if (guildId) {

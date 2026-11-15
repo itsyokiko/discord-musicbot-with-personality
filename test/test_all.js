@@ -1383,6 +1383,7 @@ async function runTests() {
   assert.ok(typeof moodResult.factors === 'object', 'factors harus object');
   console.log('Mood System tests passed!');
   require('./voice-waiter-test');
+  require('./activity-context-test');
 
   console.log('All tests passed successfully!');
 }

@@ -180,6 +180,8 @@ TOLAK secara santai atau alihkan topik (contoh: "ogah wkwk", "kagak mau, ngapain
     : '';
   const vcTrackerSnippet = voiceTracker.buildTrackerPromptSnippet();
   const todayMemorySnippet = todayMemory.buildTodayMemoryPromptSnippet(c.timezone || 'Asia/Jakarta');
+  const activityContext = require('./activityContext');
+  const activityContextSnippet = activityContext.buildPromptSnippet();
   const tz = c.timezone || 'Asia/Jakarta';
   const { dateStr } = dailyStore.getTimeInTimezone(new Date(), tz);
   const moodPromptSnippet = moodSystem.getMoodPromptSection(dateStr);
@@ -223,6 +225,7 @@ ${musicSnippet}
 ${permitSnippet}
 ${vcTrackerSnippet}
 ${todayMemorySnippet}
+${activityContextSnippet ? '\n' + activityContextSnippet : ''}
 
 ATURAN STRICT IMMERSION BOUNDARIES (BATAS INTEGRITAS & IMERSI KARAKTER):
 1. TETAP DALAM KARAKTER MANUSIA (NO OOC):

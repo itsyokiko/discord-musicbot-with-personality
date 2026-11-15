@@ -220,6 +220,19 @@ function addHistory(channelId, messageRecord) {
     const logStream = require('./logStream');
     logStream.recordChat({ channelId, ...messageRecord });
   } catch (_) {}
+  try {
+    const activityContext = require('./activityContext');
+    activityContext.recordActivity({
+      type: 'chat',
+      channelId,
+      channelLabel: messageRecord.channelLabel || `#${channelId}`,
+      authorName: messageRecord.authorName,
+      text: messageRecord.content,
+      isBot: messageRecord.isBot,
+      isJoy: messageRecord.isJoy,
+      timestamp: messageRecord.timestamp || Date.now()
+    });
+  } catch (_) {}
 }
 
 function removeHistoryMessage(channelId, messageId) {

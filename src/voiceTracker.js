@@ -186,6 +186,16 @@ function recordIncident(userId, userName, channelName, botName) {
 
   saveState(state);
   todayMemory.addTodayEntry(`[VC]: User ${userName} bawa ${botName} ke VC #${channelName}. Callista ngambek (ke-${newCount}x).`);
+  try {
+    const activityContext = require('./activityContext');
+    activityContext.recordActivity({
+      type: 'voice',
+      channelLabel: `#${channelName}`,
+      authorName: userName,
+      text: `User ${userName} bawa ${botName} ke VC #${channelName} (Callista dicuekin ke-${newCount}x)`,
+      timestamp: now
+    });
+  } catch (_) {}
   return { count: newCount, isSameDay };
 }
 
@@ -200,6 +210,16 @@ function recordForcedDisconnectIncident(guildId, kickerName, channelName) {
   };
   saveState(state);
   todayMemory.addTodayEntry(`[VC]: Callista di-disconnect paksa dari #${channelName} oleh ${kickerName}!`);
+  try {
+    const activityContext = require('./activityContext');
+    activityContext.recordActivity({
+      type: 'voice',
+      channelLabel: `#${channelName}`,
+      authorName: kickerName,
+      text: `Callista di-disconnect paksa dari #${channelName} oleh ${kickerName}`,
+      timestamp: Date.now()
+    });
+  } catch (_) {}
 }
 
 function recordAloneIncident(guildId, channelName) {
@@ -212,6 +232,16 @@ function recordAloneIncident(guildId, channelName) {
   };
   saveState(state);
   todayMemory.addTodayEntry(`[VC]: Callista ditinggal sendirian sepi di #${channelName} lalu cabut.`);
+  try {
+    const activityContext = require('./activityContext');
+    activityContext.recordActivity({
+      type: 'voice',
+      channelLabel: `#${channelName}`,
+      authorName: 'Callista',
+      text: `Callista ditinggal sendirian sepi di #${channelName} lalu cabut`,
+      timestamp: Date.now()
+    });
+  } catch (_) {}
 }
 
 function resetSession(userId) {
