@@ -1204,6 +1204,59 @@
           </div>
         </div>
 
+        <!-- Kartu Evaluasi & Kesimpulan Percakapan (Activity Context) -->
+        <div class="card">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3 style="margin-bottom:0; border:none; padding:0;">🧠 Topik & Kesimpulan Obrolan Server</h3>
+              <span class="badge" id="activityContextStateBadge" style="font-size: 10.5px; background: var(--success-soft); color: var(--success);">🟢 Auto-Distill Aktif</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span id="activityContextTimeBadge" style="font-size: 11px; color: var(--muted);">-</span>
+              <button class="btn btn-secondary" id="btnManualSynthesize" type="button" style="padding: 4px 10px; font-size: 11px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer;">
+                <span>⚡</span> Evaluasi Sekarang
+              </button>
+            </div>
+          </div>
+          <div class="grid-compact" style="grid-template-columns: 2fr 1fr; margin-bottom: 0;">
+            <div class="panel" style="background: var(--bg); display: flex; flex-direction: column;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <span style="font-size: 10.5px; text-transform: uppercase; color: var(--muted); font-weight: 800;">💡 Rangkuman Situasi & Topik Pembicaraan Server</span>
+                <span style="font-size: 10.5px; color: var(--muted);" id="activityContextDeltaBadge">0 obrolan baru</span>
+              </div>
+              <div id="overviewActivitySummary" style="font-size: 12.5px; line-height: 1.6; color: var(--text); flex-grow: 1;">
+                <span style="color: var(--muted); font-style: italic;">Belum ada topik atau obrolan yang dievaluasi. Obrolan server akan dirangkum otomatis saat mencapai 15 chat bermakna.</span>
+              </div>
+            </div>
+            <div class="panel" style="display: flex; flex-direction: column; justify-content: space-between; gap: 10px; background: var(--bg);">
+              <div>
+                <span style="font-size: 10.5px; text-transform: uppercase; color: var(--muted); font-weight: 800; display: block; margin-bottom: 8px;">📊 Parameter Evaluasi Konteks</span>
+                <div style="display: flex; flex-direction: column; gap: 7px; font-size: 11.5px;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--muted);">Pemicu Otomatis:</span>
+                    <strong id="activityContextTriggerStatus">Tiap 15 chat bermakna</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--muted);">Progress Akumulasi:</span>
+                    <strong id="activityContextProgress" style="color: var(--accent);">0 / 15 chat (0%)</strong>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--muted);">Buffer Aktivitas:</span>
+                    <span id="activityContextBufferCount" style="color: var(--text); font-weight: 600;">0 item</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: var(--muted);">Status Token:</span>
+                    <span style="color: var(--success); font-weight: 600;">0 Token (Idle / Hemat)</span>
+                  </div>
+                </div>
+              </div>
+              <div style="border-top: 1px dashed var(--border); padding-top: 8px; font-size: 10.5px; color: var(--muted); line-height: 1.35;">
+                ℹ️ Rangkuman ini otomatis disuntikkan ke Callista agar tidak amnesia dan tahu apa yang sedang terjadi di server tanpa membawa seluruh riwayat chat.
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Mood Factors Breakdown Row -->
         <div class="card">
           <h3 style="margin-bottom: 10px; font-size: 13.5px;">🧮 Breakdown Kalkulasi Mood</h3>
@@ -2048,11 +2101,12 @@
     let currentBotResponding = true;
     async function loadOverviewData() {
       try {
-        const [botRes, healthRes, acadRes, dailyRes] = await Promise.all([
+        const [botRes, healthRes, acadRes, dailyRes, actRes] = await Promise.all([
           fetch('/api/bot-state').then(r => r.ok ? r.json() : null).catch(() => null),
           fetch('/api/health/state').then(r => r.ok ? r.json() : null).catch(() => null),
           fetch('/api/academic/roadmap').then(r => r.ok ? r.json() : null).catch(() => null),
           fetch('/api/daily-context').then(r => r.ok ? r.json() : null).catch(() => null),
+          fetch('/api/activity-context').then(r => r.ok ? r.json() : null).catch(() => null),
         ]);
 
         // 1. Bot State
@@ -2239,7 +2293,86 @@
             }
           }
         }
+
+        // 5. Activity Context & Topik Percakapan
+        if (actRes) {
+          const summaryEl = document.getElementById('overviewActivitySummary');
+          const timeBadge = document.getElementById('activityContextTimeBadge');
+          const deltaBadge = document.getElementById('activityContextDeltaBadge');
+          const progressEl = document.getElementById('activityContextProgress');
+          const bufferCountEl = document.getElementById('activityContextBufferCount');
+          const stateBadge = document.getElementById('activityContextStateBadge');
+
+          if (summaryEl) {
+            if (actRes.summary && actRes.summary.trim()) {
+              const lines = actRes.summary.split('\n').filter(l => l.trim().length > 0);
+              summaryEl.innerHTML = lines.map(line => {
+                const clean = line.replace(/^[-*•]\s*/, '').trim();
+                return `<div style="padding: 3px 0; display: flex; align-items: flex-start; gap: 8px;"><span style="color: var(--accent); font-weight: bold; line-height: 1.4;">•</span><span style="line-height: 1.4;">${clean}</span></div>`;
+              }).join('');
+            } else {
+              summaryEl.innerHTML = '<span style="color: var(--muted); font-style: italic;">Belum ada topik atau kesimpulan percakapan yang dirangkum. Obrolan server akan dianalisis otomatis begitu mencapai 15 chat bermakna.</span>';
+            }
+          }
+
+          if (timeBadge) {
+            if (actRes.last_synthesized_at) {
+              const d = new Date(actRes.last_synthesized_at);
+              const h = String(d.getHours()).padStart(2, '0');
+              const m = String(d.getMinutes()).padStart(2, '0');
+              timeBadge.textContent = `Update: ${h}:${m} WIB`;
+            } else {
+              timeBadge.textContent = 'Belum pernah disintesis';
+            }
+          }
+
+          if (deltaBadge) {
+            deltaBadge.textContent = `${actRes.newActivitiesSinceSynthesis || 0} chat baru sejak evaluasi`;
+          }
+
+          if (progressEl) {
+            const currentNew = actRes.newActivitiesSinceSynthesis || 0;
+            const pct = Math.min(100, Math.round(currentNew / 15 * 100));
+            progressEl.textContent = `${currentNew} / 15 chat (${pct}%)`;
+          }
+
+          if (bufferCountEl) {
+            bufferCountEl.textContent = `${actRes.bufferedActivitiesCount || 0} log (${actRes.meaningfulActivitiesCount || 0} bermakna)`;
+          }
+
+          if (stateBadge) {
+            if (actRes.isSynthesizing) {
+              stateBadge.textContent = '⏳ Menganalisis...';
+              stateBadge.style.background = 'rgba(245,158,11,0.12)';
+              stateBadge.style.color = 'var(--warn)';
+            } else {
+              stateBadge.textContent = '🟢 Auto-Distill Aktif';
+              stateBadge.style.background = 'var(--success-soft)';
+              stateBadge.style.color = 'var(--success)';
+            }
+          }
+        }
       } catch (e) { console.warn('[OVERVIEW]', e); }
+    }
+
+    const btnManualSynthesize = document.getElementById('btnManualSynthesize');
+    if (btnManualSynthesize) {
+      btnManualSynthesize.addEventListener('click', async () => {
+        btnManualSynthesize.disabled = true;
+        btnManualSynthesize.innerHTML = '<span>⏳</span> Menganalisis...';
+        try {
+          const res = await fetch('/api/activity-context/synthesize', { method: 'POST' });
+          const data = await res.json();
+          if (data && data.success) {
+            await loadOverviewData();
+          }
+        } catch (e) {
+          console.warn('[MANUAL_SYNTHESIZE]', e);
+        } finally {
+          btnManualSynthesize.disabled = false;
+          btnManualSynthesize.innerHTML = '<span>⚡</span> Evaluasi Sekarang';
+        }
+      });
     }
 
     document.getElementById('toggleRespondingBtn').addEventListener('click', async () => {

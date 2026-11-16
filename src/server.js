@@ -62,6 +62,20 @@ function startServer(port) {
       return;
     }
 
+    if (req.method === 'POST' && url.pathname === '/api/activity-context/synthesize') {
+      const activityContext = require('./activityContext');
+      activityContext.synthesizeContext({ force: true })
+        .then(summary => {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ success: true, summary, state: activityContext.getState() }));
+        })
+        .catch(err => {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: err.message }));
+        });
+      return;
+    }
+
     if (req.method === 'GET' && url.pathname === '/api/config') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(storage.getConfig()));
