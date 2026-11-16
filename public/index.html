@@ -1702,6 +1702,67 @@
           </div>
           <span id="sfxUploadStatus" class="status-msg" style="font-size: 11.5px; display: block; margin-top: 4px;"></span>
         </div>
+
+        <!-- Card Freqblog Music Mood & VC Status -->
+        <div class="card" style="margin-top: 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <h3 style="margin-bottom:0; border:none; padding:0;">🎧 Freqblog — Suasana Lagu & Status Voice Channel</h3>
+              <span id="musicMoodBadge" class="badge">Memuat...</span>
+            </div>
+            <label class="toggle-wrap" style="cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 12px;">
+              <input type="checkbox" id="musicMoodEnabledToggle" checked>
+              <span>Fitur Aktif</span>
+            </label>
+          </div>
+          <p class="desc" style="margin-bottom: 14px;">
+            Menganalisis audio features (Essentia) saat lagu diputar, menentukan suasana emosional lagu (melow, santai, enerjik, cadas), dan otomatis meng-update teks status pada Voice Channel Discord Callista.
+          </p>
+
+          <!-- API Key Input -->
+          <div class="panel" style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h4 style="font-size: 13px; margin: 0; color: var(--accent);">🔑 Freqblog API Key</h4>
+              <span id="musicMoodKeyStatusBadge" style="font-size: 11px; color: var(--muted);">-</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <div style="position: relative; flex: 1; min-width: 260px; display: flex;">
+                <input type="password" id="freqblogApiKeyInput" placeholder="fb_live_..." style="width: 100%; font-family: monospace; font-size: 12px; padding-right: 36px;">
+                <button type="button" id="btnToggleFreqblogKeyVis" style="position: absolute; right: 4px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--muted); font-size: 14px; padding: 4px;">👁️</button>
+              </div>
+              <button type="button" class="btn btn-sm" id="btnSaveFreqblogKey">Simpan Key</button>
+            </div>
+            <span id="freqblogSaveStatus" class="status-msg" style="font-size: 11.5px; display: block; margin-top: 4px;"></span>
+          </div>
+
+          <!-- Opsi Status VC Otomatis & Testing -->
+          <div class="grid-compact" style="grid-template-columns: 1fr 1fr; margin-bottom: 0;">
+            <div class="panel">
+              <h4 style="font-size: 13px; margin-bottom: 8px; color: var(--accent);">⚙️ Pengaturan Status VC</h4>
+              <label style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; cursor: pointer; margin-bottom: 6px;">
+                <input type="checkbox" id="autoSetVoiceStatusToggle" checked>
+                <span>Otomatis ubah status VC saat lagu berputar</span>
+              </label>
+              <p style="font-size: 11px; color: var(--muted); line-height: 1.4; margin-top: 4px;">
+                Saat lagu diputar, status Voice Channel Discord otomatis diisi suasana lagu (misal: <em>"lagunya melow sendu... 🌧️"</em> atau <em>"vibes-nya adem banget 🍃"</em>). Status dikosongkan saat musik berhenti.
+              </p>
+            </div>
+
+            <div class="panel">
+              <h4 style="font-size: 13px; margin-bottom: 8px; color: var(--accent);">🧪 Uji Deteksi Mood Lagu</h4>
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <div style="display: flex; gap: 6px;">
+                  <input type="text" id="testTrackInput" placeholder="Judul lagu (e.g. Everything Matters)" style="flex: 1; font-size: 11.5px;">
+                  <input type="text" id="testArtistInput" placeholder="Artis (e.g. AURORA)" style="flex: 1; font-size: 11.5px;">
+                </div>
+                <button type="button" class="btn btn-sm btn-secondary" id="btnTestMusicMood" style="align-self: flex-start;">🔍 Cek Mood Lagu</button>
+              </div>
+              <div id="testMoodResultBox" style="margin-top: 8px; font-size: 11.5px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; display: none;">
+                <!-- Result dynamically rendered -->
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- PAGE: ELEVENLABS -->
@@ -3516,6 +3577,157 @@
 
     loadElSettings();
     // ===== END ELEVENLABS MANAGER =====
+
+    // ===== MUSIC MOOD & FREQBLOG MANAGER =====
+    async function loadMusicMoodSettings() {
+      try {
+        const res = await fetch('/api/music-mood/settings');
+        const s = await res.json();
+        const enabledToggle = document.getElementById('musicMoodEnabledToggle');
+        const autoVcToggle = document.getElementById('autoSetVoiceStatusToggle');
+        const keyInput = document.getElementById('freqblogApiKeyInput');
+        const badge = document.getElementById('musicMoodBadge');
+        const keyBadge = document.getElementById('musicMoodKeyStatusBadge');
+
+        if (enabledToggle) enabledToggle.checked = Boolean(s.enabled);
+        if (autoVcToggle) autoVcToggle.checked = Boolean(s.autoSetVoiceStatus);
+        if (keyInput && s.apiKeyMasked) {
+          keyInput.placeholder = s.hasApiKey ? `Key aktif (${s.apiKeyMasked})` : 'fb_live_...';
+        }
+
+        if (keyBadge) {
+          keyBadge.textContent = s.hasApiKey ? `Tersimpan: ${s.apiKeyMasked}` : 'Belum ada API Key';
+          keyBadge.style.color = s.hasApiKey ? 'var(--success)' : 'var(--warn)';
+        }
+
+        if (badge) {
+          if (s.enabled && s.hasApiKey) {
+            badge.textContent = '🟢 Aktif';
+            badge.style.color = 'var(--success)';
+            badge.style.background = 'var(--success-soft)';
+          } else if (s.enabled && !s.hasApiKey) {
+            badge.textContent = '🟡 Butuh API Key';
+            badge.style.color = 'var(--warn)';
+            badge.style.background = 'rgba(245,158,11,0.1)';
+          } else {
+            badge.textContent = '🔴 Nonaktif';
+            badge.style.color = 'var(--danger)';
+            badge.style.background = 'var(--danger-soft)';
+          }
+        }
+      } catch (e) {
+        console.warn('[MUSIC_MOOD_CLIENT]', e);
+      }
+    }
+
+    // Toggle password visibility
+    const btnToggleFreqblogVis = document.getElementById('btnToggleFreqblogKeyVis');
+    if (btnToggleFreqblogVis) {
+      btnToggleFreqblogVis.addEventListener('click', () => {
+        const inp = document.getElementById('freqblogApiKeyInput');
+        if (inp) {
+          inp.type = inp.type === 'password' ? 'text' : 'password';
+        }
+      });
+    }
+
+    // Save key & toggles
+    async function saveMusicMoodSettings(showMsg = true) {
+      const enabled = document.getElementById('musicMoodEnabledToggle')?.checked ?? true;
+      const autoSetVoiceStatus = document.getElementById('autoSetVoiceStatusToggle')?.checked ?? true;
+      const keyVal = document.getElementById('freqblogApiKeyInput')?.value?.trim();
+      const statusMsg = document.getElementById('freqblogSaveStatus');
+
+      try {
+        const payload = { enabled, autoSetVoiceStatus };
+        if (keyVal) payload.apiKey = keyVal;
+
+        const res = await fetch('/api/music-mood/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (data.success) {
+          if (document.getElementById('freqblogApiKeyInput') && keyVal) {
+            document.getElementById('freqblogApiKeyInput').value = '';
+          }
+          if (statusMsg && showMsg) {
+            statusMsg.textContent = '✅ Pengaturan Freqblog berhasil disimpan!';
+            statusMsg.style.color = 'var(--success)';
+            setTimeout(() => { if (statusMsg) statusMsg.textContent = ''; }, 3000);
+          }
+          await loadMusicMoodSettings();
+        }
+      } catch (err) {
+        if (statusMsg) {
+          statusMsg.textContent = '❌ Gagal menyimpan pengaturan';
+          statusMsg.style.color = 'var(--danger)';
+        }
+      }
+    }
+
+    document.getElementById('btnSaveFreqblogKey')?.addEventListener('click', () => saveMusicMoodSettings(true));
+    document.getElementById('musicMoodEnabledToggle')?.addEventListener('change', () => saveMusicMoodSettings(false));
+    document.getElementById('autoSetVoiceStatusToggle')?.addEventListener('change', () => saveMusicMoodSettings(false));
+
+    // Test music mood lookup
+    document.getElementById('btnTestMusicMood')?.addEventListener('click', async () => {
+      const track = document.getElementById('testTrackInput')?.value?.trim();
+      const artist = document.getElementById('testArtistInput')?.value?.trim();
+      const box = document.getElementById('testMoodResultBox');
+      const btn = document.getElementById('btnTestMusicMood');
+      if (!track) {
+        alert('Masukkan judul lagu yang ingin diuji!');
+        return;
+      }
+      btn.disabled = true;
+      btn.textContent = '⏳ Menganalisis...';
+      if (box) {
+        box.style.display = 'block';
+        box.innerHTML = '<span style="color:var(--muted)">Menghubungi Freqblog & mengevaluasi audio features...</span>';
+      }
+      try {
+        const res = await fetch('/api/music-mood/lookup-test', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ track, artist }),
+        });
+        const data = await res.json();
+        if (data && data.result) {
+          const r = data.result;
+          const f = r.features || {};
+          box.innerHTML = `
+            <div style="font-weight: bold; color: var(--accent); margin-bottom: 4px;">🎵 ${r.track} ${r.artist ? '— ' + r.artist : ''}</div>
+            <div style="margin-bottom: 4px;"><strong>Suasana:</strong> <span class="badge" style="background:var(--accent-soft);color:var(--accent);">${r.moodLabel}</span></div>
+            <div style="color: var(--muted); margin-bottom: 6px;">${r.description}</div>
+            <div style="background: var(--bg); padding: 6px 8px; border-radius: 4px; border: 1px solid var(--border); margin-bottom: 6px;">
+              <strong>Status VC Otomatis:</strong> <em>"${r.suggestedVcStatus}"</em>
+            </div>
+            <div style="display: flex; gap: 10px; font-size: 10.5px; color: var(--muted); flex-wrap: wrap;">
+              <span>⚡ Energy: <strong>${f.energy ?? '-'}</strong></span>
+              <span>💖 Valence: <strong>${f.valence ?? '-'}</strong></span>
+              <span>🎸 Acoustic: <strong>${f.acousticness ?? '-'}</strong></span>
+              <span>🥁 BPM: <strong>${f.bpm ?? '-'}</strong></span>
+            </div>
+          `;
+        } else {
+          box.innerHTML = '<span style="color:var(--danger)">Gagal menganalisis lagu ini. Pastikan judul/artis tepat.</span>';
+        }
+      } catch (err) {
+        if (box) box.innerHTML = '<span style="color:var(--danger)">Koneksi error: ' + err.message + '</span>';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🔍 Cek Mood Lagu';
+      }
+    });
+
+    // Panggil saat tab music dibuka
+    document.querySelector('[data-page="page-music"]')?.addEventListener('click', () => {
+      loadMusicMoodSettings();
+    });
+    loadMusicMoodSettings();
+    // ===== END MUSIC MOOD & FREQBLOG MANAGER =====
 
     // ===== END INJECTED =====
 

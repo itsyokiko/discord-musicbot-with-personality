@@ -329,9 +329,19 @@ function buildVoicePromptSnippet(guild = null, client = null) {
     const membersDesc = state.otherMembers.length > 0
       ? `bersama ${state.otherMembers.join(', ')}`
       : 'sendirian';
+
+    let moodSnippet = '';
+    try {
+      const musicMoodTracker = require('./musicMoodTracker');
+      const currentMood = musicMoodTracker.getCurrentMood(guild?.id);
+      if (currentMood) {
+        moodSnippet = `\n- Musik Sedang Diputar: "${currentMood.track}" (${currentMood.artist || 'Unknown'}) | Suasana: ${currentMood.moodLabel} (${currentMood.description}). Status VC: "${currentMood.suggestedVcStatus}". Kamu SADAR suasana lagu ini jika ditanya atau diajak ngobrol.`;
+      }
+    } catch (_) {}
+
     statusText = `
 [STATUS VOICE CHANNEL SAAT INI — SANGAT PENTING]:
-- Status: Callista SAAT INI SEDANG BERADA DI VOICE CHANNEL: "#${state.channelName}" (${membersDesc})!
+- Status: Callista SAAT INI SEDANG BERADA DI VOICE CHANNEL: "#${state.channelName}" (${membersDesc})!${moodSnippet}
 - Kesadaran Diri (Konteks Percakapan): Jika ada yang bertanya ("kamu lagi di mana?", "lagi di vc mana?", "kamu di vc ya?", "lagi ngapain?", dsb), kamu SADAR SEPENUHNYA bahwa saat ini kamu sedang berada di voice channel "${state.channelName}" ${membersDesc}. Ceritakan secara santai, alami, dan akrab.
 - Aturan Pemutaran Musik: Karena Callista SUDAH berada di voice channel "${state.channelName}", jika ada perintah memutar lagu/playlist, JANGAN MENYURUH MASUK VC ATAU MINTA JOIN VC LAGI. Cukup langsung putar musiknya (gunakan format PLAY_SONG atau PLAY_PLAYLIST).
 `;

@@ -276,6 +276,11 @@ function initDisTube(client) {
       });
     } catch (_) {}
 
+    try {
+      const musicMoodTracker = require('./musicMoodTracker');
+      musicMoodTracker.onSongPlay(queue, song).catch(() => {});
+    } catch (_) {}
+
     const guildId = queue.voiceChannel?.guild?.id || queue.id;
     if (guildId) {
       guildLyrics.delete(guildId);
@@ -337,6 +342,10 @@ function initDisTube(client) {
       guildLyrics.delete(guildId);
       pendingPlaylistSwitch.delete(guildId);
     }
+    try {
+      const musicMoodTracker = require('./musicMoodTracker');
+      musicMoodTracker.onSongEnd(queue, guildId).catch(() => {});
+    } catch (_) {}
     await markNowPlayingEnded(guildId, '⏹ Queue selesai');
     safeSend(queue.textChannel, 'udah habis playlist-nya mas joy, mau muter lagi atau ganti? wkwk');
   });
@@ -348,6 +357,10 @@ function initDisTube(client) {
     pendingPlaylistSwitch.delete(guildId);
     guildLyrics.delete(guildId);
     clearRecentQueueAdd(guildId);
+    try {
+      const musicMoodTracker = require('./musicMoodTracker');
+      musicMoodTracker.onSongEnd(queue, guildId).catch(() => {});
+    } catch (_) {}
     console.log(`[MUSIC] Disconnected from #${queue.voiceChannel?.name || '?'}`);
   });
 
@@ -1448,6 +1461,10 @@ async function stopMusic(guildId) {
         distubeInstance.voices.leave(guildId);
         shuffleState.delete(guildId);
         stopPlayerProgress(guildId);
+        try {
+          const musicMoodTracker = require('./musicMoodTracker');
+          musicMoodTracker.onSongEnd(queue, guildId).catch(() => {});
+        } catch (_) {}
         await markNowPlayingEnded(guildId, '⏹ Musik dihentikan');
         return true;
       }
@@ -1459,6 +1476,10 @@ async function stopMusic(guildId) {
   shuffleState.delete(guildId);
   stopPlayerProgress(guildId);
   try { distubeInstance.voices.leave(guildId); } catch (e) {}
+  try {
+    const musicMoodTracker = require('./musicMoodTracker');
+    musicMoodTracker.onSongEnd(queue, guildId).catch(() => {});
+  } catch (_) {}
   await markNowPlayingEnded(guildId, '⏹ Musik dihentikan');
   return true;
 }

@@ -1384,6 +1384,7 @@ async function runTests() {
   console.log('Mood System tests passed!');
   require('./voice-waiter-test');
   require('./activity-context-test');
+  require('./music-mood-test');
 
   console.log('All tests passed successfully!');
 }

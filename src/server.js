@@ -76,6 +76,77 @@ function startServer(port) {
       return;
     }
 
+    if (req.method === 'GET' && url.pathname === '/api/music-mood/settings') {
+      const musicMood = require('./musicMoodTracker');
+      const s = musicMood.loadSettings();
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        enabled: s.enabled,
+        hasApiKey: Boolean(s.apiKey),
+        apiKeyMasked: musicMood.maskApiKey(s.apiKey),
+        autoSetVoiceStatus: s.autoSetVoiceStatus,
+        cacheEnabled: s.cacheEnabled,
+      }));
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/music-mood/settings') {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const musicMood = require('./musicMoodTracker');
+          const parsed = JSON.parse(body || '{}');
+          const updates = {};
+          if (typeof parsed.enabled === 'boolean') updates.enabled = parsed.enabled;
+          if (typeof parsed.autoSetVoiceStatus === 'boolean') updates.autoSetVoiceStatus = parsed.autoSetVoiceStatus;
+          if (typeof parsed.apiKey === 'string') {
+            const k = parsed.apiKey.trim();
+            if (k && !k.includes('...')) {
+              updates.apiKey = k;
+            }
+          }
+          const s = musicMood.updateSettings(updates);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({
+            success: true,
+            enabled: s.enabled,
+            hasApiKey: Boolean(s.apiKey),
+            apiKeyMasked: musicMood.maskApiKey(s.apiKey),
+            autoSetVoiceStatus: s.autoSetVoiceStatus,
+          }));
+        } catch (err) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: err.message }));
+        }
+      });
+      return;
+    }
+
+    if (req.method === 'POST' && url.pathname === '/api/music-mood/lookup-test') {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', () => {
+        try {
+          const parsed = JSON.parse(body || '{}');
+          const musicMood = require('./musicMoodTracker');
+          musicMood.lookupMood(parsed.track || '', parsed.artist || '', { apiKey: parsed.apiKey })
+            .then(result => {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ success: true, result }));
+            })
+            .catch(err => {
+              res.writeHead(500, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({ error: err.message }));
+            });
+        } catch (err) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: err.message }));
+        }
+      });
+      return;
+    }
+
     if (req.method === 'GET' && url.pathname === '/api/config') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify(storage.getConfig()));
