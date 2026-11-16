@@ -18,8 +18,9 @@ const cachePath = path.resolve(__dirname, '../data/music_mood_cache.json');
 
 // In-memory runtime state
 const activeGuildMoods = new Map(); // guildId -> moodInfo
+const lastStatusByGuild = new Map(); // guildId -> last status string
 
-// Kumpulan template status Voice Channel Callista per kategori suasana
+// Kumpulan template status Voice Channel Callista per kategori suasana (12 varian per kategori)
 const STATUS_TEMPLATES = {
   mellow: [
     'lagunya melow sendu... 🌧️',
@@ -27,6 +28,13 @@ const STATUS_TEMPLATES = {
     'lagi melow di VC, enak bgt lagunya ☕',
     'lagunya adem tapi sedih 🥺',
     'merenung tipis dengerin lagu ini 🌧️',
+    'bengong bentar, lagunya ngena bgt 🥀',
+    'hujan sore vibes, melow bgt 🌧️',
+    'lagunya dalam bgt, berasa di film sedih 🎬',
+    'lagi mode melankolis di VC 🎧',
+    'bikin overthinking tipis lagunya wkwk 🥀',
+    'adem, syahdu, tapi bikin galau 🥺',
+    'dengerin yang sendu-sendu dulu ☕',
   ],
   chill: [
     'vibes-nya adem banget 🍃',
@@ -34,6 +42,13 @@ const STATUS_TEMPLATES = {
     'akustikan santai di VC 🎧',
     'adem bgt lagunya bikin rileks ✨',
     'santai dulu ga sih 🛋️',
+    'lagunya enak buat nemenin santai 🌿',
+    'vibes sore yang tenang ☕',
+    'petikan gitarnya bikin tenang ✨',
+    'rehat sejenak sambil dengerin lagu 🍃',
+    'lagunya menenangkan bgt di kuping 🎧',
+    'lagi chill mode on 🌿',
+    'cozy vibes di VC ✨',
   ],
   hype: [
     'lagunya naikin mood bgt 🔥',
@@ -41,22 +56,55 @@ const STATUS_TEMPLATES = {
     'lagi mode berenergi ✨',
     'asik bgt beat-nya 🚀',
     'vibes semangat gaspol ⚡',
+    'langsung melek denger lagu ini 🔥',
+    'auto semangat denger beat-nya 💥',
+    'lagunya seru bgt parah ⚡',
+    'bikin pengen loncat-loncat wkwk 🔥',
+    'energi 100% mode on 🚀',
+    'joget tipis di kursi 💃',
+    'lagu booster mood hari ini ✨',
   ],
   groovy: [
     'beat-nya nagih bgt 🕺',
     'vibes-nya asik buat goyang tipis ✨',
     'groovin in VC 🎶',
     'lagunya asik parah 🎧',
+    'bassline-nya enak bgt didenger 🎵',
+    'ketukannya candu wkwk 🕺',
+    'ikut goyang kepala denger ini 🎧',
+    'asik bgt ritmenya ✨',
+    'lagu vibing asik di VC 🎶',
+    'nagih bgt iramanya 🔥',
+    'groove-nya dapet bgt 🕺',
+    'asik buat nemenin ngapain aja 🎵',
   ],
   intense: [
     'lagi dengerin yang cadas 🎸',
     'distorsi keras mode on ⚡',
     'headbang tipis di VC 🤘',
+    'energi meluap lagunya keras 🔥',
+    'riff gitarnya gahar bgt 🎸',
+    'mode cadas dulu gaes ⚡',
+    'pecah bgt suaranya 🤘',
+    'lagu beroktan tinggi 🔥',
+    'hentakan drumnya mantap 🥁',
+    'gahar bgt vibes-nya 🎸',
+    'distorsi maksimal di VC ⚡',
+    'lagi mode rock/metal 🤘',
   ],
   neutral: [
     'lagi dengerin musik 🎧',
     'vibes musik di VC 🎵',
     'santai dengerin lagu ✨',
+    'lagu pilihan di VC 🎶',
+    'nemani suasana di voice chat 🎧',
+    'musik santai mengalun 🎵',
+    'dengerin track enak ✨',
+    'lagunya pas buat nemenin VC ☕',
+    'vibes lagu di room 🎶',
+    'dengerin playlist favorit 🎧',
+    'menikmati alunan lagu 🎶',
+    'lagu santai pengisi ruangan ☕',
   ],
 };
 
@@ -254,10 +302,12 @@ function classifyMood(audioFeatures) {
   };
 }
 
-function pickRandomTemplate(category) {
+function pickRandomTemplate(category, excludeText = '') {
   const list = STATUS_TEMPLATES[category] || STATUS_TEMPLATES.neutral;
-  const idx = Math.floor(Math.random() * list.length);
-  return list[idx];
+  const filtered = excludeText ? list.filter(t => t !== excludeText) : list;
+  const pool = filtered.length > 0 ? filtered : list;
+  const idx = Math.floor(Math.random() * pool.length);
+  return pool[idx];
 }
 
 /**
@@ -419,20 +469,26 @@ async function onSongPlay(queue, song) {
   try {
     const { track, artist } = parseTrackAndArtist(song.name, song.uploader?.name);
     const moodInfo = await lookupMood(track, artist);
-    activeGuildMoods.set(guildId, {
+    const prevStatus = lastStatusByGuild.get(guildId) || '';
+    const freshStatus = pickRandomTemplate(moodInfo.moodKey, prevStatus);
+    lastStatusByGuild.set(guildId, freshStatus);
+
+    const guildMoodData = {
       ...moodInfo,
+      suggestedVcStatus: freshStatus,
       songName: song.name,
       updatedAt: Date.now(),
-    });
+    };
+    activeGuildMoods.set(guildId, guildMoodData);
 
-    console.log(`[MUSIC_MOOD] Track "${track}" by "${artist}" → Mood: ${moodInfo.moodLabel} | VC Status: "${moodInfo.suggestedVcStatus}"`);
+    console.log(`[MUSIC_MOOD] Track "${track}" by "${artist}" → Mood: ${moodInfo.moodLabel} | VC Status: "${freshStatus}"`);
 
     // Perbarui status Voice Channel jika opsi diaktifkan
     if (settings.autoSetVoiceStatus && queue.voiceChannel) {
-      await setVoiceChannelStatus(queue.voiceChannel, moodInfo.suggestedVcStatus);
+      await setVoiceChannelStatus(queue.voiceChannel, freshStatus);
     }
 
-    return moodInfo;
+    return guildMoodData;
   } catch (err) {
     console.warn('[MUSIC_MOOD] onSongPlay error:', err.message);
     return null;
@@ -447,6 +503,7 @@ async function onSongEnd(queue, guildIdInput) {
   if (!guildId) return;
 
   activeGuildMoods.delete(guildId);
+  lastStatusByGuild.delete(guildId);
 
   const voiceChannel = queue?.voiceChannel;
   if (voiceChannel) {

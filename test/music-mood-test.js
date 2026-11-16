@@ -29,7 +29,12 @@ assert.strictEqual(p3.artist, 'Mark Ronson');
 assert.strictEqual(p3.track, 'Uptown Funk');
 
 // 2. Test classifyMood
-console.log('Checking classifyMood algorithm...');
+console.log('Checking classifyMood algorithm & template variety...');
+
+// 2.0. Verifikasi setiap kategori memiliki minimal 10 varian template
+for (const [cat, templates] of Object.entries(musicMood.STATUS_TEMPLATES)) {
+  assert.ok(templates.length >= 10, `Kategori ${cat} harus memiliki minimal 10 varian template (ditemukan: ${templates.length})`);
+}
 
 // 2a. Mellow / Galau Sendu (e.g. AURORA, Bernadya)
 const mellowFeatures = {
