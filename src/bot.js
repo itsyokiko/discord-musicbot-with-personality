@@ -528,6 +528,55 @@ async function handleDirectMusicCommand({ client, message, command, args, source
       await react('📁 œ');
       return reply({ embeds: [embed] });
     }
+    case 'filter': {
+      const musicFilters = require('./musicFilters');
+      const cleanArgs = (args || '').trim();
+
+      // 1. Tanpa argumen: buka panel kontrol filter interaktif
+      if (!cleanArgs) {
+        if (source === 'prefix') await safeDeleteCommandMessage();
+        const res = await musicFilters.sendOrUpdateFilterPanel(message.channel, guild.id);
+        if (!res.ok) {
+          if (res.error === 'no_queue') return reply('lagunya belum ada yang diputer mas joy, putar lagu dulu baru pasang filter wkwk 😭');
+          return reply(`gagal buka filter: ${res.error} 😭`);
+        }
+        return;
+      }
+
+      // 2. Dengan argumen (e.g. "nc", "bb", "vw", "off", "clear")
+      const resolved = musicFilters.resolveFilterName(cleanArgs);
+      if (!resolved) {
+        return reply(`filter "${cleanArgs}" ga dikenal mas joy 😭 coba ketik \`>fl\` buat liat tombol filter yang ada.`);
+      }
+
+      const res = musicFilters.toggleFilter(guild.id, resolved);
+      if (!res.ok) {
+        if (res.error === 'no_queue') return reply('lagunya belum ada yang diputer mas joy, putar lagu dulu baru pasang filter wkwk 😭');
+        return reply(`gagal pasang filter: ${res.error}`);
+      }
+
+      // 3. Jika box filter panel sudah ada di channel ini:
+      const hasPanel = musicFilters.hasActivePanel(guild.id);
+      if (hasPanel) {
+        // Hapus pesan teks user agar chat tetap bersih
+        await safeDeleteCommandMessage();
+        // Update box filter yang sudah ada secara real-time
+        await musicFilters.updateExistingPanel(guild.id);
+        return;
+      }
+
+      // 4. Jika belum ada box filter panel aktif, balas via chat biasa
+      if (source === 'prefix') await safeDeleteCommandMessage();
+      if (res.action === 'cleared') {
+        return reply('semua filter audio dimatikan, suara kembali normal ✨');
+      }
+      const meta = musicFilters.FILTER_META[resolved];
+      const label = meta ? `${meta.emoji} ${meta.label}` : resolved;
+      if (res.action === 'added') {
+        return reply(`filter **${label}** aktif! ${meta?.desc ? `(${meta.desc})` : ''} ✨`);
+      }
+      return reply(`filter **${label}** dimatikan ✨`);
+    }
     case 'join': {
       let channel = member?.voice?.channel || null;
       if (args) {
@@ -2437,6 +2486,13 @@ function startBot(token) {
     const allowed = isJoy || permissionStore.isPermitted(interaction.user.id);
     if (!allowed) {
       await interaction.reply({ content: musicPlayer.generateRejectReason(), ephemeral: true }).catch(() => {});
+      return;
+    }
+
+    // Tombol interaktif Audio Filter Panel (>fl)
+    if (customId.startsWith('filter_btn_')) {
+      const musicFilters = require('./musicFilters');
+      await musicFilters.handleButtonInteraction(interaction);
       return;
     }
     try {

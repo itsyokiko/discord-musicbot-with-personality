@@ -259,6 +259,9 @@ function initDisTube(client) {
     emitAddSongWhenCreatingQueue: true,
     emitAddListWhenCreatingQueue: true,
     joinNewVoiceChannel: true,
+    customFilters: {
+      lofi: 'lowpass=f=3200,volume=1.15',
+    },
     ...(ffmpegPath ? { ffmpeg: { path: ffmpegPath } } : {}),
   });
 
@@ -279,6 +282,11 @@ function initDisTube(client) {
     try {
       const musicMoodTracker = require('./musicMoodTracker');
       musicMoodTracker.onSongPlay(queue, song).catch(() => {});
+    } catch (_) {}
+
+    try {
+      const musicFilters = require('./musicFilters');
+      musicFilters.updateExistingPanel(guildId).catch(() => {});
     } catch (_) {}
 
     const guildId = queue.voiceChannel?.guild?.id || queue.id;
@@ -346,6 +354,10 @@ function initDisTube(client) {
       const musicMoodTracker = require('./musicMoodTracker');
       musicMoodTracker.onSongEnd(queue, guildId).catch(() => {});
     } catch (_) {}
+    try {
+      const musicFilters = require('./musicFilters');
+      musicFilters.cleanupPanel(guildId);
+    } catch (_) {}
     await markNowPlayingEnded(guildId, '⏹ Queue selesai');
     safeSend(queue.textChannel, 'udah habis playlist-nya mas joy, mau muter lagi atau ganti? wkwk');
   });
@@ -360,6 +372,10 @@ function initDisTube(client) {
     try {
       const musicMoodTracker = require('./musicMoodTracker');
       musicMoodTracker.onSongEnd(queue, guildId).catch(() => {});
+    } catch (_) {}
+    try {
+      const musicFilters = require('./musicFilters');
+      musicFilters.cleanupPanel(guildId);
     } catch (_) {}
     console.log(`[MUSIC] Disconnected from #${queue.voiceChannel?.name || '?'}`);
   });
@@ -1465,6 +1481,10 @@ async function stopMusic(guildId) {
           const musicMoodTracker = require('./musicMoodTracker');
           musicMoodTracker.onSongEnd(queue, guildId).catch(() => {});
         } catch (_) {}
+        try {
+          const musicFilters = require('./musicFilters');
+          musicFilters.cleanupPanel(guildId);
+        } catch (_) {}
         await markNowPlayingEnded(guildId, '⏹ Musik dihentikan');
         return true;
       }
@@ -1479,6 +1499,10 @@ async function stopMusic(guildId) {
   try {
     const musicMoodTracker = require('./musicMoodTracker');
     musicMoodTracker.onSongEnd(queue, guildId).catch(() => {});
+  } catch (_) {}
+  try {
+    const musicFilters = require('./musicFilters');
+    musicFilters.cleanupPanel(guildId);
   } catch (_) {}
   await markNowPlayingEnded(guildId, '⏹ Musik dihentikan');
   return true;

@@ -27,6 +27,7 @@ const ALIASES = {
   unloop: ['unloop', 'stoploop', 'noloop'],
   sfx: ['sfx'],
   lyrics: ['lyrics', 'lyric', 'lirik'],
+  filter: ['filter', 'audiofilter', 'fx'],
 };
 
 const BY_ALIAS = Object.fromEntries(
@@ -95,10 +96,14 @@ const SHORT_ALIASES = {
   // jump (sudah di-tambah di langkah sebelumnya)
   jp: 'jump',
   skp: 'jump',         // skip to position
+
+  // audio filter
+  fl: 'filter',
+  fx: 'filter',
 };
 
 // Perintah yang boleh dipakai tanpa prefix ">" (natural language).
-const CONTROL = new Set(['skip', 'stop', 'pause', 'resume', 'queue', 'shuffle', 'np', 'join', 'leave', 'help', 'loop', 'unloop', 'player', 'sfx', 'lyrics']);
+const CONTROL = new Set(['skip', 'stop', 'pause', 'resume', 'queue', 'shuffle', 'np', 'join', 'leave', 'help', 'loop', 'unloop', 'player', 'sfx', 'lyrics', 'filter']);
 
 // Kata-kata yang boleh muncul setelah perintah kontrol tanpa mengubah arti.
 const FILLERS = new Set([
@@ -202,6 +207,7 @@ function parseDirectCommand(content, {
     if (!CONTROL.has(command)) return null;
     if (!addressed && !(hasQueue && CONTROL.has(command))) return null;
     if (command === 'join') return { command, args: rawArgs, source: 'natural' };
+    if (command === 'filter') return { command, args: rawArgs, source: 'natural' };
     if (command === 'leave' || command === 'help') return { command, args: '', source: 'natural' };
 
     const rest = words.slice(1).map(w => w.toLowerCase());
@@ -217,6 +223,9 @@ function parseDirectCommand(content, {
   }
   if (command === 'playlist') {
     return { command: 'playlist', args: rawArgs, source: 'prefix' };
+  }
+  if (command === 'filter') {
+    return { command: 'filter', args: rawArgs, source: 'prefix' };
   }
   if (command === 'join' || command === 'move') {
     return { command, args: rawArgs, source: 'prefix' };
