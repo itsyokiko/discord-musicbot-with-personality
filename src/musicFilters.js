@@ -64,10 +64,10 @@ const FILTER_META = {
   nightcore: { label: 'Nightcore', emoji: '⚡', desc: 'Tempo dipercepat + vokal imut' },
   bassboost: { label: 'Bassboost', emoji: '🔊', desc: 'Dentuman bass maksimal' },
   vaporwave: { label: 'Vaporwave', emoji: '📻', desc: 'Slowed & retro aesthetic' },
-  '3d': { label: '3D Audio', emoji: '🌀', desc: 'Stereo berputar (pakai headset)' },
+  '3d': { label: '8D Audio', emoji: '🌀', desc: 'Binaural 360° berputar di kepala' },
   lofi: { label: 'Lo-Fi', emoji: '🍃', desc: 'Low-pass warm ala radio santai' },
   karaoke: { label: 'Karaoke', emoji: '🎤', desc: 'Meredam vokal tengah' },
-  surround: { label: 'Surround', emoji: '🌌', desc: 'Panggung suara lebar' },
+  surround: { label: 'Surround', emoji: '🌌', desc: 'Panggung suara stereo lebar' },
   echo: { label: 'Echo', emoji: '📢', desc: 'Gema audio berulang' },
 };
 
@@ -288,8 +288,9 @@ function buildFilterPlayerEmbed(song, queue) {
       `• ⚡ **Nightcore**: Tempo dipercepat & vokal imut\n` +
       `• 🔊 **Bassboost**: Dentuman low-end bass lebih padat\n` +
       `• 📻 **Vaporwave**: Slowed & reverb bernuansa retro\n` +
-      `• 🌀 **3D Audio**: Efek stereo 360° (headphone)\n` +
+      `• 🌀 **8D Audio**: Binaural 360° berputar mengitari kepala (headset)\n` +
       `• 🍃 **Lo-Fi**: Warm low-pass santai ala radio vintage\n` +
+      `• 🌌 **Surround**: Panggung suara stereo melebar luas\n` +
       `• 🎤 **Karaoke**: Menekan vokal penyanyi tengah`
     )
     .setFooter({ text: 'Klik [🎵 Player] untuk kembali ke pemutar utama • Callista Audio' });

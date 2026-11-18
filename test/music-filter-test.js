@@ -107,4 +107,9 @@ const filterEmbed = musicFilters.buildFilterPlayerEmbed({ name: 'Radwimps - Spar
 assert.ok(filterEmbed.data.description.includes('nightcore'));
 assert.ok(filterEmbed.data.footer.text.includes('🎵 Player'));
 
+// 5. Test Custom Filter Recipes (8D Audio & Surround)
+console.log('Checking 8D & Surround filter definitions...');
+assert.strictEqual(musicFilters.FILTER_META['3d'].label, '8D Audio');
+assert.strictEqual(musicFilters.FILTER_META['surround'].label, 'Surround');
+
 console.log('All Music Audio Filters & Control Panel tests passed successfully!');

@@ -260,6 +260,9 @@ function initDisTube(client) {
     emitAddListWhenCreatingQueue: true,
     joinNewVoiceChannel: true,
     customFilters: {
+      '3d': 'apulsator=hz=0.12:amount=1,aecho=0.8:0.88:30:0.3,extrastereo=m=1.2',
+      '8d': 'apulsator=hz=0.12:amount=1,aecho=0.8:0.88:30:0.3,extrastereo=m=1.2',
+      surround: 'extrastereo=m=1.8,volume=1.05',
       lofi: 'lowpass=f=3200,volume=1.15',
     },
     ...(ffmpegPath ? { ffmpeg: { path: ffmpegPath } } : {}),
@@ -518,7 +521,7 @@ function buildPlayerComponents(queue, isPaused, { viewMode = 'player', showingQu
       nightcore: { label: 'Nightcore', emoji: '⚡' },
       bassboost: { label: 'Bassboost', emoji: '🔊' },
       vaporwave: { label: 'Vaporwave', emoji: '📻' },
-      '3d': { label: '3D Audio', emoji: '🌀' },
+      '3d': { label: '8D Audio', emoji: '🌀' },
       lofi: { label: 'Lo-Fi', emoji: '🍃' },
       karaoke: { label: 'Karaoke', emoji: '🎤' },
       surround: { label: 'Surround', emoji: '🌌' },
