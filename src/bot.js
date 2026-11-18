@@ -532,12 +532,24 @@ async function handleDirectMusicCommand({ client, message, command, args, source
       const musicFilters = require('./musicFilters');
       const cleanArgs = (args || '').trim();
 
-      // 1. Tanpa argumen: buka panel kontrol filter interaktif
+      // 1. Tanpa argumen: buka / ubah player jadi tampilan filter
       if (!cleanArgs) {
+        const q = musicPlayer.safeGetQueue(guild.id);
+        if (!q || !q.songs || !q.songs.length) {
+          return reply('lagunya belum ada yang diputer mas joy, putar lagu dulu baru pasang filter wkwk 😭');
+        }
+
         if (source === 'prefix') await safeDeleteCommandMessage();
+
+        // Jika player embed aktif di guild ini, ubah langsung embed player menjadi tampilan filter!
+        if (musicPlayer.hasActivePlayer(guild.id)) {
+          await musicPlayer.toggleFilterView(guild.id, true);
+          return;
+        }
+
+        // Fallback jika embed player belum ada di channel ini:
         const res = await musicFilters.sendOrUpdateFilterPanel(message.channel, guild.id);
         if (!res.ok) {
-          if (res.error === 'no_queue') return reply('lagunya belum ada yang diputer mas joy, putar lagu dulu baru pasang filter wkwk 😭');
           return reply(`gagal buka filter: ${res.error} 😭`);
         }
         return;
@@ -555,17 +567,25 @@ async function handleDirectMusicCommand({ client, message, command, args, source
         return reply(`gagal pasang filter: ${res.error}`);
       }
 
-      // 3. Jika box filter panel sudah ada di channel ini:
-      const hasPanel = musicFilters.hasActivePanel(guild.id);
-      if (hasPanel) {
-        // Hapus pesan teks user agar chat tetap bersih
-        await safeDeleteCommandMessage();
-        // Update box filter yang sudah ada secara real-time
+      // Selalu perbarui player view jika ada player aktif
+      if (musicPlayer.hasActivePlayer(guild.id)) {
+        await musicPlayer.renderPlayerView(guild.id);
+      }
+      // Perbarui juga standalone panel jika ada
+      if (musicFilters.hasActivePanel(guild.id)) {
         await musicFilters.updateExistingPanel(guild.id);
+      }
+
+      // Cek apakah box filter sedang terlihat di layar (mode 'filter' pada player atau standalone panel)
+      const isFilterBoxShowing = (musicPlayer.hasActivePlayer(guild.id) && musicPlayer.getPlayerMode(guild.id) === 'filter') || musicFilters.hasActivePanel(guild.id);
+
+      if (isFilterBoxShowing) {
+        // Hapus pesan teks user agar chat tetap bersih menampilkan box filter
+        if (source === 'prefix') await safeDeleteCommandMessage();
         return;
       }
 
-      // 4. Jika belum ada box filter panel aktif, balas via chat biasa
+      // Jika box filter tidak terbuka di layar, beri konfirmasi di chat biasa
       if (source === 'prefix') await safeDeleteCommandMessage();
       if (res.action === 'cleared') {
         return reply('semua filter audio dimatikan, suara kembali normal ✨');
@@ -2564,6 +2584,16 @@ function startBot(token) {
         case 'player_lyrics': {
           // Toggle antara player view ↔ full lyrics view, edit embed in-place
           const toggled = await musicPlayer.toggleLyricsView(guildId);
+          if (toggled) {
+            await interaction.deferUpdate().catch(() => {});
+          } else {
+            await interaction.reply({ content: 'ga ada musik yang lagi diputar mas joy 😭', ephemeral: true });
+          }
+          break;
+        }
+        case 'player_filter': {
+          // Toggle antara player view ↔ audio filter view, edit embed in-place
+          const toggled = await musicPlayer.toggleFilterView(guildId);
           if (toggled) {
             await interaction.deferUpdate().catch(() => {});
           } else {

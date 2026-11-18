@@ -890,16 +890,19 @@ async function runTests() {
   assert.strictEqual(musicPlayer.buildQueueAddEmbed('test-guild-123'), null);
 
   console.log('--- Testing Player Lyrics Button & Full Lyrics View ---');
-  // 1. Test buildPlayerComponents includes player_lyrics
+  // 1. Test buildPlayerComponents includes player_lyrics & player_filter
   const defaultComponents = musicPlayer.buildPlayerComponents(dummyQueue, false);
   const row2Default = defaultComponents[1].components;
-  assert.strictEqual(row2Default.length, 4, 'Row 2 harus berisi 4 tombol (Loop, Shuffle, Queue, Lirik)');
+  assert.strictEqual(row2Default.length, 5, 'Row 2 harus berisi 5 tombol (Loop, Shuffle, Queue, Lirik, Filter)');
   const queueBtn = row2Default.find((b) => b.data.custom_id === 'player_queue');
   const lyricsBtn = row2Default.find((b) => b.data.custom_id === 'player_lyrics');
+  const filterBtn = row2Default.find((b) => b.data.custom_id === 'player_filter');
   assert.ok(queueBtn, 'Tombol player_queue harus ada');
   assert.ok(lyricsBtn, 'Tombol player_lyrics harus ada');
+  assert.ok(filterBtn, 'Tombol player_filter harus ada');
   assert.strictEqual(lyricsBtn.data.label, '📜 Lirik');
   assert.strictEqual(lyricsBtn.data.style, 2); // Secondary
+  assert.strictEqual(filterBtn.data.label, '🎛️ Filter');
 
   // 2. Test components saat viewMode === 'lyrics'
   const lyricsComponents = musicPlayer.buildPlayerComponents(dummyQueue, false, { viewMode: 'lyrics' });

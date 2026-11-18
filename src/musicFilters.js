@@ -84,7 +84,12 @@ function resolveFilterName(raw = '') {
  */
 function getQueue(guildId) {
   try {
-    return musicPlayer.safeGetQueue(guildId);
+    if (typeof musicPlayer.safeGetQueue === 'function') {
+      const q = musicPlayer.safeGetQueue(guildId);
+      if (q) return q;
+    }
+    const dt = typeof musicPlayer.getDisTube === 'function' ? musicPlayer.getDisTube() : null;
+    return dt?.getQueue(guildId) || null;
   } catch (_) {
     return null;
   }
@@ -262,6 +267,35 @@ async function updateExistingPanel(guildId) {
 }
 
 /**
+ * Buat embed filter yang serasi dengan tampilan Now Playing player.
+ */
+function buildFilterPlayerEmbed(song, queue) {
+  const activeFilters = queue?.filters?.names || [];
+  const songTitle = song?.name || 'Tidak ada lagu';
+  const activeListStr = activeFilters.length
+    ? activeFilters.map(f => `\`${f}\``).join(', ')
+    : '`Normal (Off)`';
+
+  return new EmbedBuilder()
+    .setColor(activeFilters.length ? 0x2ECC71 : 0x5865F2)
+    .setAuthor({ name: '🎛️ Audio Filter Control' })
+    .setTitle(songTitle.length > 60 ? songTitle.slice(0, 57) + '...' : songTitle)
+    .setURL(song?.url || null)
+    .setThumbnail(song?.thumbnail || null)
+    .setDescription(
+      `Status Filter: **${activeFilters.length ? '🟢 ' + activeListStr : '⚪ Normal (Tanpa Filter)'}**\n\n` +
+      `*Pilih filter di bawah untuk toggle audio secara instan:*\n` +
+      `• ⚡ **Nightcore**: Tempo dipercepat & vokal imut\n` +
+      `• 🔊 **Bassboost**: Dentuman low-end bass lebih padat\n` +
+      `• 📻 **Vaporwave**: Slowed & reverb bernuansa retro\n` +
+      `• 🌀 **3D Audio**: Efek stereo 360° (headphone)\n` +
+      `• 🍃 **Lo-Fi**: Warm low-pass santai ala radio vintage\n` +
+      `• 🎤 **Karaoke**: Menekan vokal penyanyi tengah`
+    )
+    .setFooter({ text: 'Klik [🎵 Player] untuk kembali ke pemutar utama • Callista Audio' });
+}
+
+/**
  * Handler saat tombol pada panel filter ditekan.
  */
 async function handleButtonInteraction(interaction) {
@@ -278,6 +312,37 @@ async function handleButtonInteraction(interaction) {
     return true;
   }
 
+  // Cek apakah interaksi berasal dari pesan Now Playing player
+  const playerMsg = typeof musicPlayer.getNowPlayingMessage === 'function' ? musicPlayer.getNowPlayingMessage(guildId) : null;
+  const isPlayerMessage = Boolean(playerMsg && playerMsg.id === interaction.message.id);
+
+  if (isPlayerMessage) {
+    if (action === 'clear') {
+      queue.filters.clear();
+    } else if (action === 'hide' || action === 'show') {
+      await musicPlayer.toggleFilterView(guildId);
+      await interaction.deferUpdate().catch(() => {});
+      return true;
+    } else {
+      const targetFilter = action;
+      if (queue.filters.has(targetFilter)) {
+        queue.filters.remove(targetFilter);
+      } else {
+        queue.filters.add(targetFilter);
+      }
+    }
+
+    await musicPlayer.renderPlayerView(guildId);
+    await interaction.deferUpdate().catch(() => {});
+
+    // Jika ada standalone panel, sinkronkan juga
+    if (hasActivePanel(guildId)) {
+      updateExistingPanel(guildId).catch(() => {});
+    }
+    return true;
+  }
+
+  // Interaksi pada standalone filter panel
   const panel = activePanels.get(guildId);
 
   // Tombol Sembunyikan (Hide)
@@ -301,6 +366,9 @@ async function handleButtonInteraction(interaction) {
     queue.filters.clear();
     const payload = buildFilterPanelPayload(queue, Boolean(panel?.isHidden));
     await interaction.update(payload).catch(() => {});
+    if (typeof musicPlayer.renderPlayerView === 'function') {
+      musicPlayer.renderPlayerView(guildId).catch(() => {});
+    }
     return true;
   }
 
@@ -314,6 +382,11 @@ async function handleButtonInteraction(interaction) {
 
   const payload = buildFilterPanelPayload(queue, Boolean(panel?.isHidden));
   await interaction.update(payload).catch(() => {});
+
+  // Update badge di player jika ada player aktif
+  if (typeof musicPlayer.renderPlayerView === 'function') {
+    musicPlayer.renderPlayerView(guildId).catch(() => {});
+  }
   return true;
 }
 
@@ -350,6 +423,7 @@ module.exports = {
   resolveFilterName,
   toggleFilter,
   buildFilterPanelPayload,
+  buildFilterPlayerEmbed,
   sendOrUpdateFilterPanel,
   updateExistingPanel,
   handleButtonInteraction,

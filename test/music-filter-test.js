@@ -76,4 +76,35 @@ assert.strictEqual(hiddenPayload.components.length, 1, 'Hidden panel has exactly
 assert.strictEqual(hiddenPayload.components[0].components.length, 1, 'Hidden panel has 1 button');
 assert.strictEqual(hiddenPayload.components[0].components[0].data.custom_id, 'filter_btn_show');
 
+// 4. Test Player Integration & safeGetQueue export
+console.log('Checking Player & Filter integration...');
+const musicPlayer = require('../src/musicPlayer');
+assert.strictEqual(typeof musicPlayer.safeGetQueue, 'function', 'safeGetQueue must be exported');
+assert.strictEqual(typeof musicPlayer.toggleFilterView, 'function', 'toggleFilterView must be exported');
+assert.strictEqual(typeof musicPlayer.hasActivePlayer, 'function', 'hasActivePlayer must be exported');
+assert.strictEqual(typeof musicPlayer.getPlayerMode, 'function', 'getPlayerMode must be exported');
+
+// Test Player Components in viewMode: 'filter'
+const filterPlayerComponents = musicPlayer.buildPlayerComponents(mockQueueActive, false, { viewMode: 'filter' });
+assert.strictEqual(filterPlayerComponents.length, 4, 'Player in filter mode has 4 rows');
+
+// Row 1: Playback buttons
+const r1 = filterPlayerComponents[0].components;
+assert.ok(r1.find(b => b.data.custom_id === 'player_pause'));
+
+// Row 2: Top filter buttons
+const r2 = filterPlayerComponents[1].components;
+assert.ok(r2.find(b => b.data.custom_id === 'filter_btn_nightcore'));
+
+// Row 4: Navigation (player_filter has label '🎵 Player')
+const r4 = filterPlayerComponents[3].components;
+const playerBtn = r4.find(b => b.data.custom_id === 'player_filter');
+assert.ok(playerBtn, 'Tombol player_filter harus ada di baris 4');
+assert.strictEqual(playerBtn.data.label, '🎵 Player');
+
+// Test buildFilterPlayerEmbed
+const filterEmbed = musicFilters.buildFilterPlayerEmbed({ name: 'Radwimps - Sparkle' }, mockQueueActive);
+assert.ok(filterEmbed.data.description.includes('nightcore'));
+assert.ok(filterEmbed.data.footer.text.includes('🎵 Player'));
+
 console.log('All Music Audio Filters & Control Panel tests passed successfully!');

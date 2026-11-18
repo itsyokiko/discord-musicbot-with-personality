@@ -427,6 +427,7 @@ function buildNowPlayingEmbed(song, queue, { currentTime = 0, isPaused = false, 
   if (repeatMode === 1 || isLoop) badgeParts.push('🔂 Loop');
   if (repeatMode === 2)           badgeParts.push('🔁 Queue Loop');
   if (shuffled)                   badgeParts.push('🔀 Shuffle');
+  if (queue?.filters?.names?.length) badgeParts.push(`🎛️ ${queue.filters.names.join(', ')}`);
   const badges = badgeParts.length ? badgeParts.join('  ·  ') : '▶ Playing';
 
   const queueSize = (queue?.songs?.length ?? 1) - 1;
@@ -503,11 +504,98 @@ function buildPlayerComponents(queue, isPaused, { viewMode = 'player', showingQu
   const currentView = viewMode || (showingQueue ? 'queue' : 'player');
   const isQueue = currentView === 'queue' || showingQueue;
   const isLyrics = currentView === 'lyrics';
+  const isFilter = currentView === 'filter';
   const SONGS_PER_PAGE = 10;
   const hasMultiPage = totalSongs > SONGS_PER_PAGE + 1; // +1 karena lagu pertama = now playing
   const guildId = queue?.voiceChannel?.guild?.id || queue?.id;
   const shuffled = guildId ? isShuffled(guildId) : false;
   const repeatMode = queue?.repeatMode ?? 0;
+
+  // Tampilan khusus saat Player berada dalam mode Audio Filter Panel
+  if (isFilter) {
+    const activeFilters = queue?.filters?.names || [];
+    const filterMeta = {
+      nightcore: { label: 'Nightcore', emoji: '⚡' },
+      bassboost: { label: 'Bassboost', emoji: '🔊' },
+      vaporwave: { label: 'Vaporwave', emoji: '📻' },
+      '3d': { label: '3D Audio', emoji: '🌀' },
+      lofi: { label: 'Lo-Fi', emoji: '🍃' },
+      karaoke: { label: 'Karaoke', emoji: '🎤' },
+      surround: { label: 'Surround', emoji: '🌌' },
+      echo: { label: 'Echo', emoji: '📢' },
+    };
+
+    // Baris 1: Kontrol Playback
+    const row1 = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId('player_prev')
+        .setLabel('⏮️')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(!(queue && queue.songs && queue.songs.length > 1)),
+      new ButtonBuilder()
+        .setCustomId('player_pause')
+        .setLabel(isPaused ? '▶️' : '⏸️')
+        .setStyle(isPaused ? ButtonStyle.Success : ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId('player_skip')
+        .setLabel('⏭️')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('player_stop')
+        .setLabel('⏹️')
+        .setStyle(ButtonStyle.Danger),
+    );
+
+    // Baris 2: Filter Populer (Nightcore, Bassboost, Vaporwave, 3D)
+    const row2 = new ActionRowBuilder().addComponents(
+      ['nightcore', 'bassboost', 'vaporwave', '3d'].map(name => {
+        const meta = filterMeta[name];
+        const isActive = activeFilters.includes(name);
+        return new ButtonBuilder()
+          .setCustomId(`filter_btn_${name}`)
+          .setLabel(isActive ? `${meta.label} (ON)` : meta.label)
+          .setEmoji(meta.emoji)
+          .setStyle(isActive ? ButtonStyle.Success : ButtonStyle.Secondary);
+      })
+    );
+
+    // Baris 3: Nuansa & Vokal (Lo-Fi, Karaoke, Surround, Echo)
+    const row3 = new ActionRowBuilder().addComponents(
+      ['lofi', 'karaoke', 'surround', 'echo'].map(name => {
+        const meta = filterMeta[name];
+        const isActive = activeFilters.includes(name);
+        return new ButtonBuilder()
+          .setCustomId(`filter_btn_${name}`)
+          .setLabel(isActive ? `${meta.label} (ON)` : meta.label)
+          .setEmoji(meta.emoji)
+          .setStyle(isActive ? ButtonStyle.Success : ButtonStyle.Secondary);
+      })
+    );
+
+    // Baris 4: Navigasi (Kembali ke Player & Reset Filter)
+    const row4 = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId('player_filter')
+        .setLabel('🎵 Player')
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId('filter_btn_clear')
+        .setLabel('Reset (Off)')
+        .setEmoji('❌')
+        .setStyle(ButtonStyle.Danger)
+        .setDisabled(activeFilters.length === 0),
+      new ButtonBuilder()
+        .setCustomId('player_queue')
+        .setLabel('📋 Queue')
+        .setStyle(ButtonStyle.Secondary),
+      new ButtonBuilder()
+        .setCustomId('player_lyrics')
+        .setLabel('📜 Lirik')
+        .setStyle(ButtonStyle.Secondary),
+    );
+
+    return [row1, row2, row3, row4];
+  }
 
   // Baris 1: Kontrol Playback
   const row1 = new ActionRowBuilder().addComponents(
@@ -530,7 +618,7 @@ function buildPlayerComponents(queue, isPaused, { viewMode = 'player', showingQu
       .setStyle(ButtonStyle.Danger),
   );
 
-  // Baris 2: Mode (Loop, Shuffle) & Queue & Lirik
+  // Baris 2: Mode (Loop, Shuffle) & Queue & Lirik & Filter
   let loopLabel = '🔂 Loop';
   let loopStyle = ButtonStyle.Secondary;
   if (repeatMode === 1) {
@@ -541,6 +629,7 @@ function buildPlayerComponents(queue, isPaused, { viewMode = 'player', showingQu
     loopStyle = ButtonStyle.Success;
   }
 
+  const hasFilter = Boolean(queue?.filters?.names?.length);
   const row2 = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId('player_loop')
@@ -559,6 +648,10 @@ function buildPlayerComponents(queue, isPaused, { viewMode = 'player', showingQu
       .setCustomId('player_lyrics')
       .setLabel(isLyrics ? '🎵 Player' : '📜 Lirik')
       .setStyle(isLyrics ? ButtonStyle.Primary : ButtonStyle.Secondary),
+    new ButtonBuilder()
+      .setCustomId('player_filter')
+      .setLabel('🎛️ Filter')
+      .setStyle(hasFilter ? ButtonStyle.Success : ButtonStyle.Secondary),
   );
 
   const rows = [row1, row2];
@@ -715,9 +808,9 @@ function startPlayerProgress(guildId, sent, _queue, song) {
     if (!q || !q.songs || !q.songs.length) { stopPlayerProgress(guildId); return; }
     if (q.paused) { stopPlayerProgress(guildId); return; }
 
-    // Jangan timpa queue view yang sedang dibuka user
+    // Jangan timpa queue view atau filter view yang sedang dibuka user
     const qs = queuePageState.get(guildId);
-    if (qs?.showing || qs?.mode === 'queue') return;
+    if (qs?.showing || qs?.mode === 'queue' || qs?.mode === 'filter') return;
 
     const liveSong = q.songs[0] || song;
     let embeds;
@@ -818,6 +911,7 @@ async function markNowPlayingEnded(guildId, label = '⏹ Queue ended') {
   if (guildId) {
     guildLyrics.delete(guildId);
     clearRecentQueueAdd(guildId);
+    queuePageState.delete(guildId);
   }
   const prev = nowPlayingMessages.get(guildId);
   if (!prev?.message) return;
@@ -964,6 +1058,12 @@ async function renderPlayerView(guildId) {
       const components = buildPlayerComponents(q, q.paused || false, { viewMode: 'lyrics', totalSongs: q.songs.length });
       await prev.message.edit({ embeds: [embed], components });
       return true;
+    } else if (state.mode === 'filter') {
+      const musicFilters = require('./musicFilters');
+      const embed = musicFilters.buildFilterPlayerEmbed(song, q);
+      const components = buildPlayerComponents(q, q.paused || false, { viewMode: 'filter', totalSongs: q.songs.length });
+      await prev.message.edit({ embeds: [embed], components });
+      return true;
     } else if (state.mode === 'queue' || state.showing) {
       const { embed, page, totalSongs } = buildQueueEmbed(q, state.page);
       const components = buildPlayerComponents(q, q.paused || false, { viewMode: 'queue', showingQueue: true, queuePage: page, totalSongs });
@@ -1085,6 +1185,51 @@ async function toggleLyricsView(guildId) {
     }
     return ok;
   }
+}
+
+/**
+ * Toggle Audio Filter view di embed Now Playing yang ada.
+ * - Saat buka filter: switch mode = 'filter', hentikan interval update progress
+ * - Saat kembali ke player: switch mode = 'player', nyalakan kembali interval progress
+ * @param {string} guildId
+ * @param {boolean} [forceMode] true = selalu buka filter, false = selalu buka player
+ * @returns {boolean} true kalau berhasil edit
+ */
+async function toggleFilterView(guildId, forceMode) {
+  const prev = nowPlayingMessages.get(guildId);
+  if (!prev?.message) return false;
+
+  const q = safeGetQueue(guildId);
+  if (!q || !q.songs || !q.songs.length) return false;
+
+  const state = queuePageState.get(guildId) || { showing: false, mode: 'player', page: 0 };
+  const toFilter = typeof forceMode === 'boolean' ? forceMode : state.mode !== 'filter';
+
+  if (toFilter) {
+    stopPlayerProgress(guildId);
+    queuePageState.set(guildId, { showing: false, mode: 'filter', page: 0 });
+    return renderPlayerView(guildId);
+  } else {
+    queuePageState.set(guildId, { showing: false, mode: 'player', page: 0 });
+    const ok = await renderPlayerView(guildId);
+    if (ok && !q.paused) {
+      const liveSong = q.songs[0];
+      startPlayerProgress(guildId, prev.message, q, liveSong);
+    }
+    return ok;
+  }
+}
+
+function hasActivePlayer(guildId) {
+  return Boolean(nowPlayingMessages.get(guildId)?.message);
+}
+
+function getPlayerMode(guildId) {
+  return queuePageState.get(guildId)?.mode || 'player';
+}
+
+function getNowPlayingMessage(guildId) {
+  return nowPlayingMessages.get(guildId)?.message || null;
 }
 
 function getDisTube() {
@@ -1664,6 +1809,11 @@ module.exports = {
   renderPlayerView,
   toggleQueueView,
   toggleLyricsView,
+  toggleFilterView,
+  hasActivePlayer,
+  getPlayerMode,
+  getNowPlayingMessage,
+  safeGetQueue,
   isVideoUrl,
   videoId,
   resolveSongInfo,
