@@ -427,22 +427,21 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
-  <!-- Discord Embedded App SDK untuk Discord Voice Activity -->
-  <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@1.1.0/output/index.umd.js"></script>
+  <!-- Discord Embedded App SDK: Native Handshake Opcode 0 (Bekerja di Web & Desktop tanpa CDN eksternal) -->
+  <script src="/assets/discord-sdk-handshake.js"></script>
   <script>
-    (async function initDiscordActivitySdk() {
+    (function initNativeDiscordSdk() {
       const sp = new URLSearchParams(window.location.search);
       const frameId = sp.get('frame_id');
       if (!frameId) return;
-      try {
-        if (window.DiscordSDK && window.DiscordSDK.DiscordSDK) {
-          const clientId = sp.get('client_id') || '1347881958286262334';
-          const discordSdk = new window.DiscordSDK.DiscordSDK(clientId);
-          await discordSdk.ready();
-          console.log('[DISCORD_SDK] Handshake ready berhasil dikirim ke Discord client!');
-        }
-      } catch (err) {
-        console.warn('[DISCORD_SDK] Handshake warning:', err.message || err);
+      const clientId = sp.get('client_id') || '1347881958286262334';
+      const rpcSource = (window.parent && window.parent.opener) ? window.parent.opener : window.parent;
+      if (rpcSource) {
+        try {
+          rpcSource.postMessage([0, {
+            v: 1, encoding: 'json', client_id: clientId, frame_id: frameId, sdk_version: '1.1.0'
+          }], '*');
+        } catch (_) {}
       }
     })();
   </script>
@@ -985,40 +984,133 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
        DISCORD ACTIVITY MODE (CINEMA & NOBAR)
     ════════════════════════════════ */
     .activity-mode-on {
-      --navbar-h: 52px;
+      --navbar-h: 46px;
     }
-    .activity-mode-on .app-sidebar { display: none !important; }
-    .activity-mode-on .episode-panel { display: none !important; }
-    .activity-mode-on .app-main { padding: 10px 14px 40px !important; }
+    /* Kunci mati sidebar & episode panel agar TIDAK PERNAH muncul di mode activity */
+    html.activity-mode-on .app-sidebar,
+    html.activity-mode-on aside,
+    html.activity-mode-on #appSidebar,
+    html.activity-mode-on .episode-panel {
+      display: none !important;
+      width: 0 !important;
+      max-width: 0 !important;
+      min-width: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+    }
+    html.activity-mode-on .app-layout {
+      display: block !important;
+      grid-template-columns: 1fr !important;
+    }
+    html.activity-mode-on .app-main {
+      padding: 6px 12px 30px !important;
+      margin-left: 0 !important;
+      width: 100% !important;
+      max-width: 100% !important;
+    }
     .activity-mode-on .player-card { border-radius: 12px; }
-    .activity-mode-on .video-box { aspect-ratio: 16/9; max-height: calc(100vh - 120px); }
+    .activity-mode-on .video-box { aspect-ratio: 16/9; max-height: calc(100vh - 110px); }
+
+    /* Ukuran Card di Mode Activity (Dibuat Kecil, Ringkas, dan Lega untuk Nobar) */
+    .activity-mode-on .media-grid {
+      grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)) !important;
+      gap: 8px !important;
+    }
+    .activity-mode-on .media-card {
+      border-radius: 8px !important;
+      padding: 4px !important;
+      box-shadow: var(--sh-sm) !important;
+    }
+    .activity-mode-on .card-thumb-wrap {
+      height: 135px !important;
+      aspect-ratio: unset !important;
+      border-radius: 6px !important;
+    }
+    .activity-mode-on .card-title {
+      font-size: 0.68rem !important;
+      line-height: 1.25 !important;
+      height: 2.5em !important;
+      margin: 4px 0 2px !important;
+    }
+    .activity-mode-on .card-badge {
+      font-size: 0.58rem !important;
+      padding: 1px 5px !important;
+      top: 4px !important;
+      left: 4px !important;
+    }
+    .activity-mode-on .card-meta {
+      display: none !important;
+    }
+    .activity-mode-on .kamar-hero {
+      padding: 10px 14px !important;
+      margin-bottom: 8px !important;
+      border-radius: 12px !important;
+    }
+    .activity-mode-on .kamar-hero h1 { font-size: 1.15rem !important; }
+    .activity-mode-on .kamar-hero p { font-size: 0.76rem !important; }
+    .activity-mode-on .kamar-portal-grid {
+      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) !important;
+      gap: 6px !important;
+    }
+    .activity-mode-on .kamar-portal-btn {
+      padding: 8px !important;
+      font-size: 0.74rem !important;
+      border-radius: 8px !important;
+    }
 
     /* Floating Nobar Live Bar */
     .activity-sync-bar {
       display: none;
-      align-items: center; justify-content: space-between; gap: 12px;
-      padding: 10px 16px; border-radius: var(--r-md); background: rgba(14,15,24,0.88);
-      backdrop-filter: blur(16px); color: #fff; margin-bottom: 12px;
-      border: 1px solid rgba(88,101,242,0.4); box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+      align-items: center; justify-content: space-between; gap: 8px;
+      padding: 8px 14px; border-radius: var(--r-md); background: rgba(14,15,24,0.92);
+      backdrop-filter: blur(16px); color: #fff; margin-bottom: 8px;
+      border: 1px solid rgba(88,101,242,0.45); box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      flex-wrap: wrap;
     }
     .activity-mode-on .activity-sync-bar { display: flex; }
 
-    .sync-status-indicator { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; }
-    .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: #2ECC71; box-shadow: 0 0 10px #2ECC71; animation: pulse 1.5s infinite; }
+    .sync-status-indicator { display: flex; align-items: center; gap: 6px; font-size: 0.76rem; font-weight: 700; }
+    .pulse-dot { width: 7px; height: 7px; border-radius: 50%; background: #2ECC71; box-shadow: 0 0 8px #2ECC71; animation: pulse 1.5s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
 
-    .sync-controls-row { display: flex; align-items: center; gap: 6px; }
+    .role-badge {
+      padding: 3px 8px; border-radius: var(--r-pill); font-size: 0.7rem; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .role-badge-host { background: linear-gradient(135deg, #F59E0B, #D97706); color: #fff; box-shadow: 0 2px 8px rgba(245,158,11,0.4); }
+    .role-badge-viewer { background: rgba(255,255,255,0.14); color: #E0E7FF; border: 1px solid rgba(255,255,255,0.2); }
+
+    .sync-controls-row { display: flex; align-items: center; gap: 4px; }
     .sync-btn {
-      padding: 5px 12px; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,0.2);
-      background: rgba(255,255,255,0.1); color: #fff; font-size: 0.76rem; font-weight: 600;
-      cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all var(--dur) var(--ease);
+      padding: 4px 10px; border-radius: var(--r-pill); border: 1px solid rgba(255,255,255,0.2);
+      background: rgba(255,255,255,0.1); color: #fff; font-size: 0.72rem; font-weight: 600;
+      cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all var(--dur) var(--ease);
     }
     .sync-btn:hover { background: rgba(255,255,255,0.25); }
 
-    .reaction-bar { display: flex; align-items: center; gap: 4px; }
+    .reaction-bar { display: flex; align-items: center; gap: 3px; }
     .react-btn {
-      width: 32px; height: 32px; border-radius: 50%; border: none;
-      background: rgba(255,255,255,0.12); font-size: 1rem; cursor: pointer;
+      width: 28px; height: 28px; border-radius: 50%; border: none;
+      background: rgba(255,255,255,0.12); font-size: 0.9rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; transition: transform 0.15s;
+    }
+    .react-btn:hover { transform: scale(1.2); }
+    .react-btn:active { transform: scale(0.9); }
+
+    /* Viewer Toast / Notification */
+    .sync-toast {
+      position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+      background: rgba(17,24,39,0.92); backdrop-filter: blur(8px);
+      color: #fff; border: 1px solid rgba(123,115,240,0.5);
+      padding: 6px 16px; border-radius: var(--r-pill); font-size: 0.75rem;
+      font-weight: 600; z-index: 10000; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      display: none; animation: fadeInToast 0.3s ease;
+    }
+    @keyframes fadeInToast { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }
       display: flex; align-items: center; justify-content: center; transition: transform 0.15s;
     }
     .react-btn:hover { transform: scale(1.2); }
@@ -1126,17 +1218,20 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       ${sidebarHtml}
       <main class="app-main">
         <!-- Live Nobar Sync Bar (muncul di mode Activity) -->
+        <div class="sync-toast" id="syncToast"></div>
         <div class="activity-sync-bar" id="activitySyncBar">
           <div class="sync-status-indicator">
             <span class="pulse-dot"></span>
-            <span>NOBAR VC ACTIVE</span>
-            <span style="opacity:0.6;font-weight:400" id="roomMemberCount">👥 1 Penonton</span>
+            <span>NOBAR VC</span>
+            <span class="role-badge role-badge-host" id="roleBadge">👑 Host</span>
+            <span style="opacity:0.75;font-size:0.72rem" id="roomMemberCount">👥 1 Penonton</span>
           </div>
 
           <div class="sync-controls-row">
-            <button class="sync-btn" onclick="sendWsAction('PLAY')" title="Play Bersama">▶️ Play All</button>
-            <button class="sync-btn" onclick="sendWsAction('PAUSE')" title="Pause Bersama">⏸️ Pause All</button>
+            <button class="sync-btn" id="playAllBtn" onclick="sendWsAction('PLAY')" title="Play Bersama">▶️ Play All</button>
+            <button class="sync-btn" id="pauseAllBtn" onclick="sendWsAction('PAUSE')" title="Pause Bersama">⏸️ Pause All</button>
             <button class="sync-btn" onclick="reloadPlayer()" title="Reload Frame">🔄 Reload</button>
+            <button class="sync-btn" id="claimHostBtn" onclick="claimHostRole()" style="display:none;background:rgba(245,158,11,0.25);border-color:#F59E0B" title="Ambil alih kendali tayangan">👑 Jadi Host</button>
           </div>
 
           <div class="reaction-bar">
@@ -1284,19 +1379,61 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
         url.searchParams.set('activity', '1');
       } else {
         url.searchParams.delete('activity');
+        url.searchParams.set('activity', '0'); // Explicit disable agar cookie dihapus
       }
-      window.history.replaceState({}, '', url.toString());
-
-      if (isNow) {
-        initActivityWebSocket();
-      }
+      window.location.href = url.toString();
     }
 
     // ══════════════════════════════════════════════════
-    // WEBSOCKET REALTIME SYNC (NOBAR VC ACTIVITY)
+    // WEBSOCKET REALTIME SYNC (HOST vs VIEWER NOBAR VC)
     // ══════════════════════════════════════════════════
+    window.isHost = false;
     let ws = null;
-    let currentRoomId = 'default-vc';
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentRoomId = urlParams.get('channel_id') || urlParams.get('instance_id') || 'default-vc';
+
+    function showSyncToast(text) {
+      const toast = document.getElementById('syncToast');
+      if (!toast) return;
+      toast.textContent = text;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2600);
+    }
+
+    function updateRoleUI(isHost) {
+      window.isHost = isHost;
+      const roleBadge = document.getElementById('roleBadge');
+      const claimBtn = document.getElementById('claimHostBtn');
+      const playBtn = document.getElementById('playAllBtn');
+      const pauseBtn = document.getElementById('pauseAllBtn');
+
+      if (roleBadge) {
+        if (isHost) {
+          roleBadge.textContent = '👑 Host (Kendali Penuh)';
+          roleBadge.className = 'role-badge role-badge-host';
+        } else {
+          roleBadge.textContent = '👁️ Penonton (ReadOnly)';
+          roleBadge.className = 'role-badge role-badge-viewer';
+        }
+      }
+      if (claimBtn) {
+        claimBtn.style.display = isHost ? 'none' : 'inline-flex';
+      }
+      if (playBtn) playBtn.disabled = !isHost;
+      if (pauseBtn) pauseBtn.disabled = !isHost;
+    }
+
+    function claimHostRole() {
+      if (ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ type: 'CLAIM_HOST' }));
+      }
+    }
+
+    function sendWsNavigate(route, title) {
+      if (ws && ws.readyState === WebSocket.OPEN && window.isHost) {
+        ws.send(JSON.stringify({ type: 'HOST_NAVIGATE', route, title }));
+      }
+    }
 
     function initActivityWebSocket() {
       if (ws && ws.readyState === WebSocket.OPEN) return;
@@ -1328,7 +1465,30 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     }
 
     function handleWsIncoming(data) {
-      if (data.type === 'USER_COUNT') {
+      if (data.type === 'INIT_STATE') {
+        updateRoleUI(data.isHost);
+        const countEl = document.getElementById('roomMemberCount');
+        if (countEl && data.count) countEl.textContent = '👥 ' + data.count + ' Penonton';
+
+        // Jika viewer join belakangan dan host sedang membuka video/halaman tertentu
+        const currentPathWithSearch = window.location.pathname + window.location.search;
+        if (!data.isHost && data.currentRoute && data.currentRoute !== '/' && data.currentRoute !== currentPathWithSearch) {
+          showSyncToast('Menyelaraskan ke tayangan Host...');
+          setTimeout(() => {
+            window.location.href = data.currentRoute;
+          }, 250);
+        }
+      } else if (data.type === 'ROLE_UPDATE') {
+        updateRoleUI(data.isHost);
+        showSyncToast(data.isHost ? '👑 Anda sekarang adalah Host!' : 'Peran berpindah: Anda sekarang Penonton.');
+      } else if (data.type === 'NAVIGATE_TO') {
+        if (!window.isHost && data.route) {
+          showSyncToast('Host memutar: ' + (data.title || 'tayangan baru'));
+          setTimeout(() => {
+            window.location.href = data.route;
+          }, 300);
+        }
+      } else if (data.type === 'USER_COUNT') {
         const countEl = document.getElementById('roomMemberCount');
         if (countEl) countEl.textContent = '👥 ' + data.count + ' Penonton';
       } else if (data.type === 'ACTION') {
@@ -1336,7 +1496,6 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
         if (data.action === 'CHANGE_SERVER' && data.payload?.src && frame) {
           frame.src = data.payload.src;
         } else if (data.action === 'PLAY' || data.action === 'PAUSE') {
-          // Kirim sinyal ke iframe (jika support postMessage)
           if (frame && frame.contentWindow) {
             frame.contentWindow.postMessage({ type: data.action }, '*');
           }
@@ -1348,6 +1507,10 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
 
     function sendWsAction(action, payload = {}) {
       if (ws && ws.readyState === WebSocket.OPEN) {
+        if (!window.isHost) {
+          showSyncToast('Hanya Host yang dapat mengontrol pemutaran.');
+          return;
+        }
         ws.send(JSON.stringify({ type: 'ACTION', action, payload }));
       }
     }
@@ -1370,6 +1533,34 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       setTimeout(() => el.remove(), 2500);
     }
 
+    // Intercept klik navigasi untuk sinkronisasi Host dan proteksi ReadOnly Viewer
+    document.addEventListener('click', function(e) {
+      const a = e.target.closest('a');
+      if (!a || !a.href) return;
+      const isAct = document.documentElement.classList.contains('activity-mode-on');
+      if (!isAct) return;
+
+      // Proteksi ReadOnly untuk Viewer: hanya Host yang boleh berpindah tontonan
+      if (!window.isHost && (a.closest('.media-grid') || a.closest('.ep-panel-scroll') || a.closest('.episode-nav-row'))) {
+        e.preventDefault();
+        showSyncToast('Hanya Host yang dapat memilih tayangan.');
+        return;
+      }
+
+      // Pastikan navigasi lokal tetap membawa parameter activity=1
+      if (a.origin === window.location.origin && !a.pathname.startsWith('/settings')) {
+        const u = new URL(a.href);
+        if (!u.searchParams.has('activity')) {
+          u.searchParams.set('activity', '1');
+          a.href = u.toString();
+        }
+        // Jika Host yang bernavigasi, siarkan rute baru ke semua penonton
+        if (window.isHost) {
+          sendWsNavigate(u.pathname + u.search, a.textContent.trim() || document.title);
+        }
+      }
+    });
+
     // Auto-connect jika diakses dengan mode activity
     if (document.documentElement.classList.contains('activity-mode-on')) {
       initActivityWebSocket();
@@ -1387,9 +1578,27 @@ async function handleMovieRequest(req, res, url) {
   const targetUrlParam = url.searchParams.get('url');
   const searchQuery = url.searchParams.get('s') || '';
   const catParam = url.searchParams.get('cat');
+  const cookieHeader = req.headers.cookie || '';
+  const hasCookieActivity = /(?:^|;\s*)callista_act=1/.test(cookieHeader);
+  const explicitlyDisabled = url.searchParams.get('activity') === '0';
   const hasDiscordActivityParam = url.searchParams.has('frame_id') || url.searchParams.has('instance_id') || Boolean(req.headers['x-forwarded-host'] && req.headers['x-forwarded-host'].includes('discordsays.com'));
-  const isActivity = url.searchParams.get('activity') === '1' || url.searchParams.get('activity') === 'true' || hasDiscordActivityParam;
+  const isActivity = !explicitlyDisabled && (url.searchParams.get('activity') === '1' || url.searchParams.get('activity') === 'true' || hasDiscordActivityParam || hasCookieActivity);
   const cfg = loadConfig();
+
+  // Helper untuk set status cookie activity
+  const sendHtml = (statusCode, htmlContent) => {
+    const headers = {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Access-Control-Allow-Origin': '*'
+    };
+    if (isActivity) {
+      headers['Set-Cookie'] = 'callista_act=1; Path=/; SameSite=Lax';
+    } else if (explicitlyDisabled) {
+      headers['Set-Cookie'] = 'callista_act=0; Max-Age=0; Path=/; SameSite=Lax';
+    }
+    res.writeHead(statusCode, headers);
+    res.end(htmlContent);
+  };
 
   // 1. API: Settings Domain
   if (url.pathname === '/api/movie/settings' || url.pathname === '/api/settings') {
@@ -1456,8 +1665,7 @@ async function handleMovieRequest(req, res, url) {
       mode: 'home',
       isActivity: false
     });
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(html);
+    sendHtml(200, html);
     return;
   }
 
@@ -1722,8 +1930,7 @@ async function handleMovieRequest(req, res, url) {
         mode,
         isActivity
       });
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(pageHtml);
+      sendHtml(200, pageHtml);
       return;
     }
 
@@ -1856,8 +2063,7 @@ async function handleMovieRequest(req, res, url) {
       `;
 
       const pageHtml = masterLayout({ title: seriesTitle, sidebarHtml, contentHtml, pageType: 'series', searchQuery, mode, isActivity });
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(pageHtml);
+      sendHtml(200, pageHtml);
       return;
     }
 
@@ -1987,8 +2193,7 @@ async function handleMovieRequest(req, res, url) {
         mode,
         isActivity
       });
-      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-      res.end(pageHtml);
+      sendHtml(200, pageHtml);
       return;
     }
 
@@ -2012,10 +2217,10 @@ async function handleMovieRequest(req, res, url) {
 }
 
 /* ============================================================
-   WEBSOCKET MANAGER: MULTI-USER REALTIME NOBAR SYNC
+   WEBSOCKET MANAGER: MULTI-USER REALTIME NOBAR SYNC (HOST & VIEWER)
    ============================================================ */
 let wss = null;
-const rooms = new Map(); // roomId -> { users: Set<WebSocket>, lastAction: object }
+const rooms = new Map(); // roomId -> { hostWs: WebSocket|null, currentRoute: string, currentTitle: string, lastAction: object|null, users: Set<WebSocket> }
 
 function initWebSocket(server) {
   if (wss) return wss;
@@ -2038,23 +2243,62 @@ function initWebSocket(server) {
   wss.on('connection', (ws, req, url) => {
     const roomId = url.searchParams.get('room') || 'default-vc';
     if (!rooms.has(roomId)) {
-      rooms.set(roomId, { users: new Set(), lastAction: null });
+      rooms.set(roomId, {
+        hostWs: null,
+        currentRoute: '/',
+        currentTitle: 'Kamar Callista',
+        lastAction: null,
+        users: new Set()
+      });
     }
     const room = rooms.get(roomId);
     room.users.add(ws);
 
-    // Kirim jumlah penonton terkini
-    broadcastToRoom(roomId, { type: 'USER_COUNT', count: room.users.size });
-
-    // Kirim aksi terakhir jika ada (agar sync otomatis)
-    if (room.lastAction) {
-      ws.send(JSON.stringify(room.lastAction));
+    // Tentukan Host (pengguna pertama di room menjadi Host)
+    let isHost = false;
+    if (!room.hostWs || !room.users.has(room.hostWs)) {
+      room.hostWs = ws;
+      isHost = true;
     }
+
+    // Kirim initial sync state ke client
+    ws.send(JSON.stringify({
+      type: 'INIT_STATE',
+      isHost,
+      currentRoute: room.currentRoute,
+      currentTitle: room.currentTitle,
+      lastAction: room.lastAction,
+      count: room.users.size
+    }));
+
+    // Broadcast user count terbaru ke semua penonton di room
+    broadcastToRoom(roomId, { type: 'USER_COUNT', count: room.users.size });
 
     ws.on('message', (message) => {
       try {
         const data = JSON.parse(message.toString());
-        if (data.type === 'ACTION') {
+
+        if (data.type === 'HOST_NAVIGATE') {
+          // Hanya host yang dapat memindahkan rute semua viewer
+          if (ws === room.hostWs) {
+            room.currentRoute = data.route;
+            room.currentTitle = data.title || 'Tayangan Nobar';
+            broadcastToRoom(roomId, {
+              type: 'NAVIGATE_TO',
+              route: data.route,
+              title: data.title
+            }, ws);
+          }
+        } else if (data.type === 'CLAIM_HOST') {
+          // Partisipan mengambil alih peran Host
+          const prevHost = room.hostWs;
+          room.hostWs = ws;
+          ws.send(JSON.stringify({ type: 'ROLE_UPDATE', isHost: true }));
+          if (prevHost && prevHost !== ws && room.users.has(prevHost)) {
+            prevHost.send(JSON.stringify({ type: 'ROLE_UPDATE', isHost: false }));
+          }
+        } else if (data.type === 'ACTION') {
+          // Hanya host (atau jika diizinkan) yang mengontrol playback
           room.lastAction = data;
           broadcastToRoom(roomId, data, ws);
         } else if (data.type === 'REACTION') {
@@ -2065,6 +2309,16 @@ function initWebSocket(server) {
 
     ws.on('close', () => {
       room.users.delete(ws);
+      if (room.hostWs === ws) {
+        room.hostWs = null;
+        // Oper otomatis peran host ke penonton lain jika masih ada
+        if (room.users.size > 0) {
+          const nextHost = Array.from(room.users)[0];
+          room.hostWs = nextHost;
+          nextHost.send(JSON.stringify({ type: 'ROLE_UPDATE', isHost: true }));
+        }
+      }
+
       if (room.users.size === 0) {
         rooms.delete(roomId);
       } else {

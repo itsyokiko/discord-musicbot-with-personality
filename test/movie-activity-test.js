@@ -68,41 +68,55 @@ async function runHttpTests() {
     const parsedCfg = JSON.parse(resMovieSettings.body);
     assert.strictEqual(parsedCfg.domainDrama, cfg.domainDrama);
 
-    // Test E: WebSocket Nobar VC Sync
+    // Test E: WebSocket Nobar VC Sync (Host & Viewer Navigation)
     console.log('Testing WebSocket realtime sync (/ws/activity)...');
     await new Promise((resolve, reject) => {
       const wsUrl = `ws://localhost:${testPort}/ws/activity?room=test-room-vc`;
       const client1 = new WebSocket(wsUrl);
-      const client2 = new WebSocket(wsUrl);
+      let client2 = null;
 
-      let client2ReceivedReaction = false;
+      let client1IsHost = false;
+      let client2ReceivedNav = false;
 
-      client2.on('message', (msg) => {
+      client1.on('message', (msg) => {
         const data = JSON.parse(msg.toString());
-        if (data.type === 'REACTION' && data.emoji === '🍿') {
-          client2ReceivedReaction = true;
-          client1.close();
-          client2.close();
-          resolve();
+        if (data.type === 'INIT_STATE') {
+          client1IsHost = data.isHost;
+          assert.strictEqual(client1IsHost, true, 'Client 1 harus menjadi Host');
+          
+          // Setelah client 1 jadi host, koneksikan client 2 (Viewer)
+          client2 = new WebSocket(wsUrl);
+          client2.on('message', (msg2) => {
+            const data2 = JSON.parse(msg2.toString());
+            if (data2.type === 'INIT_STATE') {
+              assert.strictEqual(data2.isHost, false, 'Client 2 harus menjadi Viewer/ReadOnly');
+              // Host kirim perpindahan rute tayangan
+              client1.send(JSON.stringify({
+                type: 'HOST_NAVIGATE',
+                route: '/?mode=anime&url=test-anime-eps-1',
+                title: 'Anime Keren Episode 1'
+              }));
+            } else if (data2.type === 'NAVIGATE_TO') {
+              assert.strictEqual(data2.route, '/?mode=anime&url=test-anime-eps-1');
+              assert.strictEqual(data2.title, 'Anime Keren Episode 1');
+              client2ReceivedNav = true;
+              client1.close();
+              client2.close();
+              resolve();
+            }
+          });
         }
-      });
-
-      client1.on('open', () => {
-        client2.on('open', () => {
-          // Client 1 sends reaction
-          client1.send(JSON.stringify({ type: 'REACTION', emoji: '🍿' }));
-        });
       });
 
       setTimeout(() => {
-        if (!client2ReceivedReaction) {
-          client1.close();
-          client2.close();
-          reject(new Error('WebSocket sync reaction timeout'));
+        if (!client2ReceivedNav) {
+          if (client1) client1.close();
+          if (client2) client2.close();
+          reject(new Error('WebSocket sync host navigation timeout'));
         }
-      }, 3000);
+      }, 4000);
     });
-    console.log('WebSocket sync verified successfully!');
+    console.log('WebSocket sync & Host-Viewer auto-follow verified successfully!');
 
   } finally {
     server.close();
