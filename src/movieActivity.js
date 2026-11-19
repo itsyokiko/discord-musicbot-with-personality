@@ -428,8 +428,27 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
-  <!-- Discord Embedded App SDK Standalone Handshake -->
+  <!-- Discord Embedded App SDK: Bundle Resmi & Standalone Handshake -->
+  <script src="/assets/discord-sdk.js"></script>
   <script src="/assets/discord-sdk-handshake.js"></script>
+  <script>
+    (async function initOfficialDiscordSdk() {
+      if (typeof window === 'undefined') return;
+      const sp = new URLSearchParams(window.location.search);
+      const frameId = sp.get('frame_id') || (function() { try { return sessionStorage.getItem('dc_frame_id'); } catch (_) { return null; } })();
+      if (!frameId) return;
+      const clientId = sp.get('client_id') || (function() { try { return sessionStorage.getItem('dc_client_id'); } catch (_) { return null; } })() || '1561650922281762836';
+      if (window.DiscordSDK && window.DiscordSDK.DiscordSDK) {
+        try {
+          const sdk = new window.DiscordSDK.DiscordSDK(clientId);
+          await sdk.ready();
+          console.log('[DISCORD_SDK] Official SDK ready signal sent to Discord Desktop/Web!');
+        } catch (e) {
+          console.warn('[DISCORD_SDK] SDK ready warning:', e.message || e);
+        }
+      }
+    })();
+  </script>
   <style>
     /* ═══════════════════════════════════════════════════════
        DESIGN TOKENS — KAMAR CALLISTA PASTEL SMOOTH
@@ -1015,51 +1034,57 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     .activity-mode-on .player-card { border-radius: 12px; }
     .activity-mode-on .video-box { aspect-ratio: 16/9; max-height: calc(100vh - 110px); }
 
-    /* Ukuran Card di Mode Activity (Dibuat Kecil, Ringkas, dan Lega untuk Nobar) */
+    /* Ukuran Card di Mode Activity (Super Mini, Ringkas, dan Hemat Tempat untuk Nobar) */
+    .activity-mode-on .drama-grid,
     .activity-mode-on .media-grid {
-      grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)) !important;
-      gap: 8px !important;
+      grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)) !important;
+      gap: 6px !important;
     }
+    .activity-mode-on .drama-card,
     .activity-mode-on .media-card {
-      border-radius: 8px !important;
-      padding: 4px !important;
-      box-shadow: var(--sh-sm) !important;
-    }
-    .activity-mode-on .card-thumb-wrap {
-      height: 135px !important;
-      aspect-ratio: unset !important;
       border-radius: 6px !important;
+      padding: 2px !important;
+      box-shadow: none !important;
+      border: 1px solid var(--border) !important;
+      background: var(--surface) !important;
+    }
+    .activity-mode-on .card-thumb {
+      aspect-ratio: 5/7 !important;
+      border-radius: 4px !important;
+      height: auto !important;
+    }
+    .activity-mode-on .card-caption {
+      padding: 3px 5px !important;
     }
     .activity-mode-on .card-title {
-      font-size: 0.68rem !important;
-      line-height: 1.25 !important;
-      height: 2.5em !important;
-      margin: 4px 0 2px !important;
+      font-size: 0.62rem !important;
+      line-height: 1.2 !important;
+      height: 2.4em !important;
+      margin: 2px 0 0 !important;
+      -webkit-line-clamp: 2 !important;
     }
-    .activity-mode-on .card-badge {
-      font-size: 0.58rem !important;
-      padding: 1px 5px !important;
-      top: 4px !important;
-      left: 4px !important;
-    }
+    .activity-mode-on .card-tags-top,
+    .activity-mode-on .card-ep-badge,
+    .activity-mode-on .card-hover-play,
+    .activity-mode-on .card-time,
     .activity-mode-on .card-meta {
       display: none !important;
     }
     .activity-mode-on .kamar-hero {
-      padding: 10px 14px !important;
-      margin-bottom: 8px !important;
-      border-radius: 12px !important;
+      padding: 8px 12px !important;
+      margin-bottom: 6px !important;
+      border-radius: 10px !important;
     }
-    .activity-mode-on .kamar-hero h1 { font-size: 1.15rem !important; }
-    .activity-mode-on .kamar-hero p { font-size: 0.76rem !important; }
+    .activity-mode-on .kamar-hero h1 { font-size: 1.05rem !important; margin-bottom: 2px !important; }
+    .activity-mode-on .kamar-hero p { font-size: 0.72rem !important; }
     .activity-mode-on .kamar-portal-grid {
-      grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)) !important;
-      gap: 6px !important;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)) !important;
+      gap: 4px !important;
     }
     .activity-mode-on .kamar-portal-btn {
-      padding: 8px !important;
-      font-size: 0.74rem !important;
-      border-radius: 8px !important;
+      padding: 6px 8px !important;
+      font-size: 0.72rem !important;
+      border-radius: 6px !important;
     }
 
     /* Floating Nobar Live Bar */
@@ -1224,10 +1249,6 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
           <span>🎦</span>
           <span id="actToggleText">${isActivity ? 'Keluar Activity' : 'Mode Activity'}</span>
         </button>
-        <a href="/settings" class="nav-icon-btn" title="Dashboard Bot Callista">
-          <span>⚙️</span>
-          <span>Dashboard</span>
-        </a>
         <button class="nav-icon-btn" onclick="toggleTheme()" title="Ganti Tema">
           <span id="themeEmoji">🌙</span>
         </button>
@@ -1350,33 +1371,6 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     function toggleSidebar() {
       const sb = document.getElementById('appSidebar');
       if (sb) sb.classList.toggle('open');
-    }
-
-    function changeServer(btn, src) {
-      document.querySelectorAll('.srv-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      const loader = document.getElementById('playerLoader');
-      const frame = document.getElementById('playerFrame');
-      if (loader) loader.style.display = 'flex';
-      if (frame) {
-        frame.src = src;
-        // Broadcast pergantian server ke room nobar
-        sendWsAction('CHANGE_SERVER', { src });
-      }
-    }
-
-    function onFrameLoad() {
-      const loader = document.getElementById('playerLoader');
-      if (loader) loader.style.display = 'none';
-    }
-
-    function reloadPlayer() {
-      const frame = document.getElementById('playerFrame');
-      const loader = document.getElementById('playerLoader');
-      if (frame) {
-        if (loader) loader.style.display = 'flex';
-        frame.src = frame.src;
-      }
     }
 
     function toggleAdShield() {
@@ -1549,15 +1543,192 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
         if (countEl) countEl.textContent = '👥 ' + data.count + ' Penonton';
       } else if (data.type === 'ACTION') {
         const frame = document.getElementById('playerFrame');
-        if (data.action === 'CHANGE_SERVER' && data.payload && data.payload.src && frame) {
+        const v = document.getElementById('callistaVideo');
+
+        if (data.action === 'MEDIA_PLAY') {
+          if (v && v.src) {
+            window._isInternalMediaSync = true;
+            if (typeof data.payload?.time === 'number' && Math.abs(v.currentTime - data.payload.time) > 1.2) {
+              v.currentTime = data.payload.time;
+            }
+            v.play().catch(function() {});
+            setTimeout(function() { window._isInternalMediaSync = false; }, 350);
+          }
+        } else if (data.action === 'MEDIA_PAUSE') {
+          if (v && v.src) {
+            window._isInternalMediaSync = true;
+            if (typeof data.payload?.time === 'number') {
+              v.currentTime = data.payload.time;
+            }
+            v.pause();
+            setTimeout(function() { window._isInternalMediaSync = false; }, 350);
+          }
+        } else if (data.action === 'MEDIA_SEEK') {
+          if (v && v.src && typeof data.payload?.time === 'number') {
+            window._isInternalMediaSync = true;
+            v.currentTime = data.payload.time;
+            setTimeout(function() { window._isInternalMediaSync = false; }, 350);
+          }
+        } else if (data.action === 'CHANGE_SERVER' && data.payload && data.payload.src && frame) {
           frame.src = data.payload.src;
+          if (window._currentPlayerMode === 'local') {
+            loadMediaToLocalPlayer(data.payload.src);
+          }
         } else if (data.action === 'PLAY' || data.action === 'PAUSE') {
-          if (frame && frame.contentWindow) {
+          if (v && v.src && v.style.display !== 'none') {
+            if (data.action === 'PLAY') v.play().catch(function() {});
+            else v.pause();
+          } else if (frame && frame.contentWindow) {
             frame.contentWindow.postMessage({ type: data.action }, '*');
           }
         }
       } else if (data.type === 'REACTION') {
         spawnFloatingEmoji(data.emoji);
+      }
+    }
+
+    // ══════════════════════════════════════════════════
+    // PLAYER LOKAL: KONTROL MEDIA MANDIRI & SINKRONISASI
+    // ══════════════════════════════════════════════════
+    window._currentPlayerMode = 'local';
+    window._isInternalMediaSync = false;
+
+    function initCallistaVideoEvents() {
+      const v = document.getElementById('callistaVideo');
+      if (!v || v._eventsInitialized) return;
+      v._eventsInitialized = true;
+
+      // Host Play event -> broadcast ke semua Viewer
+      v.addEventListener('play', function() {
+        if (window._isInternalMediaSync) return;
+        if (window.isHost) {
+          sendWsAction('MEDIA_PLAY', { time: v.currentTime });
+        }
+      });
+
+      // Host Pause event -> broadcast ke semua Viewer
+      v.addEventListener('pause', function() {
+        if (window._isInternalMediaSync) return;
+        if (window.isHost) {
+          sendWsAction('MEDIA_PAUSE', { time: v.currentTime });
+        }
+      });
+
+      // Host Seek event -> broadcast ke semua Viewer
+      v.addEventListener('seeked', function() {
+        if (window._isInternalMediaSync) return;
+        if (window.isHost) {
+          sendWsAction('MEDIA_SEEK', { time: v.currentTime });
+        }
+      });
+    }
+
+    async function loadMediaToLocalPlayer(sourceUrl) {
+      const v = document.getElementById('callistaVideo');
+      const frame = document.getElementById('playerFrame');
+      const loader = document.getElementById('playerLoader');
+      const loaderText = document.getElementById('loaderText');
+
+      if (!v) return;
+      if (loader) {
+        if (loaderText) loaderText.textContent = 'Mengambil alih media ke Player Lokal…';
+        loader.style.display = 'flex';
+      }
+
+      try {
+        const resp = await fetch('/api/resolve-media?url=' + encodeURIComponent(sourceUrl));
+        const res = await resp.json();
+
+        if (res.success && res.directUrl) {
+          initCallistaVideoEvents();
+          v.src = res.directUrl;
+          v.style.display = 'block';
+          if (frame) frame.style.display = 'none';
+          document.getElementById('btnLocalMode')?.classList.add('active');
+          document.getElementById('btnEmbedMode')?.classList.remove('active');
+          window._currentPlayerMode = 'local';
+          showSyncToast('⚡ Media berhasil dialihkan ke Player Lokal (Bebas Iklan)');
+          v.onloadedmetadata = function() {
+            if (loader) loader.style.display = 'none';
+          };
+        } else {
+          setPlayerMode('embed');
+        }
+      } catch (err) {
+        setPlayerMode('embed');
+      } finally {
+        if (loader) loader.style.display = 'none';
+      }
+    }
+
+    function setPlayerMode(mode) {
+      window._currentPlayerMode = mode;
+      const v = document.getElementById('callistaVideo');
+      const frame = document.getElementById('playerFrame');
+      const btnLocal = document.getElementById('btnLocalMode');
+      const btnEmbed = document.getElementById('btnEmbedMode');
+
+      if (mode === 'local') {
+        if (v && v.src) {
+          v.style.display = 'block';
+          if (frame) frame.style.display = 'none';
+          btnLocal?.classList.add('active');
+          btnEmbed?.classList.remove('active');
+        } else {
+          const currentFrameSrc = frame ? frame.src : '';
+          loadMediaToLocalPlayer(currentFrameSrc);
+        }
+      } else {
+        if (v) {
+          v.pause();
+          v.style.display = 'none';
+        }
+        if (frame) frame.style.display = 'block';
+        btnEmbed?.classList.add('active');
+        btnLocal?.classList.remove('active');
+      }
+    }
+
+    function changeServer(btn, src) {
+      document.querySelectorAll('.srv-btn').forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      const frame = document.getElementById('playerFrame');
+      const loader = document.getElementById('playerLoader');
+      if (loader) loader.style.display = 'flex';
+      if (frame) {
+        frame.src = src;
+        sendWsAction('CHANGE_SERVER', { src: src });
+      }
+      if (window._currentPlayerMode === 'local') {
+        loadMediaToLocalPlayer(src);
+      }
+    }
+
+    function reloadPlayer() {
+      const v = document.getElementById('callistaVideo');
+      const frame = document.getElementById('playerFrame');
+      const loader = document.getElementById('playerLoader');
+      if (loader) loader.style.display = 'flex';
+      if (window._currentPlayerMode === 'local' && v && v.src) {
+        const curTime = v.currentTime;
+        v.load();
+        v.currentTime = curTime;
+        if (loader) loader.style.display = 'none';
+      } else if (frame) {
+        frame.src = frame.src;
+      }
+    }
+
+    function onFrameLoad() {
+      const loader = document.getElementById('playerLoader');
+      if (loader) loader.style.display = 'none';
+      // Inisialisasi otomatis player lokal jika video player ada di halaman
+      const v = document.getElementById('callistaVideo');
+      if (v && !v.src) {
+        const frame = document.getElementById('playerFrame');
+        if (frame && frame.src) {
+          loadMediaToLocalPlayer(frame.src);
+        }
       }
     }
 
@@ -1695,6 +1866,111 @@ async function handleMovieRequest(req, res, url) {
       });
       return;
     }
+  }
+
+  // 1b. API: Resolve Direct Media URL untuk Player Lokal Callista
+  if (url.pathname === '/api/resolve-media') {
+    const targetUrl = url.searchParams.get('url');
+    if (!targetUrl) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: 'URL required' }));
+      return;
+    }
+    try {
+      let directUrl = '';
+      if (/\.(mp4|m3u8)(?:\?|$)/i.test(targetUrl)) {
+        directUrl = targetUrl;
+      } else {
+        const { data } = await axios.get(targetUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+            'Referer': targetUrl
+          },
+          timeout: 10000
+        });
+
+        const $ = cheerio.load(data);
+        $('video source, video').each((_, el) => {
+          const s = $(el).attr('src');
+          if (s && !directUrl) directUrl = s;
+        });
+
+        if (!directUrl) {
+          const mp4Matches = data.match(/https?:\/\/[^\s"'<>]+\.(?:mp4|m3u8)(?:\?[^\s"'<>]*)?/gi) || [];
+          for (const m of mp4Matches) {
+            if (!m.includes('preview') && !m.includes('thumb')) {
+              directUrl = m;
+              break;
+            }
+          }
+        }
+
+        if (!directUrl) {
+          const ifr = $('iframe').first().attr('src') || '';
+          if (ifr && ifr.startsWith('http')) directUrl = ifr;
+        }
+      }
+
+      if (directUrl) {
+        const isDirectStream = /\.(mp4|m3u8)/i.test(directUrl);
+        const playerSrc = isDirectStream ? `/media-stream?url=${encodeURIComponent(directUrl)}` : directUrl;
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({
+          success: true,
+          directUrl: playerSrc,
+          rawUrl: directUrl,
+          isNativeVideo: isDirectStream
+        }));
+      } else {
+        res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+        res.end(JSON.stringify({
+          success: false,
+          fallbackUrl: targetUrl,
+          message: 'Direct media stream not extracted'
+        }));
+      }
+    } catch (e) {
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
+      res.end(JSON.stringify({ success: false, fallbackUrl: targetUrl, error: e.message }));
+    }
+    return;
+  }
+
+  // 1c. Stream Proxy Video Lokal dengan HTTP Range (Partial Content 206)
+  if (url.pathname === '/media-stream') {
+    const rawTarget = url.searchParams.get('url');
+    if (!rawTarget) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('Missing url param');
+      return;
+    }
+    try {
+      const headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36',
+        'Referer': new URL(rawTarget).origin + '/'
+      };
+      if (req.headers.range) {
+        headers['Range'] = req.headers.range;
+      }
+      const streamResp = await axios.get(rawTarget, {
+        headers,
+        responseType: 'stream',
+        timeout: 15000
+      });
+      const respHeaders = {
+        'Content-Type': streamResp.headers['content-type'] || 'video/mp4',
+        'Accept-Ranges': 'bytes',
+        'Access-Control-Allow-Origin': '*'
+      };
+      if (streamResp.headers['content-range']) respHeaders['Content-Range'] = streamResp.headers['content-range'];
+      if (streamResp.headers['content-length']) respHeaders['Content-Length'] = streamResp.headers['content-length'];
+      res.writeHead(streamResp.status, respHeaders);
+      streamResp.data.pipe(res);
+    } catch (err) {
+      res.writeHead(502, { 'Content-Type': 'text/plain' });
+      res.end('Media stream error: ' + err.message);
+    }
+    return;
   }
 
   // 2. PROXY EMBED KHUSUS ANIME (OTAKUDESU / DESUSTREAM)
@@ -1902,6 +2178,16 @@ async function handleMovieRequest(req, res, url) {
                 `).join('')}
               </div>
 
+              <!-- Switcher Mode Player: Lokal vs Embed -->
+              <div class="player-type-toggle" style="display:inline-flex;align-items:center;background:var(--surface-soft);padding:2px;border-radius:var(--r-pill);border:1px solid var(--border);gap:2px;">
+                <button class="player-mode-btn active" id="btnLocalMode" onclick="setPlayerMode('local')" title="Player Video Lokal Callista dengan Kontrol Penuh & Sinkronisasi Nobar" style="padding:4px 10px;border-radius:var(--r-pill);border:none;background:var(--mode-accent);color:#fff;font-size:0.72rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
+                  <span>⚡</span><span>Player Lokal</span>
+                </button>
+                <button class="player-mode-btn" id="btnEmbedMode" onclick="setPlayerMode('embed')" title="Player Web Bawaan Server" style="padding:4px 10px;border-radius:var(--r-pill);border:none;background:transparent;color:var(--txt-2);font-size:0.72rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
+                  <span>🌐</span><span>Embed Web</span>
+                </button>
+              </div>
+
               <div class="action-row">
                 <button class="act-btn on" id="adBtn" onclick="toggleAdShield()">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
@@ -1925,8 +2211,13 @@ async function handleMovieRequest(req, res, url) {
             <div class="video-box" id="videoBox">
               <div class="video-loader" id="playerLoader">
                 <div class="spinner"></div>
-                <span>Menyiapkan Video…</span>
+                <span id="loaderText">Menyiapkan Video…</span>
               </div>
+
+              <!-- 1. Player Video Lokal HTML5 Callista (Bisa di-play/pause/seek realtime nobar) -->
+              <video id="callistaVideo" playsinline controls preload="metadata" style="display:none;width:100%;height:100%;background:#000;position:absolute;inset:0;z-index:3;"></video>
+
+              <!-- 2. Iframe Fallback Embed Stream -->
               <iframe id="playerFrame" src="${initSrc}"
                 allowfullscreen webkitallowfullscreen mozallowfullscreen
                 scrolling="no" frameborder="0"
@@ -2424,7 +2715,9 @@ function isMovieRoute(pathname) {
   return pathname === '/'
     || pathname === '/anime-embed'
     || pathname === '/api/movie/settings'
-    || pathname === '/api/settings';
+    || pathname === '/api/settings'
+    || pathname === '/api/resolve-media'
+    || pathname === '/media-stream';
 }
 
 module.exports = {

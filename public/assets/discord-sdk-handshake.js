@@ -25,7 +25,7 @@
 
   const clientId = sp.get('client_id') || (function() {
     try { return sessionStorage.getItem('dc_client_id'); } catch (_) { return null; }
-  })() || '1347881958286262334';
+  })() || '1561650922281762836';
 
   const rpcSource = (window.parent && window.parent.opener) ? window.parent.opener : window.parent;
   if (!rpcSource) return;
