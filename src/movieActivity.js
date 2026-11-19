@@ -1086,7 +1086,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       width: 260px !important;
       max-width: 260px !important;
       min-width: unset !important;
-      z-index: 999 !important;
+      z-index: 1000 !important;
       transform: translateX(-100%) !important;
       transition: transform 0.25s ease !important;
       box-shadow: 4px 0 24px rgba(0,0,0,0.35) !important;
@@ -1102,13 +1102,13 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     html.activity-mode-on #appSidebar.open {
       transform: translateX(0) !important;
     }
-    /* Backdrop untuk menutup sidebar saat klik di luar */
+    /* Backdrop untuk menutup sidebar saat klik di luar (z-index di belakang sidebar & episode panel) */
     .sidebar-backdrop {
-      display: none; position: fixed; inset: 0; z-index: 998;
-      background: rgba(0,0,0,0.4); backdrop-filter: blur(2px);
+      display: none; position: fixed; inset: 0; z-index: 995;
+      background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     }
     html.activity-mode-on .sidebar-backdrop.show { display: block; }
-    /* Episode panel di activity: overlay dari kanan, bukan geser layout */
+    /* Episode panel di activity: overlay dari kanan, berdiri di atas backdrop */
     html.activity-mode-on aside.episode-panel,
     html.activity-mode-on .episode-panel {
       position: fixed !important;
@@ -1117,7 +1117,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       bottom: 0 !important;
       width: var(--ep-panel-w) !important;
       max-width: 90vw !important;
-      z-index: 997 !important;
+      z-index: 1001 !important;
       transform: translateX(100%) !important;
       transition: transform 0.25s ease !important;
       box-shadow: -4px 0 24px rgba(0,0,0,0.35) !important;
@@ -1312,6 +1312,13 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       transform: translateY(-2px) scale(1.05);
       background: rgba(25, 27, 42, 0.98);
       box-shadow: 0 12px 28px rgba(0,0,0,0.65), 0 0 18px rgba(123,115,240,0.65);
+    }
+    /* Sembunyikan tombol floating episode saat panel episode terbuka */
+    body.episode-open .activity-ep-floating-btn {
+      display: none !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
     }
 
     /* Global Page Transition Overlay (Hitam transparan dengan tittle.png & ring loader) */
@@ -1595,6 +1602,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       if (!ep) return;
       const isOpen = ep.classList.toggle('open');
       if (bd) bd.classList.toggle('show', isOpen);
+      document.body.classList.toggle('episode-open', isOpen);
     }
 
     // Global Page Transition Loading Functions
