@@ -198,7 +198,7 @@ async function scrapeSidebar(mode) {
 function renderSidebar(sidebar, mode, activeCat = '') {
   return `
     <aside class="app-sidebar" id="appSidebar">
-      <button class="sidebar-close-btn" onclick="toggleSidebar()" aria-label="Tutup Sidebar">
+      <button class="sidebar-close-btn" data-action="toggleSidebar" aria-label="Tutup Sidebar">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
@@ -330,7 +330,7 @@ function renderEpisodePanel(episodeList, currentUrl, mode) {
         </svg>
         <span>Episode</span>
         <span class="ep-panel-count">${episodeList.length}</span>
-        <button class="ep-close-btn" onclick="toggleEpisodePanel()" title="Tutup Episode">&times;</button>
+        <button class="ep-close-btn" data-action="toggleEpisodePanel" title="Tutup Episode">&times;</button>
       </div>
       <div class="ep-panel-scroll">
         <div class="ep-grid-blocks">
@@ -365,13 +365,13 @@ function renderKamarHome(isActivity = false) {
           </svg>
           <span>Dashboard Bot</span>
         </a>` : ''}
-        <button class="kamar-ctrl-btn" onclick="openSettingsModal()" title="Pengaturan Domain Scraper">
+        <button class="kamar-ctrl-btn" data-action="openSettingsModal" title="Pengaturan Domain Scraper">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
           </svg>
           <span>Domain Scraper</span>
         </button>
-        <button class="kamar-ctrl-btn" onclick="toggleTheme()" id="kamarThemeBtn">
+        <button class="kamar-ctrl-btn" data-action="toggleTheme" id="kamarThemeBtn">
           <span>🌙/☀️</span>
           <span>Tema</span>
         </button>
@@ -444,24 +444,9 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
   <!-- Discord Embedded App SDK: Bundle Resmi & Standalone Handshake -->
   <script src="/assets/discord-sdk.js"></script>
   <script src="/assets/discord-sdk-handshake.js"></script>
-  <script>
-    (async function initOfficialDiscordSdk() {
-      if (typeof window === 'undefined') return;
-      const sp = new URLSearchParams(window.location.search);
-      const frameId = sp.get('frame_id') || (function() { try { return sessionStorage.getItem('dc_frame_id'); } catch (_) { return null; } })();
-      if (!frameId) return;
-      const clientId = sp.get('client_id') || (function() { try { return sessionStorage.getItem('dc_client_id'); } catch (_) { return null; } })() || '1561650922281762836';
-      if (window.DiscordSDK && window.DiscordSDK.DiscordSDK) {
-        try {
-          const sdk = new window.DiscordSDK.DiscordSDK(clientId);
-          await sdk.ready();
-          console.log('[DISCORD_SDK] Official SDK ready signal sent to Discord Desktop/Web!');
-        } catch (e) {
-          console.warn('[DISCORD_SDK] SDK ready warning:', e.message || e);
-        }
-      }
-    })();
-  </script>
+  <!-- Movie Player: semua client JS eksternal, CSP-compliant untuk Discord Desktop -->
+  <script src="/assets/movie-player.js"></script>
+
   <style>
     /* ═══════════════════════════════════════════════════════
        DESIGN TOKENS — KAMAR CALLISTA PASTEL SMOOTH
@@ -1400,13 +1385,13 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
   <!-- Floating Emoji Reaction Layer -->
   <div class="floating-emoji-layer" id="emojiLayer"></div>
   <!-- Sidebar backdrop (activity mode) -->
-  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
+  <div class="sidebar-backdrop" id="sidebarBackdrop" data-action="closeSidebar"></div>
 
   ${isHome ? contentHtml : `
     <!-- NAVBAR (Hanya muncul saat browsing Drama/Anime) -->
     <header class="navbar">
       <div class="nav-left">
-        <button class="nav-toggle-btn" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+        <button class="nav-toggle-btn" data-action="toggleSidebar" aria-label="Toggle Sidebar">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>
           </svg>
@@ -1443,7 +1428,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       </div>
 
       <div class="nav-right">
-        <button class="nav-icon-btn" onclick="toggleTheme()" title="Ganti Tema">
+        <button class="nav-icon-btn" data-action="toggleTheme" title="Ganti Tema">
           <span id="themeEmoji">🌙</span>
         </button>
       </div>
@@ -1463,11 +1448,11 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
           </div>
 
           <div class="reaction-bar">
-            <button class="react-btn" onclick="sendReaction('🍿')" title="Popcorn">🍿</button>
-            <button class="react-btn" onclick="sendReaction('❤️')" title="Love">❤️</button>
-            <button class="react-btn" onclick="sendReaction('😭')" title="Sedih">😭</button>
-            <button class="react-btn" onclick="sendReaction('🤣')" title="Ketawa">🤣</button>
-            <button class="react-btn" onclick="sendReaction('🔥')" title="Keren">🔥</button>
+            <button class="react-btn" data-action="sendReaction" data-emoji="🍿" title="Popcorn">🍿</button>
+            <button class="react-btn" data-action="sendReaction" data-emoji="❤️" title="Love">❤️</button>
+            <button class="react-btn" data-action="sendReaction" data-emoji="😭" title="Sedih">😭</button>
+            <button class="react-btn" data-action="sendReaction" data-emoji="🤣" title="Ketawa">🤣</button>
+            <button class="react-btn" data-action="sendReaction" data-emoji="🔥" title="Keren">🔥</button>
           </div>
         </div>
 
@@ -1475,7 +1460,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       </main>
       ${episodePanelHtml}
       ${(isActivity && episodePanelHtml) ? `
-        <button class="activity-ep-floating-btn" onclick="toggleEpisodePanel()" title="Buka Daftar Episode">
+        <button class="activity-ep-floating-btn" data-action="toggleEpisodePanel" title="Buka Daftar Episode">
           <span style="font-size:1.15rem">📺</span>
           <span>Episode</span>
         </button>
@@ -1497,7 +1482,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     <div class="modal-card">
       <div class="modal-header">
         <h3 class="modal-title">Pengaturan Domain Scraper</h3>
-        <button class="modal-close" onclick="closeSettingsModal()">&times;</button>
+        <button class="modal-close" data-action="closeSettingsModal">&times;</button>
       </div>
       <div class="modal-body">
         <div class="modal-field">
@@ -1510,700 +1495,14 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn-cancel" onclick="closeSettingsModal()">Batal</button>
-        <button class="btn-save" onclick="saveDomainSettings()">Simpan</button>
+        <button class="btn-cancel" data-action="closeSettingsModal">Batal</button>
+        <button class="btn-save" data-action="saveDomainSettings">Simpan</button>
       </div>
     </div>
   </div>
 
-  <script>
-    // Auto-detect Discord Activity environment
-    const isDiscordEnv = (function() {
-      const sp = new URLSearchParams(window.location.search);
-      if (sp.has('frame_id') || sp.has('instance_id')) return true;
-      if (window.location.hostname.includes('discordsays.com')) return true;
-      try { if (sessionStorage.getItem('dc_frame_id')) return true; } catch (_) {}
-      return false;
-    })();
-    // Expose for SDK handshake
-    window.isDiscordEnv = isDiscordEnv;
+  <!-- movie-player.js sudah di-load di head; semua JS ada di sana -->
 
-    // Theme Switcher
-    function toggleTheme() {
-      const html = document.documentElement;
-      const current = html.getAttribute('data-theme') || 'light';
-      const next = current === 'dark' ? 'light' : 'dark';
-      html.setAttribute('data-theme', next);
-      localStorage.setItem('callista_theme', next);
-      updateThemeEmoji();
-    }
-
-    function updateThemeEmoji() {
-      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-      const el = document.getElementById('themeEmoji');
-      if (el) el.textContent = isDark ? '☀️' : '🌙';
-    }
-
-    const savedTheme = localStorage.getItem('callista_theme');
-    if (savedTheme) {
-      document.documentElement.setAttribute('data-theme', savedTheme);
-      updateThemeEmoji();
-    }
-
-    // Modal Settings
-    function openSettingsModal() {
-      const m = document.getElementById('settingsModal');
-      if (m) m.style.display = 'flex';
-    }
-    function closeSettingsModal() {
-      const m = document.getElementById('settingsModal');
-      if (m) m.style.display = 'none';
-    }
-    async function saveDomainSettings() {
-      const drama = document.getElementById('cfgDrama').value.trim();
-      const anime = document.getElementById('cfgAnime').value.trim();
-      try {
-        const res = await fetch('/api/movie/settings', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ domainDrama: drama, domainAnime: anime })
-        });
-        const data = await res.json();
-        if (data.success) {
-          alert('Pengaturan domain berhasil disimpan!');
-          location.reload();
-        } else {
-          alert('Gagal menyimpan pengaturan.');
-        }
-      } catch (err) {
-        alert('Error: ' + err.message);
-      }
-    }
-
-    // Sidebar & Player Utilities
-    function toggleSidebar() {
-      const sb = document.getElementById('appSidebar');
-      const bd = document.getElementById('sidebarBackdrop');
-      if (!sb) return;
-      const isOpen = sb.classList.toggle('open');
-      if (bd) bd.classList.toggle('show', isOpen);
-    }
-
-    function closeSidebar() {
-      const sb = document.getElementById('appSidebar');
-      const ep = document.getElementById('episodePanel');
-      const bd = document.getElementById('sidebarBackdrop');
-      if (sb) sb.classList.remove('open');
-      if (ep) ep.classList.remove('open');
-      if (bd) bd.classList.remove('show');
-    }
-
-    function toggleEpisodePanel() {
-      const ep = document.getElementById('episodePanel');
-      const bd = document.getElementById('sidebarBackdrop');
-      if (!ep) return;
-      const isOpen = ep.classList.toggle('open');
-      if (bd) bd.classList.toggle('show', isOpen);
-      document.body.classList.toggle('episode-open', isOpen);
-    }
-
-    // Global Page Transition Loading Functions
-    function showPageLoading(text) {
-      const el = document.getElementById('pageTransitionOverlay');
-      const txt = document.getElementById('pageTransitionText');
-      if (!el) return;
-      if (txt && text) txt.textContent = text;
-      el.style.display = 'flex';
-    }
-
-    function hidePageLoading() {
-      const el = document.getElementById('pageTransitionOverlay');
-      if (el) el.style.display = 'none';
-    }
-
-    // Intercept link clicks untuk menampilkan overlay transisi loading
-    document.addEventListener('click', function(e) {
-      const a = e.target.closest('a[href]');
-      if (!a) return;
-      const href = a.getAttribute('href');
-      if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
-      if (a.target === '_blank') return;
-      if (document.body.classList.contains('is-viewer') && document.documentElement.classList.contains('activity-mode-on')) {
-        return;
-      }
-      showPageLoading('Membuka ' + (a.textContent.trim().substring(0, 25) || 'halaman') + '…');
-    });
-
-    window.addEventListener('beforeunload', function() {
-      showPageLoading('Memuat tayangan…');
-    });
-
-    function toggleAdShield() {
-      const btn = document.getElementById('adBtn');
-      const lbl = document.getElementById('adLbl');
-      if (!btn) return;
-      const isOn = btn.classList.toggle('on');
-      lbl.textContent = isOn ? 'Shield: ON' : 'Shield: OFF';
-    }
-
-    // Activity Mode Toggle
-    function toggleActivityMode() {
-      const html = document.documentElement;
-      const isNow = html.classList.toggle('activity-mode-on');
-      const btnText = document.getElementById('actToggleText');
-      if (btnText) btnText.textContent = isNow ? 'Keluar Activity' : 'Mode Activity';
-      
-      const url = new URL(window.location.href);
-      if (isNow) {
-        url.searchParams.set('activity', '1');
-      } else {
-        url.searchParams.delete('activity');
-        url.searchParams.set('activity', '0'); // Explicit disable agar cookie dihapus
-      }
-      window.location.href = url.toString();
-    }
-
-    // ══════════════════════════════════════════════════
-    // WEBSOCKET REALTIME SYNC (HOST vs VIEWER NOBAR VC)
-    // ══════════════════════════════════════════════════
-    window.isHost = false;
-    window._wsReady = false;
-    window._currentPlayerMode = 'local';
-    window._isInternalMediaSync = false;
-    let ws = null;
-
-    // Client ID persisten per browser tab/sesi lokal (TIDAK pernah dikirim lewat URL agar tidak bocor)
-    const myClientId = (function() {
-      let cid = '';
-      try { cid = sessionStorage.getItem('callista_client_id'); } catch (_) {}
-      if (!cid) {
-        cid = 'c_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 9);
-        try { sessionStorage.setItem('callista_client_id', cid); } catch (_) {}
-      }
-      return cid;
-    })();
-
-    // Helper: Simpan & baca parameter Discord dari sessionStorage agar tidak hilang saat navigasi
-    function getStoredDcParam(name) {
-      const sp = new URLSearchParams(window.location.search);
-      const v = sp.get(name);
-      if (v) {
-        try { sessionStorage.setItem('dc_' + name, v); } catch (_) {}
-        return v;
-      }
-      try { return sessionStorage.getItem('dc_' + name); } catch (_) { return null; }
-    }
-
-    function buildActivityUrl(targetPath) {
-      const u = new URL(targetPath, window.location.origin);
-      u.searchParams.set('activity', '1');
-      // Bersihkan param user_id/uid/cid dari URL agar identitas lokal tetap terisolasi
-      u.searchParams.delete('user_id');
-      u.searchParams.delete('uid');
-      u.searchParams.delete('cid');
-      ['frame_id', 'instance_id', 'client_id', 'platform', 'channel_id', 'guild_id'].forEach(function(p) {
-        const val = getStoredDcParam(p);
-        if (val && !u.searchParams.has(p)) {
-          u.searchParams.set(p, val);
-        }
-      });
-      return u.pathname + u.search;
-    }
-
-    // Room ID: Dipastikan 100% KONSISTEN untuk semua pengguna di Voice Channel yang sama
-    const currentRoomId = (function() {
-      const cId = getStoredDcParam('channel_id');
-      if (cId) return cId;
-      const iId = getStoredDcParam('instance_id');
-      if (iId) return iId;
-      return 'callista-nobar-shared';
-    })();
-
-    function showSyncToast(text) {
-      const toast = document.getElementById('syncToast');
-      if (!toast) return;
-      toast.textContent = text;
-      toast.style.display = 'block';
-      clearTimeout(toast._timer);
-      toast._timer = setTimeout(function() { toast.style.display = 'none'; }, 2600);
-    }
-
-    function updateRoleUI(isHostNow) {
-      window.isHost = isHostNow;
-      document.body.classList.toggle('is-host', isHostNow);
-      document.body.classList.toggle('is-viewer', !isHostNow);
-
-      const roleBadge = document.getElementById('roleBadge');
-      if (roleBadge) {
-        roleBadge.textContent = isHostNow ? '👑 Host' : '👁️ Penonton';
-        roleBadge.className = 'role-badge ' + (isHostNow ? 'role-badge-host' : 'role-badge-viewer');
-      }
-
-      const v = document.getElementById('callistaVideo');
-      const viewerBar = document.getElementById('viewerControlBar');
-      if (v) {
-        if (isHostNow) {
-          v.controls = true;
-          if (viewerBar) viewerBar.style.display = 'none';
-        } else {
-          v.controls = false; // NON-HOST DILARANG KERAS MENGATUR PLAYER!
-          if (viewerBar) viewerBar.style.display = 'flex';
-        }
-      }
-    }
-
-    function setViewerVolume(val) {
-      const v = document.getElementById('callistaVideo');
-      if (v) {
-        v.volume = parseFloat(val);
-        v.muted = (parseFloat(val) === 0);
-        const icon = document.getElementById('viewerVolIcon');
-        if (icon) icon.textContent = v.muted ? '🔇' : (v.volume < 0.5 ? '🔉' : '🔊');
-      }
-    }
-
-    function toggleViewerMute() {
-      const v = document.getElementById('callistaVideo');
-      const slider = document.getElementById('viewerVolSlider');
-      const icon = document.getElementById('viewerVolIcon');
-      if (!v) return;
-      v.muted = !v.muted;
-      if (v.muted) {
-        if (icon) icon.textContent = '🔇';
-      } else {
-        if (icon) icon.textContent = v.volume < 0.5 ? '🔉' : '🔊';
-        if (slider && v.volume === 0) { v.volume = 0.5; slider.value = 0.5; }
-      }
-    }
-
-    function notifyHostNavigate(route, title) {
-      if (ws && ws.readyState === WebSocket.OPEN && window.isHost) {
-        ws.send(JSON.stringify({ type: 'HOST_NAVIGATE', route, title }));
-      }
-    }
-
-    function sendMediaSync(isPlaying) {
-      if (window._isInternalMediaSync || !window.isHost) return;
-      const v = document.getElementById('callistaVideo');
-      if (v && ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({
-          type: 'HOST_MEDIA_STATE',
-          src: v.src,
-          time: v.currentTime,
-          isPlaying: isPlaying !== undefined ? isPlaying : !v.paused
-        }));
-      }
-    }
-
-    function syncViewerToMediaState(mState) {
-      if (!mState || window.isHost) return;
-      const v = document.getElementById('callistaVideo');
-      if (!v) return;
-
-      if (mState.src && v.src !== mState.src) {
-        v.src = mState.src;
-        v.style.display = 'block';
-        const frame = document.getElementById('playerFrame');
-        if (frame) frame.style.display = 'none';
-        const loader = document.getElementById('playerLoader');
-        if (loader) loader.style.display = 'none';
-      }
-
-      let targetTime = mState.time || 0;
-      if (mState.isPlaying && mState.lastUpdate) {
-        const elapsed = (Date.now() - mState.lastUpdate) / 1000;
-        targetTime += elapsed;
-      }
-
-      if (Math.abs(v.currentTime - targetTime) > 1.2) {
-        window._isInternalMediaSync = true;
-        v.currentTime = targetTime;
-        setTimeout(function() { window._isInternalMediaSync = false; }, 350);
-      }
-
-      if (mState.isPlaying && v.paused) {
-        v.play().catch(function() {});
-      } else if (!mState.isPlaying && !v.paused) {
-        v.pause();
-      }
-    }
-
-    function initActivityWebSocket() {
-      if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
-
-      const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
-      const wsUrl = proto + location.host + '/ws/activity?room=' + encodeURIComponent(currentRoomId) + '&cid=' + encodeURIComponent(myClientId);
-
-      try {
-        ws = new WebSocket(wsUrl);
-        ws.onopen = function() {
-          window._wsReady = true;
-          console.log('[NOBAR WS] Connected, room:', currentRoomId, 'cid:', myClientId);
-        };
-        ws.onmessage = function(event) {
-          try { handleWsIncoming(JSON.parse(event.data)); } catch (_) {}
-        };
-        ws.onclose = function() {
-          window._wsReady = false;
-          setTimeout(function() {
-            if (isDiscordEnv && document.documentElement.classList.contains('activity-mode-on')) {
-              initActivityWebSocket();
-            }
-          }, 2500);
-        };
-        ws.onerror = function() { ws.close(); };
-      } catch (e) {
-        console.warn('[NOBAR WS] Connection failed:', e.message);
-      }
-    }
-
-    function handleWsIncoming(data) {
-      if (data.type === 'INIT_STATE') {
-        updateRoleUI(data.isHost);
-        const countEl = document.getElementById('roomMemberCount');
-        if (countEl && data.count) countEl.textContent = '👥 ' + data.count + ' Penonton';
-
-        // Sinkronisasi mutlak: jika penonton baru join dan host sedang buka rute tertentu (bukan di rute ini)
-        if (!data.isHost && data.currentRoute) {
-          const currentClean = (window.location.pathname + window.location.search)
-            .replace(/[?&](activity|frame_id|instance_id|client_id|platform|channel_id|guild_id|user_id|cid|uid)=[^&]*/g, '')
-            .replace(/[?&]$/, '');
-          const hostClean = data.currentRoute
-            .replace(/[?&](activity|frame_id|instance_id|client_id|platform|channel_id|guild_id|user_id|cid|uid)=[^&]*/g, '')
-            .replace(/[?&]$/, '');
-
-          if (hostClean && hostClean !== currentClean) {
-            showSyncToast('🎬 Menyelaraskan ke tayangan Host…');
-            showPageLoading('🎬 Menyelaraskan ke tayangan Host…');
-            setTimeout(function() {
-              window.location.href = buildActivityUrl(data.currentRoute);
-            }, 250);
-            return;
-          }
-        }
-
-        // Jika rute sudah cocok dan host sedang memutar video, sinkronkan video & menitnya langsung
-        if (!data.isHost && data.mediaState && data.mediaState.src) {
-          setTimeout(function() {
-            syncViewerToMediaState(data.mediaState);
-          }, 500);
-        }
-      } else if (data.type === 'NAVIGATE_TO') {
-        if (!window.isHost && data.route) {
-          showSyncToast('🎬 Host membuka: ' + (data.title || 'tayangan baru'));
-          showPageLoading('🎬 Host membuka: ' + (data.title || 'tayangan baru') + '…');
-          setTimeout(function() {
-            window.location.href = buildActivityUrl(data.route);
-          }, 200);
-        }
-      } else if (data.type === 'HOST_CLOSED_SESSION') {
-        showSyncToast('🎬 ' + (data.message || 'Host telah keluar. Sesi nobar selesai.'));
-        showPageLoading('Host telah keluar. Sesi nobar selesai…');
-        setTimeout(function() {
-          try { sessionStorage.removeItem('callista_client_id'); } catch (_) {}
-          window.location.href = '/';
-        }, 1200);
-      } else if (data.type === 'MEDIA_SYNC') {
-        if (!window.isHost) {
-          syncViewerToMediaState(data);
-        }
-      } else if (data.type === 'USER_COUNT') {
-        const countEl = document.getElementById('roomMemberCount');
-        if (countEl) countEl.textContent = '👥 ' + data.count + ' Penonton';
-      } else if (data.type === 'ROLE_UPDATE') {
-        updateRoleUI(data.isHost);
-        showSyncToast(data.isHost ? '👑 Anda sekarang Host!' : '👁️ Peran berpindah ke Penonton');
-      } else if (data.type === 'REACTION') {
-        spawnFloatingEmoji(data.emoji);
-      } else if (data.type === 'CHANGE_SERVER') {
-        // Viewer: host ganti server → ikuti otomatis
-        if (!window.isHost) {
-          showSyncToast('🔄 Host ganti server: ' + (data.name || 'baru'));
-          const frame = document.getElementById('playerFrame');
-          const loader = document.getElementById('playerLoader');
-          // Aktifkan tombol server yang sesuai (cari berdasarkan src)
-          document.querySelectorAll('.srv-btn').forEach(function(b) {
-            b.classList.toggle('active', b.getAttribute('onclick') && b.getAttribute('onclick').includes(JSON.stringify(data.src)));
-          });
-          if (loader) loader.style.display = 'flex';
-          if (frame) frame.src = data.src;
-          if (window._currentPlayerMode === 'local') {
-            loadMediaToLocalPlayer(data.src);
-          } else {
-            setTimeout(function() {
-              if (loader) loader.style.display = 'none';
-            }, 1500);
-          }
-        }
-      }
-    }
-
-    // ══════════════════════════════════════════════════
-    // PLAYER LOKAL: KONTROL MEDIA MANDIRI & SINKRONISASI
-    // ══════════════════════════════════════════════════
-    function initCallistaVideoEvents() {
-      const v = document.getElementById('callistaVideo');
-      if (!v || v._eventsInitialized) return;
-      v._eventsInitialized = true;
-
-      // Host Play event -> broadcast ke semua Viewer
-      v.addEventListener('play', function() {
-        sendMediaSync(true);
-      });
-
-      // Host Pause event -> broadcast ke semua Viewer
-      v.addEventListener('pause', function() {
-        sendMediaSync(false);
-      });
-
-      // Host Seek event -> broadcast ke semua Viewer
-      v.addEventListener('seeked', function() {
-        sendMediaSync(!v.paused);
-      });
-    }
-
-    // Heartbeat berkala sinkronisasi Host setiap 3 detik
-    setInterval(function() {
-      if (window.isHost && ws && ws.readyState === WebSocket.OPEN) {
-        const v = document.getElementById('callistaVideo');
-        if (v && v.src && !v.paused) {
-          sendMediaSync(true);
-        }
-      }
-    }, 3000);
-
-    async function loadMediaToLocalPlayer(sourceUrl) {
-      const v = document.getElementById('callistaVideo');
-      const frame = document.getElementById('playerFrame');
-      const loader = document.getElementById('playerLoader');
-      const loaderText = document.getElementById('loaderText');
-
-      if (!v) return;
-      if (loader) {
-        if (loaderText) loaderText.textContent = 'Menyiapkan Player Lokal…';
-        loader.style.display = 'flex';
-      }
-
-      try {
-        const resp = await fetch('/api/resolve-media?url=' + encodeURIComponent(sourceUrl));
-        const res = await resp.json();
-
-        if (res.success && (res.directUrl || res.rawUrl)) {
-          initCallistaVideoEvents();
-          const isAct = document.documentElement.classList.contains('activity-mode-on') || isDiscordEnv;
-          const targetSrc = (isAct && res.proxyUrl) ? res.proxyUrl : (res.directUrl || res.rawUrl);
-          const isHLS = /\.m3u8/i.test(targetSrc);
-
-          // Bersihkan HLS instance sebelumnya jika ada
-          if (window._hlsInstance) {
-            window._hlsInstance.destroy();
-            window._hlsInstance = null;
-          }
-
-          if (isHLS && window.Hls && window.Hls.isSupported()) {
-            // HLS.js path: wajib untuk Electron/Discord Desktop yang tidak support HLS native
-            const hls = new window.Hls({
-              enableWorker: false, // lebih stabil di Electron sandbox
-              xhrSetup: function(xhr, url) {
-                // Semua segment HLS juga lewat proxy agar lolos CSP
-                if (!url.startsWith('/') && !url.startsWith(window.location.origin)) {
-                  xhr.open('GET', '/media-stream?url=' + encodeURIComponent(url), true);
-                }
-              }
-            });
-            window._hlsInstance = hls;
-            hls.loadSource(targetSrc);
-            hls.attachMedia(v);
-            hls.on(window.Hls.Events.MANIFEST_PARSED, function() {
-              if (loader) loader.style.display = 'none';
-              v.play().catch(function() {});
-            });
-            hls.on(window.Hls.Events.ERROR, function(event, data) {
-              if (data.fatal) {
-                console.warn('[HLS] Fatal error, fallback ke embed:', data);
-                hls.destroy();
-                window._hlsInstance = null;
-                setPlayerMode('embed');
-              }
-            });
-          } else if (isHLS && v.canPlayType('application/vnd.apple.mpegurl')) {
-            // Safari native HLS
-            v.src = targetSrc;
-            v.onloadedmetadata = function() { if (loader) loader.style.display = 'none'; };
-            v.onerror = function() { setPlayerMode('embed'); };
-          } else if (!isHLS) {
-            // MP4 / langsung
-            v.src = targetSrc;
-            v.onloadedmetadata = function() { if (loader) loader.style.display = 'none'; };
-            v.onerror = function() {
-              console.warn('[PLAYER] Video error with', v.src, ', trying fallback...');
-              if (res.proxyUrl && v.src !== res.proxyUrl) {
-                v.src = res.proxyUrl;
-                v.onerror = function() { setPlayerMode('embed'); };
-              } else if (res.directUrl && v.src !== res.directUrl) {
-                v.src = res.directUrl;
-                v.onerror = function() { setPlayerMode('embed'); };
-              } else {
-                setPlayerMode('embed');
-              }
-            };
-          } else {
-            // HLS tapi Hls.js tidak ada dan browser tidak support → embed
-            setPlayerMode('embed');
-          }
-
-          v.style.display = 'block';
-          if (frame) frame.style.display = 'none';
-          document.getElementById('btnLocalMode')?.classList.add('active');
-          document.getElementById('btnEmbedMode')?.classList.remove('active');
-          window._currentPlayerMode = 'local';
-        } else {
-          setPlayerMode('embed');
-        }
-      } catch (err) {
-        setPlayerMode('embed');
-      } finally {
-        if (loader) loader.style.display = 'none';
-      }
-    }
-
-    function setPlayerMode(mode) {
-      if (!window.isHost && window._wsReady) {
-        showSyncToast('👁️ Hanya Host yang dapat mengubah mode player');
-        return;
-      }
-      window._currentPlayerMode = mode;
-      const v = document.getElementById('callistaVideo');
-      const frame = document.getElementById('playerFrame');
-      const btnLocal = document.getElementById('btnLocalMode');
-      const btnEmbed = document.getElementById('btnEmbedMode');
-
-      if (mode === 'local') {
-        if (v && v.src) {
-          v.style.display = 'block';
-          if (frame) frame.style.display = 'none';
-          btnLocal?.classList.add('active');
-          btnEmbed?.classList.remove('active');
-        } else {
-          const currentFrameSrc = frame ? frame.src : '';
-          loadMediaToLocalPlayer(currentFrameSrc);
-        }
-      } else {
-        if (v) {
-          v.pause();
-          v.style.display = 'none';
-        }
-        if (frame) frame.style.display = 'block';
-        btnEmbed?.classList.add('active');
-        btnLocal?.classList.remove('active');
-      }
-    }
-
-    function changeServer(btn, src) {
-      if (!window.isHost && window._wsReady) {
-        showSyncToast('👁️ Hanya Host yang dapat mengganti server');
-        return;
-      }
-      document.querySelectorAll('.srv-btn').forEach(function(b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      const frame = document.getElementById('playerFrame');
-      const loader = document.getElementById('playerLoader');
-      if (loader) loader.style.display = 'flex';
-      if (frame) {
-        frame.src = src;
-      }
-      if (window._currentPlayerMode === 'local') {
-        loadMediaToLocalPlayer(src);
-      }
-      // Broadcast CHANGE_SERVER ke semua viewer
-      if (ws && ws.readyState === WebSocket.OPEN && window.isHost) {
-        ws.send(JSON.stringify({
-          type: 'HOST_CHANGE_SERVER',
-          src: src,
-          name: btn.textContent.trim()
-        }));
-      }
-    }
-
-    function onFrameLoad() {
-      const loader = document.getElementById('playerLoader');
-      if (loader) loader.style.display = 'none';
-      const v = document.getElementById('callistaVideo');
-      if (v && !v.src) {
-        const frame = document.getElementById('playerFrame');
-        if (frame && frame.src) {
-          loadMediaToLocalPlayer(frame.src);
-        }
-      }
-    }
-
-    function sendReaction(emoji) {
-      spawnFloatingEmoji(emoji);
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'REACTION', emoji: emoji }));
-      }
-    }
-
-    function spawnFloatingEmoji(emoji) {
-      const layer = document.getElementById('emojiLayer');
-      if (!layer) return;
-      const el = document.createElement('div');
-      el.className = 'floating-emoji';
-      el.textContent = emoji;
-      el.style.left = (Math.random() * 80 + 10) + 'vw';
-      layer.appendChild(el);
-      setTimeout(function() { el.remove(); }, 2500);
-    }
-
-    // Tombol fullscreen manual (support CSS theater view + native browser fullscreen)
-    function toggleVideoFullscreen() {
-      const box = document.getElementById('videoBox');
-      const btn = document.getElementById('fsBtnText');
-      if (!box) return;
-      const isFs = box.classList.toggle('fs-active');
-      document.body.classList.toggle('in-fullscreen', isFs);
-      if (btn) btn.textContent = isFs ? 'Tutup' : 'Fullscreen';
-      document.body.style.overflow = isFs ? 'hidden' : '';
-
-      if (isFs && document.fullscreenEnabled && !document.fullscreenElement) {
-        try { box.requestFullscreen().catch(function() {}); } catch (_) {}
-      } else if (!isFs && document.fullscreenElement) {
-        try { document.exitFullscreen().catch(function() {}); } catch (_) {}
-      }
-    }
-
-    // Intercept klik navigasi di mode activity
-    document.addEventListener('click', function(e) {
-      if (!document.documentElement.classList.contains('activity-mode-on')) return;
-      const a = e.target.closest('a[href]');
-      if (!a) return;
-      const href = a.getAttribute('href');
-      if (!href || href.startsWith('#') || a.pathname === '/settings') return;
-
-      // Proteksi Penonton: Cegah penonton mengacak-acak navigasi
-      if (!window.isHost) {
-        e.preventDefault();
-        showSyncToast('👁️ Hanya Host yang dapat memilih tayangan');
-        return;
-      }
-
-      // Host bernavigasi: Pertahankan parameter Discord & siarkan ke Penonton
-      if (a.origin === window.location.origin) {
-        e.preventDefault();
-        const nextUrl = buildActivityUrl(a.pathname + a.search);
-        notifyHostNavigate(nextUrl, a.textContent.trim() || document.title);
-        showPageLoading('Membuka ' + (a.textContent.trim().substring(0, 25) || 'tayangan') + '…');
-        setTimeout(function() {
-          window.location.href = nextUrl;
-        }, 120);
-      }
-    });
-
-    // Auto-connect WS hanya di Discord Activity (bukan plain browser)
-    if (isDiscordEnv && document.documentElement.classList.contains('activity-mode-on')) {
-      initActivityWebSocket();
-    }
-  </script>
 </body>
 </html>`;
 }
@@ -2683,7 +1982,7 @@ async function handleMovieRequest(req, res, url) {
                   Server:
                 </span>
                 ${mirrors.map((m,idx) => `
-                  <button class="srv-btn ${idx===0?'active':''}" onclick="changeServer(this,'${m.src}')">
+                  <button class="srv-btn ${idx===0?'active':''}" data-action="changeServer" data-src="${m.src}">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
                     ${m.name}
                   </button>
@@ -2692,24 +1991,24 @@ async function handleMovieRequest(req, res, url) {
 
               <!-- Switcher Mode Player: Lokal vs Embed -->
               <div class="player-type-toggle" style="display:inline-flex;align-items:center;background:var(--surface-soft);padding:2px;border-radius:var(--r-pill);border:1px solid var(--border);gap:2px;">
-                <button class="player-mode-btn active" id="btnLocalMode" onclick="setPlayerMode('local')" title="Player Video Lokal Callista dengan Kontrol Penuh & Sinkronisasi Nobar" style="padding:4px 10px;border-radius:var(--r-pill);border:none;background:var(--mode-accent);color:#fff;font-size:0.72rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
+                <button class="player-mode-btn active" id="btnLocalMode" data-action="setPlayerModeLocal" title="Player Video Lokal Callista dengan Kontrol Penuh & Sinkronisasi Nobar" style="padding:4px 10px;border-radius:var(--r-pill);border:none;background:var(--mode-accent);color:#fff;font-size:0.72rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
                   <span>⚡</span><span>Player Lokal</span>
                 </button>
-                <button class="player-mode-btn" id="btnEmbedMode" onclick="setPlayerMode('embed')" title="Player Web Bawaan Server" style="padding:4px 10px;border-radius:var(--r-pill);border:none;background:transparent;color:var(--txt-2);font-size:0.72rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
+                <button class="player-mode-btn" id="btnEmbedMode" data-action="setPlayerModeEmbed" title="Player Web Bawaan Server" style="padding:4px 10px;border-radius:var(--r-pill);border:none;background:transparent;color:var(--txt-2);font-size:0.72rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;">
                   <span>🌐</span><span>Embed Web</span>
                 </button>
               </div>
 
               <div class="action-row">
-                <button class="act-btn on" id="adBtn" onclick="toggleAdShield()">
+                <button class="act-btn on" id="adBtn" data-action="toggleAdShield">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                   <span id="adLbl">Shield: ON</span>
                 </button>
-                <button class="act-btn ep-toggle-btn" onclick="toggleEpisodePanel()" title="Daftar Episode">
+                <button class="act-btn ep-toggle-btn" data-action="toggleEpisodePanel" title="Daftar Episode">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
                   Episode
                 </button>
-                <button class="act-btn" onclick="reloadPlayer()">
+                <button class="act-btn" data-action="reloadPlayer">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
                     <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>
@@ -2734,8 +2033,8 @@ async function handleMovieRequest(req, res, url) {
 
               <!-- Viewer Control Bar (Non-Host: hanya kontrol volume & info sinkron) -->
               <div id="viewerControlBar" style="display:none;position:absolute;bottom:10px;left:10px;z-index:25;background:rgba(14,15,24,0.85);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);border-radius:30px;padding:5px 14px;align-items:center;gap:10px;color:#fff;font-size:0.75rem;">
-                <span id="viewerVolIcon" style="cursor:pointer;" onclick="toggleViewerMute()">🔊</span>
-                <input type="range" id="viewerVolSlider" min="0" max="1" step="0.05" value="1" style="width:75px;cursor:pointer;accent-color:var(--mode-accent);" oninput="setViewerVolume(this.value)">
+                <span id="viewerVolIcon" style="cursor:pointer;" data-action="toggleViewerMute">🔊</span>
+                <input type="range" id="viewerVolSlider" min="0" max="1" step="0.05" value="1" style="width:75px;cursor:pointer;accent-color:var(--mode-accent);" >
                 <span style="opacity:0.65;font-size:0.7rem;">| 👁️ Mengikuti Host</span>
               </div>
 
@@ -2744,9 +2043,9 @@ async function handleMovieRequest(req, res, url) {
                 allowfullscreen webkitallowfullscreen mozallowfullscreen
                 scrolling="no" frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; xr-spatial-tracking"
-                onload="onFrameLoad()">
+                >
               </iframe>
-              <button class="video-fullscreen-btn" onclick="toggleVideoFullscreen()" title="Fullscreen">
+              <button class="video-fullscreen-btn" data-action="toggleVideoFullscreen" title="Fullscreen">
                 <svg id="fsIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
                 </svg>
