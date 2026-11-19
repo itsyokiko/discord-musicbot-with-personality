@@ -439,6 +439,8 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
+  <!-- HLS.js: Native HLS support untuk Electron/Discord Desktop -->
+  <script src="/assets/hls.min.js"></script>
   <!-- Discord Embedded App SDK: Bundle Resmi & Standalone Handshake -->
   <script src="/assets/discord-sdk.js"></script>
   <script src="/assets/discord-sdk-handshake.js"></script>
@@ -1988,37 +1990,73 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
 
         if (res.success && (res.directUrl || res.rawUrl)) {
           initCallistaVideoEvents();
-          // Di Discord Desktop / Activity, prioritaskan res.proxyUrl agar lolos CSP Electron Discord
           const isAct = document.documentElement.classList.contains('activity-mode-on') || isDiscordEnv;
           const targetSrc = (isAct && res.proxyUrl) ? res.proxyUrl : (res.directUrl || res.rawUrl);
-          v.src = targetSrc;
+          const isHLS = /\.m3u8/i.test(targetSrc);
+
+          // Bersihkan HLS instance sebelumnya jika ada
+          if (window._hlsInstance) {
+            window._hlsInstance.destroy();
+            window._hlsInstance = null;
+          }
+
+          if (isHLS && window.Hls && window.Hls.isSupported()) {
+            // HLS.js path: wajib untuk Electron/Discord Desktop yang tidak support HLS native
+            const hls = new window.Hls({
+              enableWorker: false, // lebih stabil di Electron sandbox
+              xhrSetup: function(xhr, url) {
+                // Semua segment HLS juga lewat proxy agar lolos CSP
+                if (!url.startsWith('/') && !url.startsWith(window.location.origin)) {
+                  xhr.open('GET', '/media-stream?url=' + encodeURIComponent(url), true);
+                }
+              }
+            });
+            window._hlsInstance = hls;
+            hls.loadSource(targetSrc);
+            hls.attachMedia(v);
+            hls.on(window.Hls.Events.MANIFEST_PARSED, function() {
+              if (loader) loader.style.display = 'none';
+              v.play().catch(function() {});
+            });
+            hls.on(window.Hls.Events.ERROR, function(event, data) {
+              if (data.fatal) {
+                console.warn('[HLS] Fatal error, fallback ke embed:', data);
+                hls.destroy();
+                window._hlsInstance = null;
+                setPlayerMode('embed');
+              }
+            });
+          } else if (isHLS && v.canPlayType('application/vnd.apple.mpegurl')) {
+            // Safari native HLS
+            v.src = targetSrc;
+            v.onloadedmetadata = function() { if (loader) loader.style.display = 'none'; };
+            v.onerror = function() { setPlayerMode('embed'); };
+          } else if (!isHLS) {
+            // MP4 / langsung
+            v.src = targetSrc;
+            v.onloadedmetadata = function() { if (loader) loader.style.display = 'none'; };
+            v.onerror = function() {
+              console.warn('[PLAYER] Video error with', v.src, ', trying fallback...');
+              if (res.proxyUrl && v.src !== res.proxyUrl) {
+                v.src = res.proxyUrl;
+                v.onerror = function() { setPlayerMode('embed'); };
+              } else if (res.directUrl && v.src !== res.directUrl) {
+                v.src = res.directUrl;
+                v.onerror = function() { setPlayerMode('embed'); };
+              } else {
+                setPlayerMode('embed');
+              }
+            };
+          } else {
+            // HLS tapi Hls.js tidak ada dan browser tidak support → embed
+            setPlayerMode('embed');
+          }
+
           v.style.display = 'block';
           if (frame) frame.style.display = 'none';
           document.getElementById('btnLocalMode')?.classList.add('active');
           document.getElementById('btnEmbedMode')?.classList.remove('active');
           window._currentPlayerMode = 'local';
-          
-          v.onloadedmetadata = function() {
-            if (loader) loader.style.display = 'none';
-          };
-          
-          v.onerror = function() {
-            console.warn('[PLAYER] Video error with', v.src, ', trying fallback...');
-            if (res.proxyUrl && v.src !== res.proxyUrl) {
-              v.src = res.proxyUrl;
-              v.onerror = function() {
-                console.warn('[PLAYER] Proxy fallback failed, switching to embed frame...');
-                setPlayerMode('embed');
-              };
-            } else if (res.directUrl && v.src !== res.directUrl) {
-              v.src = res.directUrl;
-              v.onerror = function() {
-                setPlayerMode('embed');
-              };
-            } else {
-              setPlayerMode('embed');
-            }
-          };
         } else {
           setPlayerMode('embed');
         }
