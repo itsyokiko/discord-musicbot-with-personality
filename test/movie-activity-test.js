@@ -135,6 +135,7 @@ module.exports = runHttpTests;
 if (require.main === module) {
   runHttpTests().then(() => {
     console.log('All Movie Player & Activity integration tests passed successfully!');
+    process.exit(0);
   }).catch((err) => {
     console.error('Test failed:', err);
     process.exit(1);

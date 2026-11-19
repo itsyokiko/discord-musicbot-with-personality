@@ -429,6 +429,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; media-src * data: blob:; frame-src *; connect-src *;">
   <title>${title} — Kamar Callista</title>
   <link rel="icon" type="image/png" href="/assets/tittle.png">
   <link rel="apple-touch-icon" href="/assets/tittle.png">
@@ -1273,13 +1274,6 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
             <span style="opacity:0.75;font-size:0.72rem" id="roomMemberCount">👥 1 Penonton</span>
           </div>
 
-          <div class="sync-controls-row">
-            <button class="sync-btn" id="playAllBtn" onclick="sendWsAction('PLAY')" title="Play Bersama">▶️ Play All</button>
-            <button class="sync-btn" id="pauseAllBtn" onclick="sendWsAction('PAUSE')" title="Pause Bersama">⏸️ Pause All</button>
-            <button class="sync-btn" onclick="reloadPlayer()" title="Reload Frame">🔄 Reload</button>
-            <button class="sync-btn" id="claimHostBtn" onclick="claimHostRole()" style="display:none;background:rgba(245,158,11,0.25);border-color:#F59E0B" title="Ambil alih kendali tayangan">👑 Jadi Host</button>
-          </div>
-
           <div class="reaction-bar">
             <button class="react-btn" onclick="sendReaction('🍿')" title="Popcorn">🍿</button>
             <button class="react-btn" onclick="sendReaction('❤️')" title="Love">❤️</button>
@@ -1419,7 +1413,28 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     // ══════════════════════════════════════════════════
     window.isHost = false;
     window._wsReady = false;
+    window._currentPlayerMode = 'local';
+    window._isInternalMediaSync = false;
     let ws = null;
+
+    // User ID persisten per sesi agar Host tidak hilang saat reload/pindah episode
+    const currentUserId = (function() {
+      const sp = new URLSearchParams(window.location.search);
+      const fromQuery = sp.get('user_id');
+      if (fromQuery) {
+        try { sessionStorage.setItem('dc_user_id', fromQuery); } catch (_) {}
+        return fromQuery;
+      }
+      try {
+        const stored = sessionStorage.getItem('dc_user_id');
+        if (stored) return stored;
+        const gen = 'u_' + Math.random().toString(36).substring(2, 9);
+        sessionStorage.setItem('dc_user_id', gen);
+        return gen;
+      } catch (_) {
+        return 'u_' + Math.random().toString(36).substring(2, 9);
+      }
+    })();
 
     // Helper: Simpan & baca parameter Discord dari sessionStorage agar tidak hilang saat navigasi
     function getStoredDcParam(name) {
@@ -1441,6 +1456,9 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
           u.searchParams.set(p, val);
         }
       });
+      if (currentUserId && !u.searchParams.has('user_id')) {
+        u.searchParams.set('user_id', currentUserId);
+      }
       return u.pathname + u.search;
     }
 
@@ -1468,22 +1486,45 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       document.body.classList.toggle('is-viewer', !isHostNow);
 
       const roleBadge = document.getElementById('roleBadge');
-      const claimBtn = document.getElementById('claimHostBtn');
-      const playBtn = document.getElementById('playAllBtn');
-      const pauseBtn = document.getElementById('pauseAllBtn');
-
       if (roleBadge) {
         roleBadge.textContent = isHostNow ? '👑 Host' : '👁️ Penonton';
         roleBadge.className = 'role-badge ' + (isHostNow ? 'role-badge-host' : 'role-badge-viewer');
       }
-      if (claimBtn) claimBtn.style.display = isHostNow ? 'none' : 'inline-flex';
-      if (playBtn) playBtn.disabled = !isHostNow;
-      if (pauseBtn) pauseBtn.disabled = !isHostNow;
+
+      const v = document.getElementById('callistaVideo');
+      const viewerBar = document.getElementById('viewerControlBar');
+      if (v) {
+        if (isHostNow) {
+          v.controls = true;
+          if (viewerBar) viewerBar.style.display = 'none';
+        } else {
+          v.controls = false; // NON-HOST DILARANG KERAS MENGATUR PLAYER!
+          if (viewerBar) viewerBar.style.display = 'flex';
+        }
+      }
     }
 
-    function claimHostRole() {
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'CLAIM_HOST' }));
+    function setViewerVolume(val) {
+      const v = document.getElementById('callistaVideo');
+      if (v) {
+        v.volume = parseFloat(val);
+        v.muted = (parseFloat(val) === 0);
+        const icon = document.getElementById('viewerVolIcon');
+        if (icon) icon.textContent = v.muted ? '🔇' : (v.volume < 0.5 ? '🔉' : '🔊');
+      }
+    }
+
+    function toggleViewerMute() {
+      const v = document.getElementById('callistaVideo');
+      const slider = document.getElementById('viewerVolSlider');
+      const icon = document.getElementById('viewerVolIcon');
+      if (!v) return;
+      v.muted = !v.muted;
+      if (v.muted) {
+        if (icon) icon.textContent = '🔇';
+      } else {
+        if (icon) icon.textContent = v.volume < 0.5 ? '🔉' : '🔊';
+        if (slider && v.volume === 0) { v.volume = 0.5; slider.value = 0.5; }
       }
     }
 
@@ -1493,17 +1534,63 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       }
     }
 
+    function sendMediaSync(isPlaying) {
+      if (window._isInternalMediaSync || !window.isHost) return;
+      const v = document.getElementById('callistaVideo');
+      if (v && ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({
+          type: 'HOST_MEDIA_STATE',
+          src: v.src,
+          time: v.currentTime,
+          isPlaying: isPlaying !== undefined ? isPlaying : !v.paused
+        }));
+      }
+    }
+
+    function syncViewerToMediaState(mState) {
+      if (!mState || window.isHost) return;
+      const v = document.getElementById('callistaVideo');
+      if (!v) return;
+
+      if (mState.src && v.src !== mState.src) {
+        v.src = mState.src;
+        v.style.display = 'block';
+        const frame = document.getElementById('playerFrame');
+        if (frame) frame.style.display = 'none';
+        const loader = document.getElementById('playerLoader');
+        if (loader) loader.style.display = 'none';
+      }
+
+      let targetTime = mState.time || 0;
+      if (mState.isPlaying && mState.lastUpdate) {
+        const elapsed = (Date.now() - mState.lastUpdate) / 1000;
+        targetTime += elapsed;
+      }
+
+      if (Math.abs(v.currentTime - targetTime) > 1.2) {
+        window._isInternalMediaSync = true;
+        v.currentTime = targetTime;
+        setTimeout(function() { window._isInternalMediaSync = false; }, 350);
+      }
+
+      if (mState.isPlaying && v.paused) {
+        v.play().catch(function() {});
+      } else if (!mState.isPlaying && !v.paused) {
+        v.pause();
+      }
+    }
+
     function initActivityWebSocket() {
       if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
 
       const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
-      const wsUrl = proto + location.host + '/ws/activity?room=' + encodeURIComponent(currentRoomId);
+      const wsUrl = proto + location.host + '/ws/activity?room=' + encodeURIComponent(currentRoomId) + '&uid=' + encodeURIComponent(currentUserId);
 
       try {
         ws = new WebSocket(wsUrl);
         ws.onopen = function() {
           window._wsReady = true;
-          console.log('[NOBAR WS] Connected, room:', currentRoomId);
+          console.log('[NOBAR WS] Connected, room:', currentRoomId, 'uid:', currentUserId);
         };
         ws.onmessage = function(event) {
           try { handleWsIncoming(JSON.parse(event.data)); } catch (_) {}
@@ -1528,76 +1615,47 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
         const countEl = document.getElementById('roomMemberCount');
         if (countEl && data.count) countEl.textContent = '👥 ' + data.count + ' Penonton';
 
-        // Jika Penonton baru join dan Host sedang membuka tayangan tertentu (bukan halaman utama)
-        if (!data.isHost && data.currentRoute && data.currentRoute !== '/') {
+        // Sinkronisasi mutlak: jika penonton baru join dan host sedang buka rute tertentu (bukan di rute ini)
+        if (!data.isHost && data.currentRoute) {
           const currentClean = (window.location.pathname + window.location.search)
-            .replace(/[?&](activity|frame_id|instance_id|client_id|platform|channel_id|guild_id)=[^&]*/g, '')
+            .replace(/[?&](activity|frame_id|instance_id|client_id|platform|channel_id|guild_id|user_id)=[^&]*/g, '')
             .replace(/[?&]$/, '');
           const hostClean = data.currentRoute
-            .replace(/[?&](activity|frame_id|instance_id|client_id|platform|channel_id|guild_id)=[^&]*/g, '')
+            .replace(/[?&](activity|frame_id|instance_id|client_id|platform|channel_id|guild_id|user_id)=[^&]*/g, '')
             .replace(/[?&]$/, '');
 
           if (hostClean && hostClean !== currentClean) {
             showSyncToast('🎬 Menyelaraskan ke tayangan Host…');
             setTimeout(function() {
               window.location.href = buildActivityUrl(data.currentRoute);
-            }, 300);
+            }, 250);
+            return;
           }
         }
-      } else if (data.type === 'ROLE_UPDATE') {
-        updateRoleUI(data.isHost);
-        showSyncToast(data.isHost ? '👑 Anda sekarang Host!' : '👁️ Peran berpindah ke Penonton');
+
+        // Jika rute sudah cocok dan host sedang memutar video, sinkronkan video & menitnya langsung
+        if (!data.isHost && data.mediaState && data.mediaState.src) {
+          setTimeout(function() {
+            syncViewerToMediaState(data.mediaState);
+          }, 500);
+        }
       } else if (data.type === 'NAVIGATE_TO') {
         if (!window.isHost && data.route) {
-          showSyncToast('🎬 Host memutar: ' + (data.title || 'tayangan baru'));
+          showSyncToast('🎬 Host membuka: ' + (data.title || 'tayangan baru'));
           setTimeout(function() {
             window.location.href = buildActivityUrl(data.route);
-          }, 250);
+          }, 200);
+        }
+      } else if (data.type === 'MEDIA_SYNC') {
+        if (!window.isHost) {
+          syncViewerToMediaState(data);
         }
       } else if (data.type === 'USER_COUNT') {
         const countEl = document.getElementById('roomMemberCount');
         if (countEl) countEl.textContent = '👥 ' + data.count + ' Penonton';
-      } else if (data.type === 'ACTION') {
-        const frame = document.getElementById('playerFrame');
-        const v = document.getElementById('callistaVideo');
-
-        if (data.action === 'MEDIA_PLAY') {
-          if (v && v.src) {
-            window._isInternalMediaSync = true;
-            if (typeof data.payload?.time === 'number' && Math.abs(v.currentTime - data.payload.time) > 1.2) {
-              v.currentTime = data.payload.time;
-            }
-            v.play().catch(function() {});
-            setTimeout(function() { window._isInternalMediaSync = false; }, 350);
-          }
-        } else if (data.action === 'MEDIA_PAUSE') {
-          if (v && v.src) {
-            window._isInternalMediaSync = true;
-            if (typeof data.payload?.time === 'number') {
-              v.currentTime = data.payload.time;
-            }
-            v.pause();
-            setTimeout(function() { window._isInternalMediaSync = false; }, 350);
-          }
-        } else if (data.action === 'MEDIA_SEEK') {
-          if (v && v.src && typeof data.payload?.time === 'number') {
-            window._isInternalMediaSync = true;
-            v.currentTime = data.payload.time;
-            setTimeout(function() { window._isInternalMediaSync = false; }, 350);
-          }
-        } else if (data.action === 'CHANGE_SERVER' && data.payload && data.payload.src && frame) {
-          frame.src = data.payload.src;
-          if (window._currentPlayerMode === 'local') {
-            loadMediaToLocalPlayer(data.payload.src);
-          }
-        } else if (data.action === 'PLAY' || data.action === 'PAUSE') {
-          if (v && v.src && v.style.display !== 'none') {
-            if (data.action === 'PLAY') v.play().catch(function() {});
-            else v.pause();
-          } else if (frame && frame.contentWindow) {
-            frame.contentWindow.postMessage({ type: data.action }, '*');
-          }
-        }
+      } else if (data.type === 'ROLE_UPDATE') {
+        updateRoleUI(data.isHost);
+        showSyncToast(data.isHost ? '👑 Anda sekarang Host!' : '👁️ Peran berpindah ke Penonton');
       } else if (data.type === 'REACTION') {
         spawnFloatingEmoji(data.emoji);
       }
@@ -1606,9 +1664,6 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     // ══════════════════════════════════════════════════
     // PLAYER LOKAL: KONTROL MEDIA MANDIRI & SINKRONISASI
     // ══════════════════════════════════════════════════
-    window._currentPlayerMode = 'local';
-    window._isInternalMediaSync = false;
-
     function initCallistaVideoEvents() {
       const v = document.getElementById('callistaVideo');
       if (!v || v._eventsInitialized) return;
@@ -1616,28 +1671,29 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
 
       // Host Play event -> broadcast ke semua Viewer
       v.addEventListener('play', function() {
-        if (window._isInternalMediaSync) return;
-        if (window.isHost) {
-          sendWsAction('MEDIA_PLAY', { time: v.currentTime });
-        }
+        sendMediaSync(true);
       });
 
       // Host Pause event -> broadcast ke semua Viewer
       v.addEventListener('pause', function() {
-        if (window._isInternalMediaSync) return;
-        if (window.isHost) {
-          sendWsAction('MEDIA_PAUSE', { time: v.currentTime });
-        }
+        sendMediaSync(false);
       });
 
       // Host Seek event -> broadcast ke semua Viewer
       v.addEventListener('seeked', function() {
-        if (window._isInternalMediaSync) return;
-        if (window.isHost) {
-          sendWsAction('MEDIA_SEEK', { time: v.currentTime });
-        }
+        sendMediaSync(!v.paused);
       });
     }
+
+    // Heartbeat berkala sinkronisasi Host setiap 3 detik
+    setInterval(function() {
+      if (window.isHost && ws && ws.readyState === WebSocket.OPEN) {
+        const v = document.getElementById('callistaVideo');
+        if (v && v.src && !v.paused) {
+          sendMediaSync(true);
+        }
+      }
+    }, 3000);
 
     async function loadMediaToLocalPlayer(sourceUrl) {
       const v = document.getElementById('callistaVideo');
@@ -1647,7 +1703,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
 
       if (!v) return;
       if (loader) {
-        if (loaderText) loaderText.textContent = 'Mengambil alih media ke Player Lokal…';
+        if (loaderText) loaderText.textContent = 'Menyiapkan Player Lokal…';
         loader.style.display = 'flex';
       }
 
@@ -1655,17 +1711,31 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
         const resp = await fetch('/api/resolve-media?url=' + encodeURIComponent(sourceUrl));
         const res = await resp.json();
 
-        if (res.success && res.directUrl) {
+        if (res.success && (res.directUrl || res.rawUrl)) {
           initCallistaVideoEvents();
-          v.src = res.directUrl;
+          const targetSrc = res.directUrl || res.rawUrl;
+          v.src = targetSrc;
           v.style.display = 'block';
           if (frame) frame.style.display = 'none';
           document.getElementById('btnLocalMode')?.classList.add('active');
           document.getElementById('btnEmbedMode')?.classList.remove('active');
           window._currentPlayerMode = 'local';
-          showSyncToast('⚡ Media berhasil dialihkan ke Player Lokal (Bebas Iklan)');
+          
           v.onloadedmetadata = function() {
             if (loader) loader.style.display = 'none';
+          };
+          
+          v.onerror = function() {
+            console.warn('[PLAYER] Direct video error, trying proxyUrl...');
+            if (res.proxyUrl && v.src !== res.proxyUrl) {
+              v.src = res.proxyUrl;
+              v.onerror = function() {
+                console.warn('[PLAYER] Proxy fallback failed, switching to embed frame...');
+                setPlayerMode('embed');
+              };
+            } else {
+              setPlayerMode('embed');
+            }
           };
         } else {
           setPlayerMode('embed');
@@ -1678,6 +1748,10 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     }
 
     function setPlayerMode(mode) {
+      if (!window.isHost && window._wsReady) {
+        showSyncToast('👁️ Hanya Host yang dapat mengubah mode player');
+        return;
+      }
       window._currentPlayerMode = mode;
       const v = document.getElementById('callistaVideo');
       const frame = document.getElementById('playerFrame');
@@ -1706,6 +1780,10 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     }
 
     function changeServer(btn, src) {
+      if (!window.isHost && window._wsReady) {
+        showSyncToast('👁️ Hanya Host yang dapat mengganti server');
+        return;
+      }
       document.querySelectorAll('.srv-btn').forEach(function(b) { b.classList.remove('active'); });
       btn.classList.add('active');
       const frame = document.getElementById('playerFrame');
@@ -1713,48 +1791,21 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       if (loader) loader.style.display = 'flex';
       if (frame) {
         frame.src = src;
-        sendWsAction('CHANGE_SERVER', { src: src });
       }
       if (window._currentPlayerMode === 'local') {
         loadMediaToLocalPlayer(src);
       }
     }
 
-    function reloadPlayer() {
-      const v = document.getElementById('callistaVideo');
-      const frame = document.getElementById('playerFrame');
-      const loader = document.getElementById('playerLoader');
-      if (loader) loader.style.display = 'flex';
-      if (window._currentPlayerMode === 'local' && v && v.src) {
-        const curTime = v.currentTime;
-        v.load();
-        v.currentTime = curTime;
-        if (loader) loader.style.display = 'none';
-      } else if (frame) {
-        frame.src = frame.src;
-      }
-    }
-
     function onFrameLoad() {
       const loader = document.getElementById('playerLoader');
       if (loader) loader.style.display = 'none';
-      // Inisialisasi otomatis player lokal jika video player ada di halaman
       const v = document.getElementById('callistaVideo');
       if (v && !v.src) {
         const frame = document.getElementById('playerFrame');
         if (frame && frame.src) {
           loadMediaToLocalPlayer(frame.src);
         }
-      }
-    }
-
-    function sendWsAction(action, payload) {
-      if (!window.isHost) {
-        showSyncToast('Hanya Host yang dapat mengontrol pemutaran.');
-        return;
-      }
-      if (ws && ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({ type: 'ACTION', action: action, payload: payload || {} }));
       }
     }
 
@@ -1981,11 +2032,12 @@ async function handleMovieRequest(req, res, url) {
 
       if (directUrl) {
         const isDirectStream = /\.(mp4|m3u8)/i.test(directUrl);
-        const playerSrc = isDirectStream ? `/media-stream?url=${encodeURIComponent(directUrl)}` : directUrl;
+        const proxySrc = `/media-stream?url=${encodeURIComponent(directUrl)}`;
         res.writeHead(200, { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' });
         res.end(JSON.stringify({
           success: true,
-          directUrl: playerSrc,
+          directUrl: directUrl,
+          proxyUrl: proxySrc,
           rawUrl: directUrl,
           isNativeVideo: isDirectStream
         }));
@@ -2023,7 +2075,7 @@ async function handleMovieRequest(req, res, url) {
       const streamResp = await axios.get(rawTarget, {
         headers,
         responseType: 'stream',
-        timeout: 15000
+        validateStatus: () => true
       });
       const respHeaders = {
         'Content-Type': streamResp.headers['content-type'] || 'video/mp4',
@@ -2034,6 +2086,9 @@ async function handleMovieRequest(req, res, url) {
       if (streamResp.headers['content-length']) respHeaders['Content-Length'] = streamResp.headers['content-length'];
       res.writeHead(streamResp.status, respHeaders);
       streamResp.data.pipe(res);
+      req.on('close', () => {
+        try { streamResp.data.destroy(); } catch (_) {}
+      });
     } catch (err) {
       res.writeHead(502, { 'Content-Type': 'text/plain' });
       res.end('Media stream error: ' + err.message);
@@ -2285,12 +2340,18 @@ async function handleMovieRequest(req, res, url) {
               <!-- 1. Player Video Lokal HTML5 Callista (Bisa di-play/pause/seek realtime nobar) -->
               <video id="callistaVideo" playsinline controls preload="metadata" style="display:none;width:100%;height:100%;background:#000;position:absolute;inset:0;z-index:3;"></video>
 
+              <!-- Viewer Control Bar (Non-Host: hanya kontrol volume & info sinkron) -->
+              <div id="viewerControlBar" style="display:none;position:absolute;bottom:10px;left:10px;z-index:25;background:rgba(14,15,24,0.85);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.2);border-radius:30px;padding:5px 14px;align-items:center;gap:10px;color:#fff;font-size:0.75rem;">
+                <span id="viewerVolIcon" style="cursor:pointer;" onclick="toggleViewerMute()">🔊</span>
+                <input type="range" id="viewerVolSlider" min="0" max="1" step="0.05" value="1" style="width:75px;cursor:pointer;accent-color:var(--mode-accent);" oninput="setViewerVolume(this.value)">
+                <span style="opacity:0.65;font-size:0.7rem;">| 👁️ Mengikuti Host</span>
+              </div>
+
               <!-- 2. Iframe Fallback Embed Stream -->
               <iframe id="playerFrame" src="${initSrc}"
                 allowfullscreen webkitallowfullscreen mozallowfullscreen
                 scrolling="no" frameborder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; xr-spatial-tracking"
-                sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox"
                 onload="onFrameLoad()">
               </iframe>
               <button class="video-fullscreen-btn" onclick="toggleVideoFullscreen()" title="Fullscreen">
@@ -2655,7 +2716,17 @@ async function handleMovieRequest(req, res, url) {
    WEBSOCKET MANAGER: MULTI-USER REALTIME NOBAR SYNC (HOST & VIEWER)
    ============================================================ */
 let wss = null;
-const rooms = new Map(); // roomId -> { hostWs: WebSocket|null, currentRoute: string, currentTitle: string, lastAction: object|null, users: Set<WebSocket> }
+const rooms = new Map();
+// roomId -> {
+//   hostUserId: string,
+//   hostWs: WebSocket|null,
+//   disconnectTimer: Timeout|null,
+//   emptyTimer: Timeout|null,
+//   currentRoute: string,
+//   currentTitle: string,
+//   mediaState: { src: string, time: number, isPlaying: boolean, lastUpdate: number },
+//   users: Map<WebSocket, string> (ws -> userId)
+// }
 
 function initWebSocket(server) {
   if (wss) return wss;
@@ -2677,32 +2748,48 @@ function initWebSocket(server) {
 
   wss.on('connection', (ws, req, url) => {
     const roomId = url.searchParams.get('room') || 'default-vc';
+    const userId = url.searchParams.get('uid') || ('anon_' + Math.random().toString(36).substring(2, 9));
+
     if (!rooms.has(roomId)) {
       rooms.set(roomId, {
-        hostWs: null,
+        hostUserId: userId, // PENGGUNA PERTAMA TERKUNCI MUTLAK SEBAGAI HOST
+        hostWs: ws,
+        disconnectTimer: null,
+        emptyTimer: null,
         currentRoute: '/',
         currentTitle: 'Kamar Callista',
-        lastAction: null,
-        users: new Set()
+        mediaState: { src: '', time: 0, isPlaying: false, lastUpdate: Date.now() },
+        users: new Map()
       });
     }
-    const room = rooms.get(roomId);
-    room.users.add(ws);
 
-    // Tentukan Host (pengguna pertama di room menjadi Host)
-    let isHost = false;
-    if (!room.hostWs || !room.users.has(room.hostWs)) {
-      room.hostWs = ws;
-      isHost = true;
+    const room = rooms.get(roomId);
+    if (room.emptyTimer) {
+      clearTimeout(room.emptyTimer);
+      room.emptyTimer = null;
     }
 
-    // Kirim initial sync state ke client
+    room.users.set(ws, userId);
+
+    // Cek apakah user ini adalah host yang kembali (reconnect setelah navigasi)
+    let isHost = false;
+    if (!room.hostUserId || room.hostUserId === userId) {
+      room.hostUserId = userId;
+      room.hostWs = ws;
+      isHost = true;
+      if (room.disconnectTimer) {
+        clearTimeout(room.disconnectTimer);
+        room.disconnectTimer = null;
+      }
+    }
+
+    // Kirim initial sync state lengkap ke partisipan
     ws.send(JSON.stringify({
       type: 'INIT_STATE',
       isHost,
       currentRoute: room.currentRoute,
       currentTitle: room.currentTitle,
-      lastAction: room.lastAction,
+      mediaState: room.mediaState,
       count: room.users.size
     }));
 
@@ -2713,9 +2800,9 @@ function initWebSocket(server) {
       try {
         const data = JSON.parse(message.toString());
 
+        // 1. Host bernavigasi rute
         if (data.type === 'HOST_NAVIGATE') {
-          // Hanya host yang dapat memindahkan rute semua viewer
-          if (ws === room.hostWs) {
+          if (room.hostUserId === userId) {
             room.currentRoute = data.route;
             room.currentTitle = data.title || 'Tayangan Nobar';
             broadcastToRoom(roomId, {
@@ -2724,19 +2811,27 @@ function initWebSocket(server) {
               title: data.title
             }, ws);
           }
-        } else if (data.type === 'CLAIM_HOST') {
-          // Partisipan mengambil alih peran Host
-          const prevHost = room.hostWs;
-          room.hostWs = ws;
-          ws.send(JSON.stringify({ type: 'ROLE_UPDATE', isHost: true }));
-          if (prevHost && prevHost !== ws && room.users.has(prevHost)) {
-            prevHost.send(JSON.stringify({ type: 'ROLE_UPDATE', isHost: false }));
+        }
+        // 2. Host menyinkronkan status video (src, time, isPlaying)
+        else if (data.type === 'HOST_MEDIA_STATE') {
+          if (room.hostUserId === userId) {
+            room.mediaState = {
+              src: data.src,
+              time: data.time || 0,
+              isPlaying: Boolean(data.isPlaying),
+              lastUpdate: Date.now()
+            };
+            broadcastToRoom(roomId, {
+              type: 'MEDIA_SYNC',
+              src: data.src,
+              time: data.time || 0,
+              isPlaying: Boolean(data.isPlaying),
+              lastUpdate: Date.now()
+            }, ws);
           }
-        } else if (data.type === 'ACTION') {
-          // Hanya host (atau jika diizinkan) yang mengontrol playback
-          room.lastAction = data;
-          broadcastToRoom(roomId, data, ws);
-        } else if (data.type === 'REACTION') {
+        }
+        // 3. Reaksi emoji (bebas untuk semua penonton)
+        else if (data.type === 'REACTION') {
           broadcastToRoom(roomId, data, ws);
         }
       } catch (_) {}
@@ -2744,18 +2839,36 @@ function initWebSocket(server) {
 
     ws.on('close', () => {
       room.users.delete(ws);
+
+      // Jika socket yang putus adalah host, JANGAN langsung oper host!
+      // Berikan toleransi 60 detik agar host bisa navigasi antar episode tanpa kehilangan perannya.
       if (room.hostWs === ws) {
         room.hostWs = null;
-        // Oper otomatis peran host ke penonton lain jika masih ada
-        if (room.users.size > 0) {
-          const nextHost = Array.from(room.users)[0];
-          room.hostWs = nextHost;
-          nextHost.send(JSON.stringify({ type: 'ROLE_UPDATE', isHost: true }));
+        if (!room.disconnectTimer) {
+          room.disconnectTimer = setTimeout(() => {
+            // Jika host asli benar-benar keluar (tidak kembali dalam 60s), oper ke orang berikutnya
+            if (!room.hostWs && room.users.size > 0) {
+              const nextWs = Array.from(room.users.keys())[0];
+              const nextUid = room.users.get(nextWs);
+              room.hostUserId = nextUid;
+              room.hostWs = nextWs;
+              nextWs.send(JSON.stringify({ type: 'ROLE_UPDATE', isHost: true }));
+              broadcastToRoom(roomId, { type: 'HOST_CHANGED' });
+            }
+            room.disconnectTimer = null;
+          }, 60000);
         }
       }
 
       if (room.users.size === 0) {
-        rooms.delete(roomId);
+        if (!room.emptyTimer) {
+          room.emptyTimer = setTimeout(() => {
+            if (room.users.size === 0) {
+              rooms.delete(roomId);
+            }
+            room.emptyTimer = null;
+          }, 60000);
+        }
       } else {
         broadcastToRoom(roomId, { type: 'USER_COUNT', count: room.users.size });
       }
@@ -2769,7 +2882,7 @@ function broadcastToRoom(roomId, data, senderWs = null) {
   const room = rooms.get(roomId);
   if (!room) return;
   const payload = JSON.stringify(data);
-  for (const client of room.users) {
+  for (const client of room.users.keys()) {
     if (client.readyState === WebSocket.OPEN && client !== senderWs) {
       client.send(payload);
     }
