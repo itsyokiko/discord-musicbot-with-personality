@@ -328,18 +328,17 @@ function renderEpisodePanel(episodeList, currentUrl, mode) {
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/>
         </svg>
-        <span>Daftar Episode</span>
+        <span>Episode</span>
         <span class="ep-panel-count">${episodeList.length}</span>
       </div>
       <div class="ep-panel-scroll">
-        ${episodeList.map(ep => `
-          <a href="/?mode=${mode}&url=${encodeURIComponent(ep.epLink)}"
-             class="ep-panel-item ${ep.isCurrent ? 'current' : ''}">
-            <span class="ep-num-badge">${ep.epNum || '?'}</span>
-            <span class="ep-panel-title">${ep.epTitle.replace(/^.*?Episode\s*/i,'Eps ')}</span>
-            ${ep.isCurrent ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>' : ''}
-          </a>
-        `).join('')}
+        <div class="ep-grid-blocks">
+          ${episodeList.map(ep => `
+            <a href="/?mode=${mode}&url=${encodeURIComponent(ep.epLink)}"
+               class="ep-num-box ${ep.isCurrent ? 'current' : ''}"
+               title="${ep.epTitle.replace(/"/g, '&quot;')}">${ep.epNum || '?'}</a>
+          `).join('')}
+        </div>
       </div>
     </aside>
   `;
@@ -829,11 +828,26 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     .act-btn.on { background: var(--mode-accent-l); color: var(--mode-accent); border-color: var(--mode-accent); }
 
     .video-box { position: relative; width: 100%; aspect-ratio: 16/9; background: #000; overflow: hidden; }
+    /* Loading overlay: tittle.png di tengah cincin spinner */
     .video-loader {
-      position: absolute; inset: 0; background: rgba(0,0,0,0.85); display: flex;
-      flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: #fff;
-      font-size: 0.88rem; font-weight: 500; transition: opacity var(--dur) var(--ease); z-index: 10;
+      position: absolute; inset: 0; background: rgba(0,0,0,0.9); display: flex;
+      flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: #fff;
+      font-size: 0.82rem; font-weight: 500; transition: opacity var(--dur) var(--ease); z-index: 10;
     }
+    .loader-logo-wrap {
+      position: relative; width: 76px; height: 76px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .loader-logo-wrap img {
+      width: 42px; height: 42px; object-fit: contain; border-radius: 10px; position: relative; z-index: 2;
+    }
+    .loader-ring {
+      position: absolute; inset: 0; border-radius: 50%;
+      border: 3px solid rgba(255,255,255,0.15);
+      border-top-color: var(--mode-accent);
+      animation: spin 0.85s linear infinite;
+    }
+    /* legacy spinner kecil (dipakai di tempat lain jika ada) */
     .spinner { width: 34px; height: 34px; border: 3px solid rgba(255,255,255,0.2); border-top-color: var(--mode-accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -868,7 +882,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     .tip-pill { font-size: 0.78rem; color: var(--txt-3); display: flex; align-items: center; gap: 6px; }
     .tip-tag { padding: 2px 6px; border-radius: var(--r-sm); background: var(--gold-l); color: var(--gold); font-weight: 700; font-size: 0.7rem; }
 
-    /* Episode Side Panel */
+    /* Episode Side Panel — Grid 4 kolom minimalis */
     .episode-panel {
       width: var(--ep-panel-w); background: var(--surface); border-left: 1px solid var(--border);
       height: calc(100vh - var(--navbar-h)); position: sticky; top: var(--navbar-h);
@@ -879,7 +893,23 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       display: flex; align-items: center; gap: 8px;
     }
     .ep-panel-count { padding: 2px 8px; border-radius: var(--r-pill); background: var(--surface-soft); font-size: 0.75rem; margin-left: auto; color: var(--txt-2); }
-    .ep-panel-scroll { flex: 1; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+    /* Grid blok episode — 4 kolom, angka minimalis */
+    .ep-panel-scroll { flex: 1; overflow-y: auto; padding: 10px; }
+    .ep-grid-blocks {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .ep-num-box {
+      display: flex; align-items: center; justify-content: center;
+      height: 36px; border-radius: 8px;
+      border: 1px solid var(--border); background: var(--surface-soft);
+      font-size: 0.78rem; font-weight: 700; color: var(--txt-2);
+      transition: all var(--dur) var(--ease); cursor: pointer;
+    }
+    .ep-num-box:hover { background: var(--surface); border-color: var(--mode-accent); color: var(--mode-accent); }
+    .ep-num-box.current { background: var(--mode-accent); color: #fff; border-color: var(--mode-accent); }
+    /* Legacy: .ep-panel-item tetap ada untuk backward compat */
     .ep-panel-item {
       display: flex; align-items: center; gap: 10px; padding: 10px 12px;
       border-radius: var(--r-md); border: 1px solid transparent; background: var(--surface-soft);
@@ -1015,21 +1045,71 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     .activity-mode-on {
       --navbar-h: 46px;
     }
-    /* Kunci mati sidebar & episode panel agar TIDAK PERNAH muncul di mode activity */
+    .activity-mode-on {
+      --navbar-h: 46px;
+    }
+    /* Sidebar kiri di mode activity: drawer overlay, tidak menggeser konten */
     html.activity-mode-on .app-sidebar,
-    html.activity-mode-on aside,
-    html.activity-mode-on #appSidebar,
-    html.activity-mode-on .episode-panel {
-      display: none !important;
-      width: 0 !important;
-      max-width: 0 !important;
-      min-width: 0 !important;
-      padding: 0 !important;
+    html.activity-mode-on #appSidebar {
+      position: fixed !important;
+      top: var(--navbar-h) !important;
+      left: 0 !important;
+      bottom: 0 !important;
+      width: 260px !important;
+      max-width: 260px !important;
+      min-width: unset !important;
+      z-index: 999 !important;
+      transform: translateX(-100%) !important;
+      transition: transform 0.25s ease !important;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.35) !important;
+      display: flex !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      overflow-y: auto !important;
+      padding: 20px 16px !important;
       margin: 0 !important;
+    }
+    html.activity-mode-on .app-sidebar.open,
+    html.activity-mode-on #appSidebar.open {
+      transform: translateX(0) !important;
+    }
+    /* Backdrop untuk menutup sidebar saat klik di luar */
+    .sidebar-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 998;
+      background: rgba(0,0,0,0.4); backdrop-filter: blur(2px);
+    }
+    html.activity-mode-on .sidebar-backdrop.show { display: block; }
+    /* Episode panel di activity: overlay dari kanan, bukan geser layout */
+    html.activity-mode-on aside.episode-panel,
+    html.activity-mode-on .episode-panel {
+      position: fixed !important;
+      top: var(--navbar-h) !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: var(--ep-panel-w) !important;
+      max-width: 90vw !important;
+      z-index: 997 !important;
+      transform: translateX(100%) !important;
+      transition: transform 0.25s ease !important;
+      box-shadow: -4px 0 24px rgba(0,0,0,0.35) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      visibility: visible !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      border-left: 1px solid var(--border) !important;
       overflow: hidden !important;
-      visibility: hidden !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
+    }
+    html.activity-mode-on .episode-panel.open {
+      transform: translateX(0) !important;
+    }
+    /* Tombol toggle episode panel di mode activity */
+    .ep-toggle-btn {
+      display: none;
+    }
+    html.activity-mode-on .ep-toggle-btn {
+      display: flex;
     }
     html.activity-mode-on .app-layout {
       display: block !important;
@@ -1152,11 +1232,16 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     body.is-viewer .media-card,
     body.is-viewer .drama-card,
     body.is-viewer .ep-panel-item,
+    body.is-viewer .ep-num-box,
     body.is-viewer .nav-ep-btn,
     body.is-viewer .srv-btn,
     body.is-viewer .kamar-portal-btn {
       pointer-events: none !important;
       cursor: default !important;
+    }
+    /* Sembunyikan search bar untuk viewer — viewer dilarang mengubah UI */
+    body.is-viewer .nav-search {
+      display: none !important;
     }
     /* Pengecualian: Tombol di Nobar Bar, Reaksi, Fullscreen, & Klaim Host tetap aktif */
     body.is-viewer .activity-sync-bar,
@@ -1213,6 +1298,8 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
 
   <!-- Floating Emoji Reaction Layer -->
   <div class="floating-emoji-layer" id="emojiLayer"></div>
+  <!-- Sidebar backdrop (activity mode) -->
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
 
   ${isHome ? contentHtml : `
     <!-- NAVBAR (Hanya muncul saat browsing Drama/Anime) -->
@@ -1380,7 +1467,23 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     // Sidebar & Player Utilities
     function toggleSidebar() {
       const sb = document.getElementById('appSidebar');
-      if (sb) sb.classList.toggle('open');
+      const bd = document.getElementById('sidebarBackdrop');
+      if (!sb) return;
+      const isOpen = sb.classList.toggle('open');
+      if (bd) bd.classList.toggle('show', isOpen);
+    }
+
+    function closeSidebar() {
+      const sb = document.getElementById('appSidebar');
+      const bd = document.getElementById('sidebarBackdrop');
+      if (sb) sb.classList.remove('open');
+      if (bd) bd.classList.remove('show');
+    }
+
+    function toggleEpisodePanel() {
+      const ep = document.getElementById('episodePanel');
+      if (!ep) return;
+      ep.classList.toggle('open');
     }
 
     function toggleAdShield() {
@@ -1657,6 +1760,26 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
         showSyncToast(data.isHost ? '👑 Anda sekarang Host!' : '👁️ Peran berpindah ke Penonton');
       } else if (data.type === 'REACTION') {
         spawnFloatingEmoji(data.emoji);
+      } else if (data.type === 'CHANGE_SERVER') {
+        // Viewer: host ganti server → ikuti otomatis
+        if (!window.isHost) {
+          showSyncToast('🔄 Host ganti server: ' + (data.name || 'baru'));
+          const frame = document.getElementById('playerFrame');
+          const loader = document.getElementById('playerLoader');
+          // Aktifkan tombol server yang sesuai (cari berdasarkan src)
+          document.querySelectorAll('.srv-btn').forEach(function(b) {
+            b.classList.toggle('active', b.getAttribute('onclick') && b.getAttribute('onclick').includes(JSON.stringify(data.src)));
+          });
+          if (loader) loader.style.display = 'flex';
+          if (frame) frame.src = data.src;
+          if (window._currentPlayerMode === 'local') {
+            loadMediaToLocalPlayer(data.src);
+          } else {
+            setTimeout(function() {
+              if (loader) loader.style.display = 'none';
+            }, 1500);
+          }
+        }
       }
     }
 
@@ -1793,6 +1916,14 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       }
       if (window._currentPlayerMode === 'local') {
         loadMediaToLocalPlayer(src);
+      }
+      // Broadcast CHANGE_SERVER ke semua viewer
+      if (ws && ws.readyState === WebSocket.OPEN && window.isHost) {
+        ws.send(JSON.stringify({
+          type: 'HOST_CHANGE_SERVER',
+          src: src,
+          name: btn.textContent.trim()
+        }));
       }
     }
 
@@ -2126,12 +2257,13 @@ async function handleMovieRequest(req, res, url) {
   }
 
   // 3. MURNI HALAMAN DEPAN KAMAR CALLISTA
-  if (!reqMode && !targetUrlParam && !searchQuery && !catParam && !isActivity) {
+  // FIX: !isActivity dihapus — saat activity mode pun, URL root (/) selalu ke Kamar Utama
+  if (!reqMode && !targetUrlParam && !searchQuery && !catParam) {
     const html = masterLayout({
       title: 'Kamar Callista',
       contentHtml: renderKamarHome(),
       mode: 'home',
-      isActivity: false
+      isActivity
     });
     sendHtml(200, html);
     return;
@@ -2315,9 +2447,9 @@ async function handleMovieRequest(req, res, url) {
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                   <span id="adLbl">Shield: ON</span>
                 </button>
-                <button class="act-btn" onclick="toggleActivityMode()" title="Nonton Bareng Mode Activity">
-                  <span>🎦</span>
-                  <span>Mode Nobar</span>
+                <button class="act-btn ep-toggle-btn" onclick="toggleEpisodePanel()" title="Daftar Episode">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
+                  Episode
                 </button>
                 <button class="act-btn" onclick="reloadPlayer()">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -2332,7 +2464,10 @@ async function handleMovieRequest(req, res, url) {
             <!-- Video Aspect Box (16:9) -->
             <div class="video-box" id="videoBox">
               <div class="video-loader" id="playerLoader">
-                <div class="spinner"></div>
+                <div class="loader-logo-wrap">
+                  <div class="loader-ring"></div>
+                  <img src="/assets/tittle.png" alt="Callista" draggable="false">
+                </div>
                 <span id="loaderText">Menyiapkan Video…</span>
               </div>
 
@@ -2827,6 +2962,16 @@ function initWebSocket(server) {
         // 3. Reaksi emoji (bebas untuk semua penonton)
         else if (data.type === 'REACTION') {
           broadcastToRoom(roomId, data, ws);
+        }
+        // 4. Host ganti server mirror
+        else if (data.type === 'HOST_CHANGE_SERVER') {
+          if (room.hostClientId === clientId) {
+            broadcastToRoom(roomId, {
+              type: 'CHANGE_SERVER',
+              src: data.src,
+              name: data.name || ''
+            }, ws);
+          }
         }
       } catch (_) {}
     });
