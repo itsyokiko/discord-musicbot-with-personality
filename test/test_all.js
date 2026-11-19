@@ -1389,6 +1389,7 @@ async function runTests() {
   require('./activity-context-test');
   require('./music-mood-test');
   require('./music-filter-test');
+  await require('./movie-activity-test')();
 
   console.log('All tests passed successfully!');
 }

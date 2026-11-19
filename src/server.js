@@ -9,6 +9,7 @@ const musicStore = require('./musicStore');
 const sfxStore = require('./sfxStore');
 const elevenLabs = require('./elevenLabs');
 const logStream = require('./logStream');
+const movieActivity = require('./movieActivity');
 logStream.initLogCapture();
 
 function startServer(port) {
@@ -16,7 +17,29 @@ function startServer(port) {
   const server = http.createServer((req, res) => {
     const url = new URL(req.url, `http://${req.headers.host}`);
 
-    if (req.method === 'GET' && url.pathname === '/') {
+    // 1. Static Assets (untuk Kamar Callista & Movie Player)
+    if (req.method === 'GET' && url.pathname.startsWith('/assets/')) {
+      const assetPath = path.resolve(__dirname, '../public', '.' + url.pathname);
+      if (fs.existsSync(assetPath)) {
+        const ext = path.extname(assetPath).toLowerCase();
+        const mimeTypes = {
+          '.jpg': 'image/jpeg',
+          '.jpeg': 'image/jpeg',
+          '.png': 'image/png',
+          '.gif': 'image/gif',
+          '.svg': 'image/svg+xml',
+          '.css': 'text/css',
+          '.js': 'application/javascript'
+        };
+        const mime = mimeTypes[ext] || 'application/octet-stream';
+        res.writeHead(200, { 'Content-Type': mime, 'Cache-Control': 'public, max-age=86400' });
+        fs.createReadStream(assetPath).pipe(res);
+        return;
+      }
+    }
+
+    // 2. Dashboard Callista (digeser ke /settings & /dashboard)
+    if (req.method === 'GET' && (url.pathname === '/settings' || url.pathname === '/settings/' || url.pathname === '/dashboard')) {
       const htmlPath = path.resolve(__dirname, '../public/index.html');
       fs.readFile(htmlPath, (err, data) => {
         if (err) {
@@ -27,6 +50,12 @@ function startServer(port) {
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(data);
       });
+      return;
+    }
+
+    // 3. Kamar Callista, Ruang Drama, Ruang Anime & Nobar Activity
+    if (movieActivity.isMovieRoute(url.pathname)) {
+      movieActivity.handleMovieRequest(req, res, url);
       return;
     }
 
@@ -1058,6 +1087,7 @@ function startServer(port) {
   });
 
   server.on('error', (e) => console.error('[SERVER] HTTP error:', e.message));
+  movieActivity.initWebSocket(server);
   server.listen(port, () => {
     console.log(`Callista controller listening at http://localhost:${port}`);
   });
