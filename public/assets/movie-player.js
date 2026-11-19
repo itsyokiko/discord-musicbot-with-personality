@@ -627,6 +627,21 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
+// Click outside untuk menutup sidebar episode atau sidebar navigasi jika terbuka
+document.addEventListener('click', function(e) {
+  const ep = document.getElementById('episodePanel');
+  const sb = document.getElementById('appSidebar');
+  const isEpOpen = ep && ep.classList.contains('open');
+  const isSbOpen = sb && sb.classList.contains('open');
+  if (!isEpOpen && !isSbOpen) return;
+
+  // Jika klik berasal dari dalam panel, tombol toggle, atau floating card, biarkan
+  if (e.target.closest('#episodePanel') || e.target.closest('#appSidebar') || e.target.closest('#activityFloatCard') || e.target.closest('.ep-toggle-btn') || e.target.closest('.nav-toggle-btn')) {
+    return;
+  }
+  closeSidebar();
+});
+
 // ─── 10. Activity Navigation Intercept ───────────────────────────────────────
 document.addEventListener('click', function(e) {
   if (!document.documentElement.classList.contains('activity-mode-on')) return;

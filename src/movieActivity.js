@@ -853,7 +853,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     .video-fullscreen-btn:hover { background: rgba(0,0,0,0.9); }
     .video-box.fs-active {
       position: fixed !important; inset: 0 !important; top: 0 !important; left: 0 !important;
-      right: 0 !important; bottom: 0 !important; z-index: 999999 !important;
+      right: 0 !important; bottom: 0 !important; z-index: 9900 !important;
       aspect-ratio: unset !important; border-radius: 0 !important;
       width: 100vw !important; height: 100vh !important;
       max-width: 100vw !important; max-height: 100vh !important;
@@ -1088,10 +1088,11 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     }
     /* Backdrop untuk menutup sidebar saat klik di luar (z-index di belakang sidebar & episode panel) */
     .sidebar-backdrop {
-      display: none; position: fixed; inset: 0; z-index: 995;
-      background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+      display: none; position: fixed; inset: 0; z-index: 9950 !important;
+      background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
     }
-    html.activity-mode-on .sidebar-backdrop.show { display: block; }
+    .sidebar-backdrop.show,
+    html.activity-mode-on .sidebar-backdrop.show { display: block !important; }
     /* Episode panel di activity: overlay dari kanan, berdiri di atas backdrop */
     html.activity-mode-on aside.episode-panel,
     html.activity-mode-on .episode-panel {
@@ -1101,7 +1102,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       bottom: 0 !important;
       width: var(--ep-panel-w) !important;
       max-width: 90vw !important;
-      z-index: 1001 !important;
+      z-index: 9980 !important;
       transform: translateX(100%) !important;
       transition: transform 0.25s ease !important;
       box-shadow: -4px 0 24px rgba(0,0,0,0.35) !important;
@@ -1269,24 +1270,24 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
 
     /* Floating Card Controls (Episode + Fullscreen) Pojok Bawah — Icon Only */
     .activity-float-card {
-      position: fixed;
-      bottom: 22px;
-      right: 22px;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      gap: 3px;
-      padding: 5px 8px;
-      border-radius: var(--r-pill);
-      background: rgba(14, 15, 24, 0.92);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1.5px solid var(--mode-accent);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.55), 0 0 14px rgba(123,115,240,0.45);
-      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      position: fixed !important;
+      bottom: 22px !important;
+      right: 22px !important;
+      z-index: 9990 !important;
+      display: flex !important;
+      align-items: center !important;
+      gap: 3px !important;
+      padding: 5px 8px !important;
+      border-radius: var(--r-pill) !important;
+      background: rgba(14, 15, 24, 0.92) !important;
+      backdrop-filter: blur(14px) !important;
+      -webkit-backdrop-filter: blur(14px) !important;
+      border: 1.5px solid var(--mode-accent) !important;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.55), 0 0 14px rgba(123,115,240,0.45) !important;
+      transition: right 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.2s ease, box-shadow 0.2s ease !important;
     }
     .activity-float-card:hover {
-      box-shadow: 0 12px 28px rgba(0,0,0,0.65), 0 0 18px rgba(123,115,240,0.65);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.65), 0 0 18px rgba(123,115,240,0.65) !important;
     }
     .activity-float-card .float-btn {
       background: none;
@@ -1312,18 +1313,19 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       background: rgba(255, 255, 255, 0.22);
       margin: 0 2px;
     }
-    /* Sembunyikan saat panel episode terbuka, muncul kembali saat ditutup */
+    /* Saat panel episode terbuka: kartu bergeser ke kiri panel agar tidak tertutup & tombol tetap aktif */
     body.episode-open .activity-float-card {
-      display: none !important;
-      opacity: 0 !important;
-      pointer-events: none !important;
-      visibility: hidden !important;
+      right: calc(min(var(--ep-panel-w, 310px), 80vw) + 16px) !important;
+      z-index: 9990 !important;
+    }
+    body.episode-open .activity-float-card .ep-float-btn {
+      background: var(--mode-accent) !important;
+      color: #fff !important;
     }
     /* Di mode fullscreen, floating card tetap berada di atas video */
     body.in-fullscreen .activity-float-card {
-      z-index: 1000000 !important;
-      bottom: 24px;
-      right: 24px;
+      z-index: 9990 !important;
+      bottom: 24px !important;
     }
 
     /* Global Page Transition Overlay (Hitam transparan dengan tittle.png & ring loader) */
@@ -1481,7 +1483,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       ${episodePanelHtml}
       ${episodePanelHtml ? `
         <div class="activity-float-card" id="activityFloatCard">
-          <button class="float-btn" data-action="toggleEpisodePanel" title="Daftar Episode">
+          <button class="float-btn ep-float-btn" data-action="toggleEpisodePanel" title="Daftar Episode">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
               <polyline points="17 2 12 7 7 2"/>
