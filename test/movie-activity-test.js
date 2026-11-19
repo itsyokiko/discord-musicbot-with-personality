@@ -75,11 +75,12 @@ async function runHttpTests() {
     const parsedCfg = JSON.parse(resMovieSettings.body);
     assert.strictEqual(parsedCfg.domainDrama, cfg.domainDrama);
 
-    // Test E: WebSocket Nobar VC Sync (Host & Viewer Navigation)
+    // Test E: WebSocket Nobar VC Sync (Host & Viewer Navigation & Media Sync)
     console.log('Testing WebSocket realtime sync (/ws/activity)...');
     await new Promise((resolve, reject) => {
-      const wsUrl = `ws://localhost:${testPort}/ws/activity?room=test-room-vc`;
-      const client1 = new WebSocket(wsUrl);
+      const wsUrl1 = `ws://localhost:${testPort}/ws/activity?room=test-room-vc&cid=client_host_1`;
+      const wsUrl2 = `ws://localhost:${testPort}/ws/activity?room=test-room-vc&cid=client_viewer_2`;
+      const client1 = new WebSocket(wsUrl1);
       let client2 = null;
 
       let client1IsHost = false;
@@ -92,7 +93,7 @@ async function runHttpTests() {
           assert.strictEqual(client1IsHost, true, 'Client 1 harus menjadi Host');
           
           // Setelah client 1 jadi host, koneksikan client 2 (Viewer)
-          client2 = new WebSocket(wsUrl);
+          client2 = new WebSocket(wsUrl2);
           client2.on('message', (msg2) => {
             const data2 = JSON.parse(msg2.toString());
             if (data2.type === 'INIT_STATE') {

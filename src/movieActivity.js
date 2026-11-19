@@ -1417,23 +1417,15 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     window._isInternalMediaSync = false;
     let ws = null;
 
-    // User ID persisten per sesi agar Host tidak hilang saat reload/pindah episode
-    const currentUserId = (function() {
-      const sp = new URLSearchParams(window.location.search);
-      const fromQuery = sp.get('user_id');
-      if (fromQuery) {
-        try { sessionStorage.setItem('dc_user_id', fromQuery); } catch (_) {}
-        return fromQuery;
+    // Client ID persisten per browser tab/sesi lokal (TIDAK pernah dikirim lewat URL agar tidak bocor)
+    const myClientId = (function() {
+      let cid = '';
+      try { cid = sessionStorage.getItem('callista_client_id'); } catch (_) {}
+      if (!cid) {
+        cid = 'c_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 9);
+        try { sessionStorage.setItem('callista_client_id', cid); } catch (_) {}
       }
-      try {
-        const stored = sessionStorage.getItem('dc_user_id');
-        if (stored) return stored;
-        const gen = 'u_' + Math.random().toString(36).substring(2, 9);
-        sessionStorage.setItem('dc_user_id', gen);
-        return gen;
-      } catch (_) {
-        return 'u_' + Math.random().toString(36).substring(2, 9);
-      }
+      return cid;
     })();
 
     // Helper: Simpan & baca parameter Discord dari sessionStorage agar tidak hilang saat navigasi
@@ -1450,15 +1442,16 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     function buildActivityUrl(targetPath) {
       const u = new URL(targetPath, window.location.origin);
       u.searchParams.set('activity', '1');
+      // Bersihkan param user_id/uid/cid dari URL agar identitas lokal tetap terisolasi
+      u.searchParams.delete('user_id');
+      u.searchParams.delete('uid');
+      u.searchParams.delete('cid');
       ['frame_id', 'instance_id', 'client_id', 'platform', 'channel_id', 'guild_id'].forEach(function(p) {
         const val = getStoredDcParam(p);
         if (val && !u.searchParams.has(p)) {
           u.searchParams.set(p, val);
         }
       });
-      if (currentUserId && !u.searchParams.has('user_id')) {
-        u.searchParams.set('user_id', currentUserId);
-      }
       return u.pathname + u.search;
     }
 
@@ -1584,13 +1577,13 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
 
       const proto = location.protocol === 'https:' ? 'wss://' : 'ws://';
-      const wsUrl = proto + location.host + '/ws/activity?room=' + encodeURIComponent(currentRoomId) + '&uid=' + encodeURIComponent(currentUserId);
+      const wsUrl = proto + location.host + '/ws/activity?room=' + encodeURIComponent(currentRoomId) + '&cid=' + encodeURIComponent(myClientId);
 
       try {
         ws = new WebSocket(wsUrl);
         ws.onopen = function() {
           window._wsReady = true;
-          console.log('[NOBAR WS] Connected, room:', currentRoomId, 'uid:', currentUserId);
+          console.log('[NOBAR WS] Connected, room:', currentRoomId, 'cid:', myClientId);
         };
         ws.onmessage = function(event) {
           try { handleWsIncoming(JSON.parse(event.data)); } catch (_) {}
@@ -1618,10 +1611,10 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
         // Sinkronisasi mutlak: jika penonton baru join dan host sedang buka rute tertentu (bukan di rute ini)
         if (!data.isHost && data.currentRoute) {
           const currentClean = (window.location.pathname + window.location.search)
-            .replace(/[?&](activity|frame_id|instance_id|client_id|platform|channel_id|guild_id|user_id)=[^&]*/g, '')
+            .replace(/[?&](activity|frame_id|instance_id|client_id|platform|channel_id|guild_id|user_id|cid|uid)=[^&]*/g, '')
             .replace(/[?&]$/, '');
           const hostClean = data.currentRoute
-            .replace(/[?&](activity|frame_id|instance_id|client_id|platform|channel_id|guild_id|user_id)=[^&]*/g, '')
+            .replace(/[?&](activity|frame_id|instance_id|client_id|platform|channel_id|guild_id|user_id|cid|uid)=[^&]*/g, '')
             .replace(/[?&]$/, '');
 
           if (hostClean && hostClean !== currentClean) {
@@ -1646,6 +1639,12 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
             window.location.href = buildActivityUrl(data.route);
           }, 200);
         }
+      } else if (data.type === 'HOST_CLOSED_SESSION') {
+        showSyncToast('🎬 ' + (data.message || 'Host telah keluar. Sesi nobar selesai.'));
+        setTimeout(function() {
+          try { sessionStorage.removeItem('callista_client_id'); } catch (_) {}
+          window.location.href = '/';
+        }, 1200);
       } else if (data.type === 'MEDIA_SYNC') {
         if (!window.isHost) {
           syncViewerToMediaState(data);
@@ -2748,33 +2747,28 @@ function initWebSocket(server) {
 
   wss.on('connection', (ws, req, url) => {
     const roomId = url.searchParams.get('room') || 'default-vc';
-    const userId = url.searchParams.get('uid') || ('anon_' + Math.random().toString(36).substring(2, 9));
+    const clientId = url.searchParams.get('cid') || ('c_' + Math.random().toString(36).substring(2, 9));
 
+    // Jika room belum ada: client pertama otomatis dan mutlak menjadi Host
     if (!rooms.has(roomId)) {
       rooms.set(roomId, {
-        hostUserId: userId, // PENGGUNA PERTAMA TERKUNCI MUTLAK SEBAGAI HOST
+        hostClientId: clientId, // KUNCI MUTLAK: orang pertama yang membuka adalah Host
         hostWs: ws,
         disconnectTimer: null,
-        emptyTimer: null,
         currentRoute: '/',
         currentTitle: 'Kamar Callista',
         mediaState: { src: '', time: 0, isPlaying: false, lastUpdate: Date.now() },
-        users: new Map()
+        users: new Map() // ws -> clientId
       });
+      console.log(`[NOBAR ROOM] Room created: ${roomId}, Host: ${clientId}`);
     }
 
     const room = rooms.get(roomId);
-    if (room.emptyTimer) {
-      clearTimeout(room.emptyTimer);
-      room.emptyTimer = null;
-    }
+    room.users.set(ws, clientId);
 
-    room.users.set(ws, userId);
-
-    // Cek apakah user ini adalah host yang kembali (reconnect setelah navigasi)
+    // Cek peran: Hanya clientId yang cocok dengan hostClientId yang bisa menjadi Host
     let isHost = false;
-    if (!room.hostUserId || room.hostUserId === userId) {
-      room.hostUserId = userId;
+    if (room.hostClientId === clientId) {
       room.hostWs = ws;
       isHost = true;
       if (room.disconnectTimer) {
@@ -2802,7 +2796,7 @@ function initWebSocket(server) {
 
         // 1. Host bernavigasi rute
         if (data.type === 'HOST_NAVIGATE') {
-          if (room.hostUserId === userId) {
+          if (room.hostClientId === clientId) {
             room.currentRoute = data.route;
             room.currentTitle = data.title || 'Tayangan Nobar';
             broadcastToRoom(roomId, {
@@ -2814,7 +2808,7 @@ function initWebSocket(server) {
         }
         // 2. Host menyinkronkan status video (src, time, isPlaying)
         else if (data.type === 'HOST_MEDIA_STATE') {
-          if (room.hostUserId === userId) {
+          if (room.hostClientId === clientId) {
             room.mediaState = {
               src: data.src,
               time: data.time || 0,
@@ -2840,35 +2834,34 @@ function initWebSocket(server) {
     ws.on('close', () => {
       room.users.delete(ws);
 
-      // Jika socket yang putus adalah host, JANGAN langsung oper host!
-      // Berikan toleransi 60 detik agar host bisa navigasi antar episode tanpa kehilangan perannya.
-      if (room.hostWs === ws) {
+      // Jika socket yang putus adalah Host:
+      if (room.hostClientId === clientId) {
         room.hostWs = null;
         if (!room.disconnectTimer) {
+          // Berikan toleransi 8 detik jika host hanya sedang berpindah halaman/episode
           room.disconnectTimer = setTimeout(() => {
-            // Jika host asli benar-benar keluar (tidak kembali dalam 60s), oper ke orang berikutnya
-            if (!room.hostWs && room.users.size > 0) {
-              const nextWs = Array.from(room.users.keys())[0];
-              const nextUid = room.users.get(nextWs);
-              room.hostUserId = nextUid;
-              room.hostWs = nextWs;
-              nextWs.send(JSON.stringify({ type: 'ROLE_UPDATE', isHost: true }));
-              broadcastToRoom(roomId, { type: 'HOST_CHANGED' });
+            // Jika dalam 8 detik host TIDAK kembali: Host telah menutup activity / keluar!
+            if (!room.hostWs) {
+              console.log(`[NOBAR ROOM] Host ${clientId} has left room ${roomId}. Closing activity for all.`);
+              // 1. Beritahu semua partisipan bahwa sesi ditutup dan kembali ke kamar utama
+              broadcastToRoom(roomId, {
+                type: 'HOST_CLOSED_SESSION',
+                message: 'Host telah keluar. Sesi nobar selesai.'
+              });
+              // 2. Putus semua koneksi partisipan tersisa
+              for (const clientWs of room.users.keys()) {
+                try { clientWs.close(); } catch (_) {}
+              }
+              // 3. Hapus seluruh data progres activity dari memori (reset ke awal)
+              rooms.delete(roomId);
             }
             room.disconnectTimer = null;
-          }, 60000);
+          }, 8000);
         }
       }
 
-      if (room.users.size === 0) {
-        if (!room.emptyTimer) {
-          room.emptyTimer = setTimeout(() => {
-            if (room.users.size === 0) {
-              rooms.delete(roomId);
-            }
-            room.emptyTimer = null;
-          }, 60000);
-        }
+      if (room.users.size === 0 && !room.disconnectTimer) {
+        rooms.delete(roomId);
       } else {
         broadcastToRoom(roomId, { type: 'USER_COUNT', count: room.users.size });
       }
