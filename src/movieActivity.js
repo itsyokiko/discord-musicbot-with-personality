@@ -873,9 +873,6 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     body.in-fullscreen .player-nav-bar,
     body.in-fullscreen .dl-card,
     body.in-fullscreen .activity-sync-bar,
-    body.in-fullscreen .activity-ep-floating-btn {
-      display: none !important;
-    }
 
     .player-nav-bar {
       padding: 14px 18px; border-top: 1px solid var(--border);
@@ -1270,42 +1267,63 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       display: none !important;
     }
 
-    /* Floating Episode Button di Pojok Bawah (Khusus Mode Activity) */
-    .activity-ep-floating-btn {
-      display: none;
-    }
-    html.activity-mode-on .activity-ep-floating-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    /* Floating Card Controls (Episode + Fullscreen) Pojok Bawah — Icon Only */
+    .activity-float-card {
       position: fixed;
       bottom: 22px;
       right: 22px;
       z-index: 1000;
-      padding: 10px 18px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      padding: 5px 8px;
       border-radius: var(--r-pill);
       background: rgba(14, 15, 24, 0.92);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      color: #fff;
       border: 1.5px solid var(--mode-accent);
       box-shadow: 0 8px 24px rgba(0,0,0,0.55), 0 0 14px rgba(123,115,240,0.45);
-      font-size: 0.85rem;
-      font-weight: 700;
-      cursor: pointer;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    html.activity-mode-on .activity-ep-floating-btn:hover {
-      transform: translateY(-2px) scale(1.05);
-      background: rgba(25, 27, 42, 0.98);
+    .activity-float-card:hover {
       box-shadow: 0 12px 28px rgba(0,0,0,0.65), 0 0 18px rgba(123,115,240,0.65);
     }
-    /* Sembunyikan tombol floating episode saat panel episode terbuka */
-    body.episode-open .activity-ep-floating-btn {
+    .activity-float-card .float-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.15s;
+      padding: 0;
+    }
+    .activity-float-card .float-btn:hover {
+      background: rgba(255, 255, 255, 0.18);
+      transform: scale(1.1);
+    }
+    .activity-float-card .float-divider {
+      width: 1px;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.22);
+      margin: 0 2px;
+    }
+    /* Sembunyikan saat panel episode terbuka, muncul kembali saat ditutup */
+    body.episode-open .activity-float-card {
       display: none !important;
       opacity: 0 !important;
       pointer-events: none !important;
       visibility: hidden !important;
+    }
+    /* Di mode fullscreen, floating card tetap berada di atas video */
+    body.in-fullscreen .activity-float-card {
+      z-index: 1000000 !important;
+      bottom: 24px;
+      right: 24px;
     }
 
     /* Global Page Transition Overlay (Hitam transparan dengan tittle.png & ring loader) */
@@ -1336,6 +1354,8 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     body.is-viewer .reaction-bar *,
     body.is-viewer .video-fullscreen-btn,
     body.is-viewer .video-fullscreen-btn *,
+    body.is-viewer .activity-float-card,
+    body.is-viewer .activity-float-card *,
     body.is-viewer #claimHostBtn,
     body.is-viewer #claimHostBtn * {
       pointer-events: auto !important;
@@ -1459,11 +1479,21 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
         ${contentHtml}
       </main>
       ${episodePanelHtml}
-      ${(isActivity && episodePanelHtml) ? `
-        <button class="activity-ep-floating-btn" data-action="toggleEpisodePanel" title="Buka Daftar Episode">
-          <span style="font-size:1.15rem">📺</span>
-          <span>Episode</span>
-        </button>
+      ${episodePanelHtml ? `
+        <div class="activity-float-card" id="activityFloatCard">
+          <button class="float-btn" data-action="toggleEpisodePanel" title="Daftar Episode">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="15" rx="2" ry="2"/>
+              <polyline points="17 2 12 7 7 2"/>
+            </svg>
+          </button>
+          <span class="float-divider"></span>
+          <button class="float-btn" id="floatFsBtn" data-action="toggleVideoFullscreen" title="Fullscreen">
+            <svg id="fsIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+            </svg>
+          </button>
+        </div>
       ` : ''}
     </div>
   `}
@@ -1730,8 +1760,22 @@ async function handleMovieRequest(req, res, url) {
         responseType: 'stream',
         validateStatus: () => true
       });
+      let ctype = streamResp.headers['content-type'];
+      const cleanTarget = rawTarget.split('?')[0].toLowerCase();
+      if (!ctype || ctype === 'video/mp4' || ctype === 'application/octet-stream' || ctype === 'text/plain') {
+        if (cleanTarget.endsWith('.js') || rawTarget.includes('/chunks/') || rawTarget.includes('bundle') || rawTarget.includes('.js?')) {
+          ctype = 'application/javascript; charset=utf-8';
+        } else if (cleanTarget.endsWith('.m3u8')) {
+          ctype = 'application/vnd.apple.mpegurl';
+        } else if (cleanTarget.endsWith('.mp4')) {
+          ctype = 'video/mp4';
+        } else {
+          ctype = ctype || 'video/mp4';
+        }
+      }
+
       const respHeaders = {
-        'Content-Type': streamResp.headers['content-type'] || 'video/mp4',
+        'Content-Type': ctype,
         'Accept-Ranges': 'bytes',
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Range, Origin, Content-Type',
@@ -1789,6 +1833,22 @@ async function handleMovieRequest(req, res, url) {
       html = html.replace(/top\.location\s*==\s*self\.location/g, 'false');
       html = html.replace(/top\.location\s*!==\s*self\.location/g, 'true');
       html = html.replace(/track\.window\s*>=\s*\d+/g, 'false');
+
+      // 3b. Rewrite ALL <script src="..."> (absolute & relative) lewat /media-stream agar lolos CSP Discord Desktop
+      html = html.replace(/<script\b([^>]*?)\bsrc=(["'])(.*?)\2([^>]*)>/gi, (match, before, quote, srcVal, after) => {
+        if (!srcVal || srcVal.startsWith('data:') || srcVal.startsWith('/media-stream')) return match;
+        let absScriptUrl = srcVal;
+        try {
+          absScriptUrl = new URL(srcVal, targetUrl).href;
+        } catch (_) {}
+        const proxyUrl = `/media-stream?url=${encodeURIComponent(absScriptUrl)}`;
+        return `<script${before}src=${quote}${proxyUrl}${quote}${after}>`;
+      });
+
+      // 3c. Rewrite dynamic loadScript(...) yang sering dipakai player (misal abyssplayer)
+      html = html.replace(/loadScript\s*\(\s*(["'])(https?:\/\/[^"']+)\1\s*\)/gi, (m, q, u) => {
+        return `loadScript('/media-stream?url=' + encodeURIComponent('${u}'))`;
+      });
 
       // 4. Injeksi base href jika belum ada
       const targetOrigin = new URL(targetUrl).origin;
@@ -2045,12 +2105,7 @@ async function handleMovieRequest(req, res, url) {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen; xr-spatial-tracking"
                 >
               </iframe>
-              <button class="video-fullscreen-btn" data-action="toggleVideoFullscreen" title="Fullscreen">
-                <svg id="fsIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                  <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
-                </svg>
-                <span id="fsBtnText">Fullscreen</span>
-              </button>
+              <!-- Fullscreen & Episode disatukan dalam activity-float-card -->
             </div>
 
             <!-- Bottom Nav -->

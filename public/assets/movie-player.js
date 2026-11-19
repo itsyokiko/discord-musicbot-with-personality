@@ -108,6 +108,7 @@ function closeSidebar() {
   if (sb) sb.classList.remove('open');
   if (ep) ep.classList.remove('open');
   if (bd) bd.classList.remove('show');
+  document.body.classList.remove('episode-open');
 }
 
 function toggleEpisodePanel() {
@@ -606,10 +607,12 @@ function spawnFloatingEmoji(emoji) {
 function toggleVideoFullscreen() {
   const box = document.getElementById('videoBox');
   const btn = document.getElementById('fsBtnText');
+  const floatFs = document.getElementById('floatFsBtn');
   if (!box) return;
   const isFs = box.classList.toggle('fs-active');
   document.body.classList.toggle('in-fullscreen', isFs);
   if (btn) btn.textContent = isFs ? 'Tutup' : 'Fullscreen';
+  if (floatFs) floatFs.title = isFs ? 'Keluar Fullscreen' : 'Fullscreen';
   document.body.style.overflow = isFs ? 'hidden' : '';
   if (isFs && document.fullscreenEnabled && !document.fullscreenElement) {
     try { box.requestFullscreen().catch(function() {}); } catch (_) {}
@@ -617,6 +620,12 @@ function toggleVideoFullscreen() {
     try { document.exitFullscreen().catch(function() {}); } catch (_) {}
   }
 }
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeSidebar();
+  }
+});
 
 // ─── 10. Activity Navigation Intercept ───────────────────────────────────────
 document.addEventListener('click', function(e) {
