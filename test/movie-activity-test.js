@@ -41,11 +41,12 @@ async function runHttpTests() {
 
   try {
     // Test A: GET / (Kamar Callista Home Page)
-    console.log('Testing GET / (Kamar Callista & Activity Mode button)...');
+    console.log('Testing GET / (Kamar Callista Home Page)...');
     const resHome = await get('/');
     assert.strictEqual(resHome.status, 200);
     assert.ok(resHome.body.includes('Kamar Callista'), 'Harus menampilkan judul Kamar Callista');
-    assert.ok(resHome.body.includes('Mode Activity (Nobar VC)'), 'Harus memiliki tombol Mode Activity');
+    // Tombol Mode Activity dihapus dari kamar home (auto-detect only via Discord env)
+    assert.ok(!resHome.body.includes('btn-activity-portal'), 'Tombol Mode Activity tidak boleh ada di kamar home web biasa');
     assert.ok(resHome.body.includes('/settings'), 'Harus memiliki link ke Dashboard Bot Callista');
 
     // Test B: GET /settings (Callista Dashboard)
@@ -60,8 +61,14 @@ async function runHttpTests() {
     const resAsset = await get('/assets/tittle.png');
     assert.strictEqual(resAsset.status, 200);
     assert.strictEqual(resAsset.headers['content-type'], 'image/png');
+    assert.strictEqual(resAsset.headers['access-control-allow-origin'], '*', 'Asset harus punya CORS header');
 
-    // Test D: GET /api/movie/settings
+    // Test D1: GET /image-proxy (tanpa url = 400)
+    console.log('Testing GET /image-proxy (no url = 400)...');
+    const resImgProxyNoUrl = await get('/image-proxy');
+    assert.strictEqual(resImgProxyNoUrl.status, 400, '/image-proxy tanpa url harus 400');
+
+    // Test D2: GET /api/movie/settings
     console.log('Testing GET /api/movie/settings...');
     const resMovieSettings = await get('/api/movie/settings');
     assert.strictEqual(resMovieSettings.status, 200);

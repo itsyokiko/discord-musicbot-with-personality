@@ -32,7 +32,11 @@ function startServer(port) {
           '.js': 'application/javascript'
         };
         const mime = mimeTypes[ext] || 'application/octet-stream';
-        res.writeHead(200, { 'Content-Type': mime, 'Cache-Control': 'public, max-age=86400' });
+        res.writeHead(200, {
+          'Content-Type': mime,
+          'Cache-Control': 'public, max-age=86400',
+          'Access-Control-Allow-Origin': '*'
+        });
         fs.createReadStream(assetPath).pipe(res);
         return;
       }
@@ -72,11 +76,7 @@ function startServer(port) {
       let isAllowed = false;
       try {
         const tUrl = new URL(targetUrl);
-        // Whitelist domain streaming yang diizinkan (hanya yang di-embed langsung)
-        const allowedHosts = ['stream.otakudesu', 'nanistream', 'meownime', 'moenime',
-          'streamlare', 'googleapis.com', 'googlevideo.com', 'filemoon', 'vidfast',
-          'oppadrama', 'gdriveplayer', 'embedder'];
-        isAllowed = allowedHosts.some(h => tUrl.hostname.includes(h));
+        isAllowed = tUrl.protocol === 'http:' || tUrl.protocol === 'https:';
       } catch (_) {}
 
       if (!isAllowed) {

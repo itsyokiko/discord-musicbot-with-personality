@@ -44,6 +44,19 @@ function saveConfig(cfg) {
 }
 
 /* ============================================================
+   HELPER: Image Proxy URL Generator (Bypass Discord CSP & Anti-Hotlinking)
+   ============================================================ */
+function proxyImg(imgUrl) {
+  if (!imgUrl || typeof imgUrl !== 'string') {
+    return 'https://placehold.co/240x340/EDE9FE/9CA3AF?text=No+Poster';
+  }
+  if (imgUrl.startsWith('/assets/') || imgUrl.startsWith('data:') || imgUrl.startsWith('/image-proxy')) {
+    return imgUrl;
+  }
+  return `/image-proxy?url=${encodeURIComponent(imgUrl)}`;
+}
+
+/* ============================================================
    HELPER: Fetch HTML dengan headers browser-like
    ============================================================ */
 const fetchHtml = async (url, referer) => {
@@ -267,7 +280,7 @@ function renderSidebar(sidebar, mode, activeCat = '') {
             ${sidebar.onAir.slice(0, 8).map(item => `
               <a href="/?mode=drama&url=${encodeURIComponent(item.link)}" class="sb-mini-item">
                 <div class="sb-mini-thumb">
-                  <img src="${item.img}" alt="${item.title}" loading="lazy"
+                  <img src="${proxyImg(item.img)}" alt="${item.title}" loading="lazy"
                     onerror="this.src='https://placehold.co/60x80/E8ECF8/9CA3AF?text=?'"/>
                 </div>
                 <div class="sb-mini-info">
@@ -288,7 +301,7 @@ function renderSidebar(sidebar, mode, activeCat = '') {
               <a href="/?mode=anime&url=${encodeURIComponent(item.link)}" class="sb-mini-item">
                 ${item.img ? `
                   <div class="sb-mini-thumb">
-                    <img src="${item.img}" alt="${item.title}" loading="lazy"/>
+                    <img src="${proxyImg(item.img)}" alt="${item.title}" loading="lazy"/>
                   </div>
                 ` : ''}
                 <div class="sb-mini-info">
@@ -390,10 +403,6 @@ function renderKamarHome() {
             <a href="/?mode=anime" class="kamar-portal-btn btn-anime-portal">
               <span style="font-size:1.3rem">🌸</span>
               <span>Masuk ke Ruang Anime</span>
-            </a>
-            <a href="/?activity=1" class="kamar-portal-btn btn-activity-portal" style="background: linear-gradient(135deg, #7B73F0, #5865F2); color: #fff; box-shadow: 0 4px 18px rgba(88,101,242,0.38);">
-              <span style="font-size:1.3rem">🎦</span>
-              <span>Mode Activity (Nobar VC)</span>
             </a>
           </div>
         </div>
@@ -1245,10 +1254,6 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       </div>
 
       <div class="nav-right">
-        <button class="nav-icon-btn btn-act-toggle" onclick="toggleActivityMode()" title="Toggle Nobar Activity">
-          <span>🎦</span>
-          <span id="actToggleText">${isActivity ? 'Keluar Activity' : 'Mode Activity'}</span>
-        </button>
         <button class="nav-icon-btn" onclick="toggleTheme()" title="Ganti Tema">
           <span id="themeEmoji">🌙</span>
         </button>
@@ -1315,6 +1320,17 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
   </div>
 
   <script>
+    // Auto-detect Discord Activity environment
+    const isDiscordEnv = (function() {
+      const sp = new URLSearchParams(window.location.search);
+      if (sp.has('frame_id') || sp.has('instance_id')) return true;
+      if (window.location.hostname.includes('discordsays.com')) return true;
+      try { if (sessionStorage.getItem('dc_frame_id')) return true; } catch (_) {}
+      return false;
+    })();
+    // Expose for SDK handshake
+    window.isDiscordEnv = isDiscordEnv;
+
     // Theme Switcher
     function toggleTheme() {
       const html = document.documentElement;
@@ -1495,7 +1511,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
         ws.onclose = function() {
           window._wsReady = false;
           setTimeout(function() {
-            if (document.documentElement.classList.contains('activity-mode-on')) {
+            if (isDiscordEnv && document.documentElement.classList.contains('activity-mode-on')) {
               initActivityWebSocket();
             }
           }, 2500);
@@ -1802,8 +1818,8 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       }
     });
 
-    // Auto-connect jika diakses dengan mode activity
-    if (document.documentElement.classList.contains('activity-mode-on')) {
+    // Auto-connect WS hanya di Discord Activity (bukan plain browser)
+    if (isDiscordEnv && document.documentElement.classList.contains('activity-mode-on')) {
       initActivityWebSocket();
     }
   </script>
@@ -1820,10 +1836,14 @@ async function handleMovieRequest(req, res, url) {
   const searchQuery = url.searchParams.get('s') || '';
   const catParam = url.searchParams.get('cat');
   const cookieHeader = req.headers.cookie || '';
-  const hasCookieActivity = /(?:^|;\s*)callista_act=1/.test(cookieHeader);
   const explicitlyDisabled = url.searchParams.get('activity') === '0';
-  const hasDiscordActivityParam = url.searchParams.has('frame_id') || url.searchParams.has('instance_id') || Boolean(req.headers['x-forwarded-host'] && req.headers['x-forwarded-host'].includes('discordsays.com'));
-  const isActivity = !explicitlyDisabled && (url.searchParams.get('activity') === '1' || url.searchParams.get('activity') === 'true' || hasDiscordActivityParam || hasCookieActivity);
+
+  // Auto-detect: Discord Activity hanya jika ada frame_id/instance_id atau host discordsays.com
+  // Cookie activity hanya berlaku saat memang Discord env (bukan forced dari browser biasa)
+  const hasDiscordActivityParam = url.searchParams.has('frame_id') || url.searchParams.has('instance_id')
+    || Boolean(req.headers['x-forwarded-host'] && req.headers['x-forwarded-host'].includes('discordsays.com'));
+  const hasCookieActivity = /(?:^|;\s*)callista_act=1/.test(cookieHeader);
+  const isActivity = !explicitlyDisabled && (hasDiscordActivityParam || hasCookieActivity);
   const cfg = loadConfig();
 
   // Helper untuk set status cookie activity
@@ -1840,6 +1860,44 @@ async function handleMovieRequest(req, res, url) {
     res.writeHead(statusCode, headers);
     res.end(htmlContent);
   };
+
+  // 0. Image Proxy — bypass CSP/hotlink di Discord Desktop
+  if (url.pathname === '/image-proxy') {
+    const imgUrl = url.searchParams.get('url');
+    if (!imgUrl) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('Missing url');
+      return;
+    }
+    try {
+      let referer = imgUrl;
+      try { referer = new URL(imgUrl).origin + '/'; } catch (_) {}
+      const imgResp = await axios.get(imgUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+          'Referer': referer,
+          'Accept': 'image/webp,image/apng,image/*,*/*;q=0.8'
+        },
+        responseType: 'stream',
+        timeout: 10000
+      });
+      const ct = imgResp.headers['content-type'] || 'image/jpeg';
+      const cl = imgResp.headers['content-length'];
+      const respH = {
+        'Content-Type': ct,
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'public, max-age=86400'
+      };
+      if (cl) respH['Content-Length'] = cl;
+      res.writeHead(200, respH);
+      imgResp.data.pipe(res);
+    } catch (e) {
+      // Fallback: redirect ke placeholder
+      res.writeHead(302, { 'Location': 'https://placehold.co/240x340/EDE9FE/9CA3AF?text=No+Image' });
+      res.end();
+    }
+    return;
+  }
 
   // 1. API: Settings Domain
   if (url.pathname === '/api/movie/settings' || url.pathname === '/api/settings') {
@@ -1881,10 +1939,14 @@ async function handleMovieRequest(req, res, url) {
       if (/\.(mp4|m3u8)(?:\?|$)/i.test(targetUrl)) {
         directUrl = targetUrl;
       } else {
+        // Build referer: use the origin of the target URL
+        let referer = targetUrl;
+        try { referer = new URL(targetUrl).origin + '/'; } catch (_) {}
+
         const { data } = await axios.get(targetUrl, {
           headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-            'Referer': targetUrl
+            'Referer': referer
           },
           timeout: 10000
         });
@@ -1894,6 +1956,12 @@ async function handleMovieRequest(req, res, url) {
           const s = $(el).attr('src');
           if (s && !directUrl) directUrl = s;
         });
+
+        // Juga cari mp4 yang di-assign ke variabel JS (pola desustream: videoURL = "...")
+        if (!directUrl) {
+          const jsVarMatch = data.match(/(?:videoURL|videoUrl|video_url|src)\s*[=:]\s*["'`](https?:\/\/[^"'`\s]+\.(?:mp4|m3u8)[^"'`\s]*)["'`]/i);
+          if (jsVarMatch) directUrl = jsVarMatch[1];
+        }
 
         if (!directUrl) {
           const mp4Matches = data.match(/https?:\/\/[^\s"'<>]+\.(?:mp4|m3u8)(?:\?[^\s"'<>]*)?/gi) || [];
@@ -2369,7 +2437,7 @@ async function handleMovieRequest(req, res, url) {
       const contentHtml = `
         <div class="series-hero">
           <div class="series-poster">
-            <img src="${poster}" alt="${seriesTitle}"
+            <img src="${proxyImg(poster)}" alt="${seriesTitle}"
               onerror="this.src='https://placehold.co/300x420/EDE9FE/9CA3AF?text=No+Poster'"/>
           </div>
           <div class="series-info">
@@ -2519,7 +2587,7 @@ async function handleMovieRequest(req, res, url) {
           ${items.map(item => `
             <a class="drama-card" href="/?mode=${mode}&url=${encodeURIComponent(item.link)}">
               <div class="card-thumb">
-                <img src="${item.img}" alt="${item.title}" loading="lazy"
+                <img src="${proxyImg(item.img)}" alt="${item.title}" loading="lazy"
                   onerror="this.src='https://placehold.co/240x340/EDE9FE/9CA3AF?text=No+Poster'"/>
                 <div class="card-hover-play">
                   <div class="play-ring">
@@ -2714,6 +2782,7 @@ function broadcastToRoom(roomId, data, senderWs = null) {
 function isMovieRoute(pathname) {
   return pathname === '/'
     || pathname === '/anime-embed'
+    || pathname === '/image-proxy'
     || pathname === '/api/movie/settings'
     || pathname === '/api/settings'
     || pathname === '/api/resolve-media'
