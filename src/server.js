@@ -59,6 +59,60 @@ function startServer(port) {
       return;
     }
 
+    // 3b. Embed Proxy — bypass X-Frame-Options dari situs streaming pihak ketiga
+    // Discord Desktop memuat dalam iframe ketat; situs streaming menolak di-embed.
+    // Proxy ini fetch konten, strip header X-Frame-Options/CSP, lalu serve dari domain Callista.
+    if (req.method === 'GET' && url.pathname === '/embed-proxy') {
+      const targetUrl = url.searchParams.get('url');
+      if (!targetUrl) {
+        res.writeHead(400, { 'Content-Type': 'text/plain' });
+        res.end('Missing url param');
+        return;
+      }
+      let isAllowed = false;
+      try {
+        const tUrl = new URL(targetUrl);
+        // Whitelist domain streaming yang diizinkan (hanya yang di-embed langsung)
+        const allowedHosts = ['stream.otakudesu', 'nanistream', 'meownime', 'moenime',
+          'streamlare', 'googleapis.com', 'googlevideo.com', 'filemoon', 'vidfast',
+          'oppadrama', 'gdriveplayer', 'embedder'];
+        isAllowed = allowedHosts.some(h => tUrl.hostname.includes(h));
+      } catch (_) {}
+
+      if (!isAllowed) {
+        res.writeHead(403, { 'Content-Type': 'text/plain' });
+        res.end('Domain tidak diizinkan');
+        return;
+      }
+
+      const axios = require('axios');
+      axios.get(targetUrl, {
+        responseType: 'stream',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0.0.0 Safari/537.36',
+          'Referer': new URL(targetUrl).origin + '/',
+          'Accept': '*/*'
+        },
+        timeout: 15000
+      }).then(resp => {
+        const headers = {};
+        const passthroughHeaders = ['content-type', 'content-length', 'cache-control'];
+        for (const h of passthroughHeaders) {
+          if (resp.headers[h]) headers[h] = resp.headers[h];
+        }
+        // Strip anti-iframe headers, tambah allow
+        headers['X-Frame-Options'] = 'ALLOWALL';
+        headers['Access-Control-Allow-Origin'] = '*';
+        headers['Content-Security-Policy'] = "frame-ancestors *";
+        res.writeHead(resp.status, headers);
+        resp.data.pipe(res);
+      }).catch(err => {
+        res.writeHead(502, { 'Content-Type': 'text/plain' });
+        res.end('Proxy error: ' + err.message);
+      });
+      return;
+    }
+
     if (req.method === 'GET' && url.pathname === '/api/logs/stream') {
       logStream.handleSse(req, res);
       return;
