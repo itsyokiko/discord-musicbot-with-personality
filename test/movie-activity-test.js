@@ -68,6 +68,19 @@ async function runHttpTests() {
     const resImgProxyNoUrl = await get('/image-proxy');
     assert.strictEqual(resImgProxyNoUrl.status, 400, '/image-proxy tanpa url harus 400');
 
+    // Test D1b: GET /embed-proxy (tanpa url = 400)
+    console.log('Testing GET /embed-proxy (no url = 400)...');
+    const resEmbedProxyNoUrl = await get('/embed-proxy');
+    assert.strictEqual(resEmbedProxyNoUrl.status, 400, '/embed-proxy tanpa url harus 400');
+
+    // Test D1c: GET /?activity=1 (Kamar Callista Mode Activity)
+    console.log('Testing GET /?activity=1 (Activity mode checks)...');
+    const resHomeAct = await get('/?activity=1');
+    assert.strictEqual(resHomeAct.status, 200);
+    assert.ok(resHomeAct.body.includes('activity-mode-on'), 'Harus memiliki kelas activity-mode-on');
+    assert.ok(!resHomeAct.body.includes('Dashboard Bot'), 'Dashboard Bot harus disembunyikan di mode activity');
+    assert.ok(resHomeAct.body.includes('global-transition-overlay'), 'Harus memiliki global transition overlay');
+
     // Test D2: GET /api/movie/settings
     console.log('Testing GET /api/movie/settings...');
     const resMovieSettings = await get('/api/movie/settings');

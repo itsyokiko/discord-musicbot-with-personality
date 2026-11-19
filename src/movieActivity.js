@@ -330,6 +330,7 @@ function renderEpisodePanel(episodeList, currentUrl, mode) {
         </svg>
         <span>Episode</span>
         <span class="ep-panel-count">${episodeList.length}</span>
+        <button class="ep-close-btn" onclick="toggleEpisodePanel()" title="Tutup Episode">&times;</button>
       </div>
       <div class="ep-panel-scroll">
         <div class="ep-grid-blocks">
@@ -348,7 +349,7 @@ function renderEpisodePanel(episodeList, currentUrl, mode) {
    RENDER: HALAMAN UTAMA / DEPAN "KAMAR CALLISTA"
    (Original Layout dipertahankan + Tombol Mode Activity & Dashboard)
    ============================================================ */
-function renderKamarHome() {
+function renderKamarHome(isActivity = false) {
   return `
     <div class="kamar-immersive-screen">
       <!-- Overlay tipis lembut, mempertahankan gambar kamar tetap tajam -->
@@ -356,13 +357,14 @@ function renderKamarHome() {
 
       <!-- Kontrol Pojok Kanan Atas di Kamar -->
       <div class="kamar-top-controls">
+        ${!isActivity ? `
         <a href="/settings" class="kamar-ctrl-btn" title="Buka Dashboard Pengaturan Bot Callista">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <circle cx="12" cy="12" r="3"/>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
           <span>Dashboard Bot</span>
-        </a>
+        </a>` : ''}
         <button class="kamar-ctrl-btn" onclick="openSettingsModal()" title="Pengaturan Domain Scraper">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
@@ -863,9 +865,29 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     }
     .video-fullscreen-btn:hover { background: rgba(0,0,0,0.9); }
     .video-box.fs-active {
-      position: fixed !important; inset: 0 !important; z-index: 99999 !important;
+      position: fixed !important; inset: 0 !important; top: 0 !important; left: 0 !important;
+      right: 0 !important; bottom: 0 !important; z-index: 999999 !important;
       aspect-ratio: unset !important; border-radius: 0 !important;
       width: 100vw !important; height: 100vh !important;
+      max-width: 100vw !important; max-height: 100vh !important;
+      background: #000 !important; margin: 0 !important; padding: 0 !important;
+    }
+    .video-box.fs-active #callistaVideo,
+    .video-box.fs-active #playerFrame {
+      width: 100% !important; height: 100% !important; max-height: 100vh !important;
+      border-radius: 0 !important; object-fit: contain !important;
+    }
+    body.in-fullscreen {
+      overflow: hidden !important;
+    }
+    body.in-fullscreen .navbar,
+    body.in-fullscreen .app-sidebar,
+    body.in-fullscreen .player-topbar,
+    body.in-fullscreen .player-nav-bar,
+    body.in-fullscreen .dl-card,
+    body.in-fullscreen .activity-sync-bar,
+    body.in-fullscreen .activity-ep-floating-btn {
+      display: none !important;
     }
 
     .player-nav-bar {
@@ -893,6 +915,12 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       display: flex; align-items: center; gap: 8px;
     }
     .ep-panel-count { padding: 2px 8px; border-radius: var(--r-pill); background: var(--surface-soft); font-size: 0.75rem; margin-left: auto; color: var(--txt-2); }
+    .ep-close-btn {
+      background: none; border: none; color: var(--txt-3);
+      font-size: 1.4rem; line-height: 1; cursor: pointer; padding: 0 4px;
+      transition: color var(--dur) var(--ease); display: flex; align-items: center; justify-content: center;
+    }
+    .ep-close-btn:hover { color: var(--mode-accent); }
     /* Grid blok episode — 4 kolom, angka minimalis */
     .ep-panel-scroll { flex: 1; overflow-y: auto; padding: 10px; }
     .ep-grid-blocks {
@@ -1243,6 +1271,70 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
     body.is-viewer .nav-search {
       display: none !important;
     }
+
+    /* Khusus Mode Activity: Sembunyikan semua tombol unduh, daftar unduhan, dan dashboard bot */
+    html.activity-mode-on .dl-card,
+    html.activity-mode-on .dl-list,
+    html.activity-mode-on .download-section,
+    html.activity-mode-on [class*="dl-card"],
+    html.activity-mode-on [class*="download"],
+    html.activity-mode-on a[href="/settings"],
+    html.activity-mode-on .kamar-ctrl-btn[href="/settings"] {
+      display: none !important;
+    }
+
+    /* Floating Episode Button di Pojok Bawah (Khusus Mode Activity) */
+    .activity-ep-floating-btn {
+      display: none;
+    }
+    html.activity-mode-on .activity-ep-floating-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: fixed;
+      bottom: 22px;
+      right: 22px;
+      z-index: 1000;
+      padding: 10px 18px;
+      border-radius: var(--r-pill);
+      background: rgba(14, 15, 24, 0.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      color: #fff;
+      border: 1.5px solid var(--mode-accent);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.55), 0 0 14px rgba(123,115,240,0.45);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    html.activity-mode-on .activity-ep-floating-btn:hover {
+      transform: translateY(-2px) scale(1.05);
+      background: rgba(25, 27, 42, 0.98);
+      box-shadow: 0 12px 28px rgba(0,0,0,0.65), 0 0 18px rgba(123,115,240,0.65);
+    }
+
+    /* Global Page Transition Overlay (Hitam transparan dengan tittle.png & ring loader) */
+    .global-transition-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 999999;
+      background: rgba(14, 15, 24, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      color: #fff;
+    }
+    .transition-loader-text {
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: rgba(255,255,255,0.92);
+    }
     /* Pengecualian: Tombol di Nobar Bar, Reaksi, Fullscreen, & Klaim Host tetap aktif */
     body.is-viewer .activity-sync-bar,
     body.is-viewer .activity-sync-bar *,
@@ -1373,8 +1465,23 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
         ${contentHtml}
       </main>
       ${episodePanelHtml}
+      ${(isActivity && episodePanelHtml) ? `
+        <button class="activity-ep-floating-btn" onclick="toggleEpisodePanel()" title="Buka Daftar Episode">
+          <span style="font-size:1.15rem">📺</span>
+          <span>Episode</span>
+        </button>
+      ` : ''}
     </div>
   `}
+
+  <!-- Global Page Transition Overlay -->
+  <div class="global-transition-overlay" id="pageTransitionOverlay" style="display:none;">
+    <div class="loader-logo-wrap">
+      <div class="loader-ring"></div>
+      <img src="/assets/tittle.png" alt="Callista" draggable="false">
+    </div>
+    <span class="transition-loader-text" id="pageTransitionText">Memuat Kamar Callista…</span>
+  </div>
 
   <!-- Modal Pengaturan Domain -->
   <div class="modal-overlay" id="settingsModal">
@@ -1475,16 +1582,51 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
 
     function closeSidebar() {
       const sb = document.getElementById('appSidebar');
+      const ep = document.getElementById('episodePanel');
       const bd = document.getElementById('sidebarBackdrop');
       if (sb) sb.classList.remove('open');
+      if (ep) ep.classList.remove('open');
       if (bd) bd.classList.remove('show');
     }
 
     function toggleEpisodePanel() {
       const ep = document.getElementById('episodePanel');
+      const bd = document.getElementById('sidebarBackdrop');
       if (!ep) return;
-      ep.classList.toggle('open');
+      const isOpen = ep.classList.toggle('open');
+      if (bd) bd.classList.toggle('show', isOpen);
     }
+
+    // Global Page Transition Loading Functions
+    function showPageLoading(text) {
+      const el = document.getElementById('pageTransitionOverlay');
+      const txt = document.getElementById('pageTransitionText');
+      if (!el) return;
+      if (txt && text) txt.textContent = text;
+      el.style.display = 'flex';
+    }
+
+    function hidePageLoading() {
+      const el = document.getElementById('pageTransitionOverlay');
+      if (el) el.style.display = 'none';
+    }
+
+    // Intercept link clicks untuk menampilkan overlay transisi loading
+    document.addEventListener('click', function(e) {
+      const a = e.target.closest('a[href]');
+      if (!a) return;
+      const href = a.getAttribute('href');
+      if (!href || href.startsWith('#') || href.startsWith('javascript:')) return;
+      if (a.target === '_blank') return;
+      if (document.body.classList.contains('is-viewer') && document.documentElement.classList.contains('activity-mode-on')) {
+        return;
+      }
+      showPageLoading('Membuka ' + (a.textContent.trim().substring(0, 25) || 'halaman') + '…');
+    });
+
+    window.addEventListener('beforeunload', function() {
+      showPageLoading('Memuat tayangan…');
+    });
 
     function toggleAdShield() {
       const btn = document.getElementById('adBtn');
@@ -1722,6 +1864,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
 
           if (hostClean && hostClean !== currentClean) {
             showSyncToast('🎬 Menyelaraskan ke tayangan Host…');
+            showPageLoading('🎬 Menyelaraskan ke tayangan Host…');
             setTimeout(function() {
               window.location.href = buildActivityUrl(data.currentRoute);
             }, 250);
@@ -1738,12 +1881,14 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       } else if (data.type === 'NAVIGATE_TO') {
         if (!window.isHost && data.route) {
           showSyncToast('🎬 Host membuka: ' + (data.title || 'tayangan baru'));
+          showPageLoading('🎬 Host membuka: ' + (data.title || 'tayangan baru') + '…');
           setTimeout(function() {
             window.location.href = buildActivityUrl(data.route);
           }, 200);
         }
       } else if (data.type === 'HOST_CLOSED_SESSION') {
         showSyncToast('🎬 ' + (data.message || 'Host telah keluar. Sesi nobar selesai.'));
+        showPageLoading('Host telah keluar. Sesi nobar selesai…');
         setTimeout(function() {
           try { sessionStorage.removeItem('callista_client_id'); } catch (_) {}
           window.location.href = '/';
@@ -1835,7 +1980,9 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
 
         if (res.success && (res.directUrl || res.rawUrl)) {
           initCallistaVideoEvents();
-          const targetSrc = res.directUrl || res.rawUrl;
+          // Di Discord Desktop / Activity, prioritaskan res.proxyUrl agar lolos CSP Electron Discord
+          const isAct = document.documentElement.classList.contains('activity-mode-on') || isDiscordEnv;
+          const targetSrc = (isAct && res.proxyUrl) ? res.proxyUrl : (res.directUrl || res.rawUrl);
           v.src = targetSrc;
           v.style.display = 'block';
           if (frame) frame.style.display = 'none';
@@ -1848,11 +1995,16 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
           };
           
           v.onerror = function() {
-            console.warn('[PLAYER] Direct video error, trying proxyUrl...');
+            console.warn('[PLAYER] Video error with', v.src, ', trying fallback...');
             if (res.proxyUrl && v.src !== res.proxyUrl) {
               v.src = res.proxyUrl;
               v.onerror = function() {
                 console.warn('[PLAYER] Proxy fallback failed, switching to embed frame...');
+                setPlayerMode('embed');
+              };
+            } else if (res.directUrl && v.src !== res.directUrl) {
+              v.src = res.directUrl;
+              v.onerror = function() {
                 setPlayerMode('embed');
               };
             } else {
@@ -1963,6 +2115,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
       const btn = document.getElementById('fsBtnText');
       if (!box) return;
       const isFs = box.classList.toggle('fs-active');
+      document.body.classList.toggle('in-fullscreen', isFs);
       if (btn) btn.textContent = isFs ? 'Tutup' : 'Fullscreen';
       document.body.style.overflow = isFs ? 'hidden' : '';
 
@@ -1993,6 +2146,7 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
         e.preventDefault();
         const nextUrl = buildActivityUrl(a.pathname + a.search);
         notifyHostNavigate(nextUrl, a.textContent.trim() || document.title);
+        showPageLoading('Membuka ' + (a.textContent.trim().substring(0, 25) || 'tayangan') + '…');
         setTimeout(function() {
           window.location.href = nextUrl;
         }, 120);
@@ -2024,7 +2178,8 @@ async function handleMovieRequest(req, res, url) {
   const hasDiscordActivityParam = url.searchParams.has('frame_id') || url.searchParams.has('instance_id')
     || Boolean(req.headers['x-forwarded-host'] && req.headers['x-forwarded-host'].includes('discordsays.com'));
   const hasCookieActivity = /(?:^|;\s*)callista_act=1/.test(cookieHeader);
-  const isActivity = !explicitlyDisabled && (hasDiscordActivityParam || hasCookieActivity);
+  const hasQueryActivity = url.searchParams.get('activity') === '1';
+  const isActivity = !explicitlyDisabled && (hasQueryActivity || hasDiscordActivityParam || hasCookieActivity);
   const cfg = loadConfig();
 
   // Helper untuk set status cookie activity
@@ -2109,12 +2264,18 @@ async function handleMovieRequest(req, res, url) {
 
   // 1b. API: Resolve Direct Media URL untuk Player Lokal Callista
   if (url.pathname === '/api/resolve-media') {
-    const targetUrl = url.searchParams.get('url');
+    let targetUrl = url.searchParams.get('url');
     if (!targetUrl) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ success: false, error: 'URL required' }));
       return;
     }
+    // Unwrap jika targetUrl dibungkus oleh /embed-proxy atau /anime-embed
+    if (targetUrl.includes('url=')) {
+      const match = targetUrl.match(/[?&]url=([^&]+)/);
+      if (match) targetUrl = decodeURIComponent(match[1]);
+    }
+
     try {
       let directUrl = '';
       if (/\.(mp4|m3u8)(?:\?|$)/i.test(targetUrl)) {
@@ -2140,7 +2301,7 @@ async function handleMovieRequest(req, res, url) {
 
         // Juga cari mp4 yang di-assign ke variabel JS (pola desustream: videoURL = "...")
         if (!directUrl) {
-          const jsVarMatch = data.match(/(?:videoURL|videoUrl|video_url|src)\s*[=:]\s*["'`](https?:\/\/[^"'`\s]+\.(?:mp4|m3u8)[^"'`\s]*)["'`]/i);
+          const jsVarMatch = data.match(/(?:videoURL|videoUrl|video_url|file|src)\s*[=:]\s*["'`](https?:\/\/[^"'`\s]+\.(?:mp4|m3u8)[^"'`\s]*)["'`]/i);
           if (jsVarMatch) directUrl = jsVarMatch[1];
         }
 
@@ -2154,9 +2315,26 @@ async function handleMovieRequest(req, res, url) {
           }
         }
 
+        // Jika terdapat iframe di dalam halaman, coba fetch isi iframe untuk mencari direct video stream
         if (!directUrl) {
           const ifr = $('iframe').first().attr('src') || '';
-          if (ifr && ifr.startsWith('http')) directUrl = ifr;
+          if (ifr && ifr.startsWith('http')) {
+            try {
+              let ifrReferer = ifr;
+              try { ifrReferer = new URL(ifr).origin + '/'; } catch (_) {}
+              const ifrResp = await axios.get(ifr, {
+                headers: {
+                  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+                  'Referer': ifrReferer
+                },
+                timeout: 8000
+              });
+              const ifrData = typeof ifrResp.data === 'string' ? ifrResp.data : '';
+              const ifrMatch = ifrData.match(/(?:videoURL|videoUrl|video_url|file|src)\s*[=:]\s*["'`](https?:\/\/[^"'`\s]+\.(?:mp4|m3u8)[^"'`\s]*)["'`]/i);
+              if (ifrMatch) directUrl = ifrMatch[1];
+            } catch (_) {}
+            if (!directUrl) directUrl = ifr;
+          }
         }
       }
 
@@ -2210,7 +2388,9 @@ async function handleMovieRequest(req, res, url) {
       const respHeaders = {
         'Content-Type': streamResp.headers['content-type'] || 'video/mp4',
         'Accept-Ranges': 'bytes',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Range, Origin, Content-Type',
+        'Cache-Control': 'public, max-age=3600'
       };
       if (streamResp.headers['content-range']) respHeaders['Content-Range'] = streamResp.headers['content-range'];
       if (streamResp.headers['content-length']) respHeaders['Content-Length'] = streamResp.headers['content-length'];
@@ -2226,8 +2406,8 @@ async function handleMovieRequest(req, res, url) {
     return;
   }
 
-  // 2. PROXY EMBED KHUSUS ANIME (OTAKUDESU / DESUSTREAM)
-  if (url.pathname === '/anime-embed') {
+  // 2. UNIVERSAL EMBED PROXY (Bypass CSP, X-Frame-Options, dan rewrite videoURL ke /media-stream untuk Discord Desktop)
+  if (url.pathname === '/embed-proxy' || url.pathname === '/anime-embed') {
     const targetUrl = url.searchParams.get('url');
     if (!targetUrl) {
       res.writeHead(400, { 'Content-Type': 'text/plain' });
@@ -2235,23 +2415,51 @@ async function handleMovieRequest(req, res, url) {
       return;
     }
     try {
+      let referer = targetUrl;
+      try { referer = new URL(targetUrl).origin + '/'; } catch (_) {}
       const { data } = await axios.get(targetUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-          'Referer': cfg.domainAnime + '/'
+          'Referer': referer
         },
         timeout: 15000
       });
-      const $ = cheerio.load(data);
-      $('head').prepend('<base href="https://desustream.net/">');
+
+      let html = typeof data === 'string' ? data : data.toString();
+
+      // 1. Rewrite videoURL di script desustream / anime agar menggunakan /media-stream
+      html = html.replace(/(videoURL\s*=\s*["'])(https?:\/\/[^"']+\.(?:mp4|m3u8)[^"']*)(["'])/gi, (m, p1, p2, p3) => {
+        return `${p1}/media-stream?url=${encodeURIComponent(p2)}${p3}`;
+      });
+
+      // 2. Rewrite video & source src langsung
+      html = html.replace(/(<video[^>]*?\ssrc=["'])(https?:\/\/[^"']+)(["'])/gi, (m, p1, p2, p3) => {
+        return `${p1}/media-stream?url=${encodeURIComponent(p2)}${p3}`;
+      });
+      html = html.replace(/(<source[^>]*?\ssrc=["'])(https?:\/\/[^"']+)(["'])/gi, (m, p1, p2, p3) => {
+        return `${p1}/media-stream?url=${encodeURIComponent(p2)}${p3}`;
+      });
+
+      // 3. Bypass anti-iframe / sandbox checks di player seperti abyssplayer
+      html = html.replace(/top\.location\s*==\s*self\.location/g, 'false');
+      html = html.replace(/top\.location\s*!==\s*self\.location/g, 'true');
+      html = html.replace(/track\.window\s*>=\s*\d+/g, 'false');
+
+      // 4. Injeksi base href jika belum ada
+      const targetOrigin = new URL(targetUrl).origin;
+      if (!html.includes('<base')) {
+        html = html.replace(/<head>/i, `<head><base href="${targetOrigin}/">`);
+      }
+
       res.writeHead(200, {
         'Content-Type': 'text/html; charset=utf-8',
-        'X-Frame-Options': 'ALLOWALL'
+        'X-Frame-Options': 'ALLOWALL',
+        'Access-Control-Allow-Origin': '*'
       });
-      res.end($.html());
+      res.end(html);
     } catch (err) {
       res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end(`Gagal memuat embed anime: ${err.message}`);
+      res.end(`Gagal memuat embed proxy: ${err.message}`);
     }
     return;
   }
@@ -2261,7 +2469,7 @@ async function handleMovieRequest(req, res, url) {
   if (!reqMode && !targetUrlParam && !searchQuery && !catParam) {
     const html = masterLayout({
       title: 'Kamar Callista',
-      contentHtml: renderKamarHome(),
+      contentHtml: renderKamarHome(isActivity),
       mode: 'home',
       isActivity
     });
@@ -2312,7 +2520,7 @@ async function handleMovieRequest(req, res, url) {
         pageTitle = $('h1.posttl').text().trim() || $('title').text().split('|')[0].trim();
         let iframeSrc = $('#pembed iframe, .responsive-embed-stream iframe').first().attr('src') || '';
         if (iframeSrc) {
-          initSrc = `/anime-embed?url=${encodeURIComponent(iframeSrc)}`;
+          initSrc = `/embed-proxy?url=${encodeURIComponent(iframeSrc)}`;
           mirrors.push({ name: 'DesuStream (Utama)', src: initSrc });
         }
         $('.mirrorstream ul li a').each((i, el) => {
@@ -2365,15 +2573,19 @@ async function handleMovieRequest(req, res, url) {
           try {
             const decoded = Buffer.from(val, 'base64').toString('utf-8');
             const match   = decoded.match(/src=["'](.*?)["']/i);
-            const src     = match?.[1] || (decoded.startsWith('http') ? decoded.trim() : '');
-            if (src) mirrors.push({ name: name || `Server ${mirrors.length+1}`, src });
+            const rawSrc  = match?.[1] || (decoded.startsWith('http') ? decoded.trim() : '');
+            if (rawSrc) {
+              const src = `/embed-proxy?url=${encodeURIComponent(rawSrc)}`;
+              mirrors.push({ name: name || `Server ${mirrors.length+1}`, src });
+            }
           } catch (_) {}
         });
 
         if (!mirrors.length) {
           $('iframe').each((i, el) => {
-            const src = $(el).attr('src') || $(el).attr('data-src') || '';
-            if (src && !src.includes('googletag') && !src.includes('facebook') && !src.includes('disqus')) {
+            const rawSrc = $(el).attr('src') || $(el).attr('data-src') || '';
+            if (rawSrc && !rawSrc.includes('googletag') && !rawSrc.includes('facebook') && !rawSrc.includes('disqus')) {
+              const src = `/embed-proxy?url=${encodeURIComponent(rawSrc)}`;
               mirrors.push({ name: `Server ${mirrors.length+1}`, src });
             }
           });
@@ -2511,7 +2723,7 @@ async function handleMovieRequest(req, res, url) {
 
               <div class="tip-pill">
                 <span class="tip-tag">💡 Tips</span>
-                <span>Klik 🎦 Mode Nobar untuk sinkronisasi nonton bareng teman di VC.</span>
+                <span>Gunakan tombol Fullscreen untuk tampilan penuh atau putar via Player Lokal.</span>
               </div>
 
               ${nextLink
@@ -2527,7 +2739,7 @@ async function handleMovieRequest(req, res, url) {
             </div>
           </div>
 
-          ${dlList.length ? `
+          ${(!isActivity && dlList.length) ? `
             <div class="dl-card">
               <div class="sec-title">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -3033,6 +3245,7 @@ function broadcastToRoom(roomId, data, senderWs = null) {
 function isMovieRoute(pathname) {
   return pathname === '/'
     || pathname === '/anime-embed'
+    || pathname === '/embed-proxy'
     || pathname === '/image-proxy'
     || pathname === '/api/movie/settings'
     || pathname === '/api/settings'
