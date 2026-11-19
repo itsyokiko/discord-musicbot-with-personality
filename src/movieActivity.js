@@ -427,6 +427,25 @@ function masterLayout({ title, sidebarHtml = '', contentHtml, episodePanelHtml =
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <!-- Discord Embedded App SDK untuk Discord Voice Activity -->
+  <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@1.1.0/output/index.umd.js"></script>
+  <script>
+    (async function initDiscordActivitySdk() {
+      const sp = new URLSearchParams(window.location.search);
+      const frameId = sp.get('frame_id');
+      if (!frameId) return;
+      try {
+        if (window.DiscordSDK && window.DiscordSDK.DiscordSDK) {
+          const clientId = sp.get('client_id') || '1347881958286262334';
+          const discordSdk = new window.DiscordSDK.DiscordSDK(clientId);
+          await discordSdk.ready();
+          console.log('[DISCORD_SDK] Handshake ready berhasil dikirim ke Discord client!');
+        }
+      } catch (err) {
+        console.warn('[DISCORD_SDK] Handshake warning:', err.message || err);
+      }
+    })();
+  </script>
   <style>
     /* ═══════════════════════════════════════════════════════
        DESIGN TOKENS — KAMAR CALLISTA PASTEL SMOOTH
@@ -1368,7 +1387,8 @@ async function handleMovieRequest(req, res, url) {
   const targetUrlParam = url.searchParams.get('url');
   const searchQuery = url.searchParams.get('s') || '';
   const catParam = url.searchParams.get('cat');
-  const isActivity = url.searchParams.get('activity') === '1' || url.searchParams.get('activity') === 'true';
+  const hasDiscordActivityParam = url.searchParams.has('frame_id') || url.searchParams.has('instance_id') || Boolean(req.headers['x-forwarded-host'] && req.headers['x-forwarded-host'].includes('discordsays.com'));
+  const isActivity = url.searchParams.get('activity') === '1' || url.searchParams.get('activity') === 'true' || hasDiscordActivityParam;
   const cfg = loadConfig();
 
   // 1. API: Settings Domain
